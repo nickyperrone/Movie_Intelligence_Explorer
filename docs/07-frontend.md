@@ -170,7 +170,8 @@ performance) once per title; no new endpoint.
 1. Shared filters above the columns, in three labeled groups: "Measure" (streams, viewing hours),
    "Filter" (country and platform multi-selects, dataset C values) and "Timeline" ("Calendar" or
    "From launch": month 1 is each title's first month with consumption).
-2. Columns: one per title, equal width. With fewer than 3 titles, the next column is an "Add a
+2. Columns: one per title, all the same fixed width (15rem from 640 px up), side by side from the
+   left like a table; the chart and the row lines still use the full width. With fewer than 3 titles, the next column is an "Add a
    title" slot: the title picker on top, as wide as a poster, and under it a dashed box of the same
    size as a poster. The picker's results open over the box. A title already on screen cannot be
    added twice. Each column has a remove button on its poster; removing the last title leaves the
