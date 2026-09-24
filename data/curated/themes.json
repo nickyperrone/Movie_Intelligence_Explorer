@@ -6,7 +6,7 @@
   "themes": [
     {
       "theme_id": "t01",
-      "name": "True Stories Gone Wrong",
+      "name": "Real Disasters",
       "description": "Documentaries and dramas about real events that went badly wrong, from lost submarines to failed parties.",
       "title_ids": [
         "tt1001520",
@@ -50,7 +50,7 @@
     },
     {
       "theme_id": "t02",
-      "name": "Assassins and Kidnappings",
+      "name": "Hired Killers",
       "description": "Action thrillers about hired killers, kidnapped families and missions that go wrong.",
       "title_ids": [
         "tt0327785",
@@ -150,7 +150,7 @@
     },
     {
       "theme_id": "t03",
-      "name": "Family and Second Chances",
+      "name": "Second Chances",
       "description": "Comedic dramas about families, reunions and people rethinking their lives.",
       "title_ids": [
         "tt10375624",
@@ -267,7 +267,7 @@
     },
     {
       "theme_id": "t04",
-      "name": "Indian Cops and Agents",
+      "name": "Indian Cop Action",
       "description": "Indian action films about police officers, soldiers and spies.",
       "title_ids": [
         "tt11905536",
@@ -316,7 +316,7 @@
     },
     {
       "theme_id": "t05",
-      "name": "True Crime Documentaries",
+      "name": "True Crime",
       "description": "Documentaries that investigate real crimes, cover-ups and the people involved.",
       "title_ids": [
         "tt11331792",
@@ -390,7 +390,7 @@
     },
     {
       "theme_id": "t06",
-      "name": "Indian Heroes and Epics",
+      "name": "Indian Epics",
       "description": "Indian action dramas about local heroes, rulers and their communities.",
       "title_ids": [
         "tt10651230",
@@ -610,7 +610,7 @@
     },
     {
       "theme_id": "t08",
-      "name": "Love and Fresh Starts",
+      "name": "Fresh Starts",
       "description": "Romances about love found far from home or later than planned.",
       "title_ids": [
         "tt12823454",
@@ -867,7 +867,7 @@
     },
     {
       "theme_id": "t11",
-      "name": "Animated Family Adventures",
+      "name": "Animated Quests",
       "description": "Animated adventures for the whole family, with magic, quests and songs.",
       "title_ids": [
         "tt0498396",
@@ -924,7 +924,7 @@
     },
     {
       "theme_id": "t12",
-      "name": "Star-Led Comedies",
+      "name": "Star Comedies",
       "description": "American comedies and romances built around well-known actors.",
       "title_ids": [
         "tt11762114",
@@ -959,7 +959,7 @@
     },
     {
       "theme_id": "t13",
-      "name": "Star-Led Genre Films",
+      "name": "Star Vehicles",
       "description": "Thrillers, science fiction and dramas whose stories center on their lead actors.",
       "title_ids": [
         "tt10098448",
@@ -1034,7 +1034,7 @@
     },
     {
       "theme_id": "t14",
-      "name": "Inspired by Real Lives",
+      "name": "Real-Life Heroes",
       "description": "Biopics and dramas about real people who beat the odds.",
       "title_ids": [
         "tt10172266",
@@ -1121,7 +1121,7 @@
     },
     {
       "theme_id": "t15",
-      "name": "Quiet Personal Dramas",
+      "name": "Quiet Dramas",
       "description": "Character dramas about loss, desire and people at a turning point.",
       "title_ids": [
         "tt10236164",
@@ -1206,7 +1206,7 @@
     },
     {
       "theme_id": "t16",
-      "name": "Music and Celebrity Docs",
+      "name": "Music Docs",
       "description": "Documentaries about musicians, entertainers and public figures.",
       "title_ids": [
         "tt10365912",
@@ -1312,7 +1312,7 @@
     },
     {
       "theme_id": "t17",
-      "name": "Bollywood Drama and Romance",
+      "name": "Bollywood Romance",
       "description": "Hindi-language dramas, thrillers and romances, often with music.",
       "title_ids": [
         "tt11364772",
@@ -1378,7 +1378,7 @@
     },
     {
       "theme_id": "t18",
-      "name": "Holiday and Friends Comedies",
+      "name": "Holiday Comedies",
       "description": "Light comedies about holidays, reunions and old friends.",
       "title_ids": [
         "tt10171472",
@@ -1578,7 +1578,7 @@
     },
     {
       "theme_id": "t21",
-      "name": "Dark Mysteries and Horror",
+      "name": "Dark Mysteries",
       "description": "Horror and mysteries about disappearances, curses and grim family secrets.",
       "title_ids": [
         "tt10160976",

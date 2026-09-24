@@ -37,10 +37,27 @@ def test_grounded_answer_returns_evidence(monkeypatch):
     assert result.evidence[0].rows == [[1590]]
 
 
-def test_number_not_in_results_is_rejected(monkeypatch):
-    result, _ = ask(monkeypatch, sql_call(COUNT_SQL), final("answered", "There are 2,000 movies."))
+def test_number_not_in_results_is_rejected_after_one_retry(monkeypatch):
+    result, fake = ask(
+        monkeypatch,
+        sql_call(COUNT_SQL),
+        final("answered", "There are 2,000 movies."),
+        final("answered", "There are 2,000 movies."),
+    )
     assert result.status.root == "failed"
     assert result.answer is None
+    assert "2,000" in fake.calls[-1]["messages"][-1]["content"]
+
+
+def test_retry_can_fix_an_ungrounded_answer(monkeypatch):
+    result, _ = ask(
+        monkeypatch,
+        sql_call(COUNT_SQL),
+        final("answered", "There are 2,000 movies."),
+        final("answered", "There are 1,590 movies."),
+    )
+    assert result.status.root == "answered"
+    assert result.answer == "There are 1,590 movies."
 
 
 def test_compact_numbers_and_percentages_are_matched(monkeypatch):
@@ -51,8 +68,18 @@ def test_compact_numbers_and_percentages_are_matched(monkeypatch):
     assert result.status.root == "answered"
 
 
+def test_text_cells_with_numbers_are_read(monkeypatch):
+    sql = "SELECT '28 Years Later' AS title, 4521 AS streams"
+    result, _ = ask(
+        monkeypatch, sql_call(sql), final("answered", "28 Years Later had 4.5K streams.")
+    )
+    assert result.status.root == "answered"
+
+
 def test_answer_without_tool_call_is_rejected(monkeypatch):
-    result, _ = ask(monkeypatch, final("answered", "There are 42 movies."))
+    result, _ = ask(
+        monkeypatch, final("answered", "There are 42 movies."), final("answered", "Still 42.")
+    )
     assert result.status.root == "failed"
 
 

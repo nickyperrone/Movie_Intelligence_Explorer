@@ -24,9 +24,9 @@ K_RANGE = range(16, 33)
 EXAMPLES_PER_THEME = 10
 
 THEME_PROMPT = """You name a group of movies for a streaming catalog browser. You get the movies
-closest to the center of the group. Return JSON: {"name": "at most 4 words, specific and plain,
-title case", "description": "at most 20 words on what these movies have in common"}. No marketing
-words, no quotes, no numbers."""
+closest to the center of the group. Return JSON: {"name": "at most 18 characters, specific and
+plain, title case", "description": "at most 20 words on what these movies have in common"}.
+No marketing words, no quotes, no numbers."""
 
 
 class ThemeName(BaseModel):
