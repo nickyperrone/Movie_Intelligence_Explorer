@@ -155,7 +155,7 @@ export function useDashboardMatrix(query: DashboardQuery) {
 }
 
 export function useDashboardTitles(query: DashboardQuery, sort: Schemas['TitleSort']) {
-  const limit = 20
+  const limit = 10
   return useInfiniteQuery({
     queryKey: ['dashboard', 'titles', query, sort],
     queryFn: ({ pageParam }) =>

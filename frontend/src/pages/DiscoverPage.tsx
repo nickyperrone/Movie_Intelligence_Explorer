@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Schemas } from '@/api/client'
 import { useCollections } from '@/api/queries'
 import { CardRow } from '@/components/common/CardRow'
@@ -24,6 +25,14 @@ export function DiscoverPage() {
   const selected = SECTIONS.find((section) => section.id === get('section'))?.id
   const visible = selected ? SECTIONS.filter((section) => section.id === selected) : SECTIONS
   const covers = assignCovers(collections.data?.collections ?? [])
+  // Every cover has the same size: rows show as many cards as the shortest visible row has.
+  const rowLengths = visible
+    .map(
+      (section) =>
+        collections.data?.collections.filter((c) => c.section === section.id).length ?? 0,
+    )
+    .filter((length) => length > 0)
+  const perView = rowLengths.length ? Math.min(...rowLengths) : undefined
 
   return (
     <div className="pt-2">
@@ -80,7 +89,10 @@ export function DiscoverPage() {
                   ))}
                 </CardRow>
               ) : selected ? (
-                <div className="-mx-3 grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
+                <div
+                  style={{ '--max': perView } as CSSProperties}
+                  className="-mx-3 grid [--per-view:2] [grid-template-columns:repeat(min(var(--per-view),var(--max)),minmax(0,1fr))] sm:[--per-view:3] lg:[--per-view:5]"
+                >
                   {items.map((collection) => (
                     <CollectionCard
                       key={collection.collection_id}
@@ -90,7 +102,7 @@ export function DiscoverPage() {
                   ))}
                 </div>
               ) : (
-                <CardRow label={section.title}>
+                <CardRow label={section.title} maxPerView={perView}>
                   {items.map((collection) => (
                     <CollectionCard
                       key={collection.collection_id}

@@ -10,9 +10,18 @@ import {
 } from 'react'
 import { cn } from '@/lib/cn'
 
-// A row of cards that always fills the width: 2, 3 or 5 cards per view by screen size, fewer
-// and wider when the row has fewer cards. Small arrows scroll one view at a time.
-export function CardRow({ children, label }: { children: ReactNode; label: string }) {
+// A row of cards that always fills the width: 2, 3 or 5 cards per view by screen size, capped by
+// `maxPerView` (a page passes its shortest row's length so every card has the same size) or by
+// the row's own length. Small arrows scroll one view at a time.
+export function CardRow({
+  children,
+  label,
+  maxPerView,
+}: {
+  children: ReactNode
+  label: string
+  maxPerView?: number
+}) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [canScroll, setCanScroll] = useState({ back: false, forward: false })
   const count = Children.count(children)
@@ -49,11 +58,11 @@ export function CardRow({ children, label }: { children: ReactNode; label: strin
         ref={trackRef}
         onScroll={measure}
         aria-label={label}
-        style={{ '--count': count } as CSSProperties}
+        style={{ '--max': maxPerView ?? count } as CSSProperties}
         className={cn(
           '-mx-3 grid snap-x snap-mandatory grid-flow-col overflow-x-auto scrollbar-none',
           '[--per-view:2] sm:[--per-view:3] lg:[--per-view:5]',
-          '[grid-auto-columns:calc(100%/min(var(--per-view),var(--count)))]',
+          '[grid-auto-columns:calc(100%/min(var(--per-view),var(--max)))]',
         )}
       >
         {children}
