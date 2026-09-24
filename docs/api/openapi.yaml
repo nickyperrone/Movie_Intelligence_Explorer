@@ -1,0 +1,1130 @@
+openapi: 3.1.0
+info:
+  title: Movie Intelligence Explorer API
+  version: 1.0.0
+  description: |
+    Read-only API for semantic movie search, streaming availability (dataset B, a single-month
+    snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
+
+    Conventions
+    - Versioned by path: /api/v1. Breaking changes go to /api/v2; additive changes bump the minor version.
+    - Months are "YYYY-MM". Missing scalars are null. Missing lists are [].
+    - "No results" is 200 with an empty list. 404 is only for an unknown title_id or collection_id.
+    - Errors always use the Error envelope.
+    - LLM problems never cause a 5xx; they are reported in a `status` field (docs/06-llm.md).
+    - Metric definitions: docs/04-metrics.md. Filter semantics: docs/05-search.md.
+servers:
+  - url: /api/v1
+
+tags:
+  - name: system
+  - name: search
+  - name: movies
+  - name: dashboard
+  - name: collections
+  - name: decisions
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      operationId: getHealth
+      summary: Service status
+      responses:
+        "200":
+          description: Service is up and data is loaded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+
+  /filters:
+    get:
+      tags: [system]
+      operationId: getFilterOptions
+      summary: Vocabularies for every filter control
+      responses:
+        "200":
+          description: Filter options
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FilterOptions" }
+
+  /search:
+    get:
+      tags: [search]
+      operationId: searchMovies
+      summary: Semantic search with optional structured filters
+      description: |
+        1. If `interpret=true`, the LLM parses `q` into a semantic query and proposed filters.
+        2. Explicit filter parameters override proposed filters, field by field.
+        3. Filters restrict the candidates (SQL); embeddings rank them (cosine similarity).
+        4. Results below the relevance threshold are dropped.
+        To apply edited filters without the LLM, send `q=<semantic_query>`, the filters and
+        `interpret=false`.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 200 }
+        - name: interpret
+          in: query
+          schema: { type: boolean, default: true }
+        - name: genres
+          in: query
+          description: Movie must have all listed genres.
+          style: form
+          explode: true
+          schema: { type: array, items: { type: string } }
+        - name: year_min
+          in: query
+          schema: { type: integer, minimum: 1900, maximum: 2100 }
+        - name: year_max
+          in: query
+          schema: { type: integer, minimum: 1900, maximum: 2100 }
+        - name: countries
+          in: query
+          description: Availability countries (dataset B), matched on the same row as platforms.
+          style: form
+          explode: true
+          schema: { type: array, items: { type: string } }
+        - name: platforms
+          in: query
+          description: Availability platforms (dataset B), matched on the same row as countries.
+          style: form
+          explode: true
+          schema: { type: array, items: { type: string } }
+        - name: people
+          in: query
+          description: Case-insensitive substring match on directors or cast.
+          style: form
+          explode: true
+          schema: { type: array, maxItems: 3, items: { type: string, minLength: 2, maxLength: 60 } }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        "200":
+          description: Ranked results, possibly empty
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SearchResponse" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /movies/lookup:
+    get:
+      tags: [movies]
+      operationId: lookupMovies
+      summary: Find movies by title text (for pickers)
+      description: Case-insensitive substring match on the title; prefix matches first, then by vote count.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 100 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 20, default: 10 }
+      responses:
+        "200":
+          description: Matching movies
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MovieList" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /movies/{title_id}:
+    get:
+      tags: [movies]
+      operationId: getMovie
+      summary: Movie metadata (dataset A)
+      parameters:
+        - $ref: "#/components/parameters/TitleId"
+      responses:
+        "200":
+          description: Movie detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MovieDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /movies/{title_id}/availability:
+    get:
+      tags: [movies]
+      operationId: getMovieAvailability
+      summary: Streaming availability from the dataset B snapshot
+      description: A movie without availability rows returns 200 with empty lists.
+      parameters:
+        - $ref: "#/components/parameters/TitleId"
+      responses:
+        "200":
+          description: Offers grouped by platform and platform type
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Availability" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /movies/{title_id}/performance:
+    get:
+      tags: [movies]
+      operationId: getMoviePerformance
+      summary: Monthly consumption from dataset C
+      description: |
+        - `series`: monthly sums over the filtered rows, gap-filled with zeros between the first and
+          last month present.
+        - `by_country` applies only the platform filter; `by_platform` applies only the country filter.
+        - Filter values come from dataset C (`options`).
+        - No matching rows: 200 with `period: null`, empty `series` and zero totals.
+      parameters:
+        - $ref: "#/components/parameters/TitleId"
+        - $ref: "#/components/parameters/ConsumptionCountries"
+        - $ref: "#/components/parameters/ConsumptionPlatforms"
+      responses:
+        "200":
+          description: Consumption series and breakdowns
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Performance" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /movies/{title_id}/similar:
+    get:
+      tags: [movies]
+      operationId: getSimilarMovies
+      summary: Nearest movies by embedding, excluding the movie itself
+      parameters:
+        - $ref: "#/components/parameters/TitleId"
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 20, default: 8 }
+      responses:
+        "200":
+          description: Similar movies
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScoredMovieList" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /movies/{title_id}/insight:
+    get:
+      tags: [movies]
+      operationId: getMovieInsight
+      summary: Performance facts and a generated summary
+      parameters:
+        - $ref: "#/components/parameters/TitleId"
+      responses:
+        "200":
+          description: Insight
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Insight" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /dashboard/summary:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardSummary
+      summary: KPIs for the filters, compared with the previous period
+      parameters: &dashboardFilters
+        - $ref: "#/components/parameters/Start"
+        - $ref: "#/components/parameters/End"
+        - $ref: "#/components/parameters/ConsumptionCountries"
+        - $ref: "#/components/parameters/ConsumptionPlatforms"
+        - $ref: "#/components/parameters/PrimaryGenres"
+        - $ref: "#/components/parameters/Distributors"
+      responses:
+        "200":
+          description: KPIs
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /dashboard/trend:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardTrend
+      summary: Monthly streams and viewing hours
+      parameters: *dashboardFilters
+      responses:
+        "200":
+          description: Gap-filled monthly series covering the whole period
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardTrend" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /dashboard/breakdown:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardBreakdown
+      summary: Totals, shares and streams per title by one dimension
+      parameters:
+        - name: dimension
+          in: query
+          required: true
+          schema: { $ref: "#/components/schemas/BreakdownDimension" }
+        - $ref: "#/components/parameters/Start"
+        - $ref: "#/components/parameters/End"
+        - $ref: "#/components/parameters/ConsumptionCountries"
+        - $ref: "#/components/parameters/ConsumptionPlatforms"
+        - $ref: "#/components/parameters/PrimaryGenres"
+        - $ref: "#/components/parameters/Distributors"
+      responses:
+        "200":
+          description: One item per value of the dimension, sorted by streams descending
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardBreakdown" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /dashboard/matrix:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardMatrix
+      summary: Platform × country streams per title
+      parameters: *dashboardFilters
+      responses:
+        "200":
+          description: One cell per platform and country with consumption
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardMatrix" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /dashboard/titles:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardTitles
+      summary: Ranked titles for the filters
+      parameters:
+        - $ref: "#/components/parameters/Start"
+        - $ref: "#/components/parameters/End"
+        - $ref: "#/components/parameters/ConsumptionCountries"
+        - $ref: "#/components/parameters/ConsumptionPlatforms"
+        - $ref: "#/components/parameters/PrimaryGenres"
+        - $ref: "#/components/parameters/Distributors"
+        - name: sort
+          in: query
+          schema: { $ref: "#/components/schemas/TitleSort" }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        "200":
+          description: Page of ranked titles; nulls sort last
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardTitles" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /dashboard/changes:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardChanges
+      summary: Movers and share shifts vs the previous period, with a generated summary
+      parameters: *dashboardFilters
+      responses:
+        "200":
+          description: Changes
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardChanges" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /collections:
+    get:
+      tags: [collections]
+      operationId: listCollections
+      summary: All shelves with a four-poster preview
+      responses:
+        "200":
+          description: Collections in display order; empty collections are omitted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CollectionList" }
+
+  /collections/{collection_id}:
+    get:
+      tags: [collections]
+      operationId: getCollection
+      summary: Full ranked shelf (at most 30 movies)
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema: { type: string, pattern: "^[a-z0-9-]+$", maxLength: 64 }
+      responses:
+        "200":
+          description: Collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Collection" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /decisions/licensing:
+    get:
+      tags: [decisions]
+      operationId: getLicensingAssessment
+      summary: Evidence for licensing a title to a platform in a country
+      parameters: &licensingParams
+        - name: title_id
+          in: query
+          required: true
+          schema: { type: string, pattern: "^tt\\d+$" }
+        - name: platform
+          in: query
+          required: true
+          description: A consumption platform (dataset C).
+          schema: { type: string }
+        - name: country
+          in: query
+          required: true
+          description: A consumption country (dataset C).
+          schema: { type: string }
+      responses:
+        "200":
+          description: Assessment facts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LicensingAssessment" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /decisions/licensing/memo:
+    get:
+      tags: [decisions]
+      operationId: getLicensingMemo
+      summary: Generated memo for a licensing assessment
+      parameters: *licensingParams
+      responses:
+        "200":
+          description: Memo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LicensingMemo" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /decisions/concepts:
+    post:
+      tags: [decisions]
+      operationId: evaluateConcepts
+      summary: Demand evidence for 1 to 3 project loglines
+      description: Side-effect free. POST because loglines are long free text.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConceptsRequest" }
+      responses:
+        "200":
+          description: One result per concept, in input order, with its rank
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ConceptsEvaluation" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /decisions/concepts/memo:
+    post:
+      tags: [decisions]
+      operationId: getConceptsMemo
+      summary: Generated memo comparing the concepts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConceptsRequest" }
+      responses:
+        "200":
+          description: Memo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ConceptsMemo" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+components:
+  parameters:
+    TitleId:
+      name: title_id
+      in: path
+      required: true
+      schema: { type: string, pattern: "^tt\\d+$" }
+    Start:
+      name: start
+      in: query
+      description: "First month, inclusive. Default: 11 months before the latest month of data."
+      schema: { $ref: "#/components/schemas/Month" }
+    End:
+      name: end
+      in: query
+      description: "Last month, inclusive. Default: the latest month of data. Must not be before start."
+      schema: { $ref: "#/components/schemas/Month" }
+    ConsumptionCountries:
+      name: countries
+      in: query
+      description: Consumption countries (dataset C). Any listed value matches.
+      style: form
+      explode: true
+      schema: { type: array, items: { type: string } }
+    ConsumptionPlatforms:
+      name: platforms
+      in: query
+      description: Consumption platforms (dataset C). Any listed value matches.
+      style: form
+      explode: true
+      schema: { type: array, items: { type: string } }
+    PrimaryGenres:
+      name: genres
+      in: query
+      description: Primary genres. Any listed value matches.
+      style: form
+      explode: true
+      schema: { type: array, items: { type: string } }
+    Distributors:
+      name: distributors
+      in: query
+      description: Parent distributors from dataset B. A movie matches if any of its distributors is listed.
+      style: form
+      explode: true
+      schema: { type: array, items: { type: string } }
+
+  responses:
+    NotFound:
+      description: Unknown resource
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example: { error: { code: not_found, message: "Movie tt0000000 not found" } }
+    ValidationError:
+      description: Invalid parameters or body
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example: { error: { code: validation_error, message: "q: String should have at least 2 characters" } }
+
+  schemas:
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error: { $ref: "#/components/schemas/ErrorBody" }
+
+    ErrorBody:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code: { type: string, enum: [not_found, validation_error, internal_error] }
+        message: { type: string }
+
+    Month:
+      type: string
+      pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+      examples: ["2025-03"]
+
+    MonthRange:
+      type: object
+      additionalProperties: false
+      required: [start, end]
+      properties:
+        start: { $ref: "#/components/schemas/Month" }
+        end: { $ref: "#/components/schemas/Month" }
+
+    LlmStatus:
+      type: string
+      enum: [ok, skipped, disabled, failed, insufficient_evidence]
+
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status, api_version, llm_enabled]
+      properties:
+        status: { type: string, enum: [ok] }
+        api_version: { type: string }
+        llm_enabled: { type: boolean }
+
+    ThemeOption:
+      type: object
+      additionalProperties: false
+      required: [theme_id, name]
+      properties:
+        theme_id: { type: string }
+        name: { type: string }
+
+    VocabularyPair:
+      type: object
+      additionalProperties: false
+      required: [countries, platforms]
+      properties:
+        countries: { type: array, items: { type: string } }
+        platforms: { type: array, items: { type: string } }
+
+    YearRange:
+      type: object
+      additionalProperties: false
+      required: [min, max]
+      properties:
+        min: { type: integer }
+        max: { type: integer }
+
+    FilterOptions:
+      type: object
+      additionalProperties: false
+      required: [genres, primary_genres, year_range, availability, consumption, consumption_months, distributors, themes]
+      properties:
+        genres: { type: array, items: { type: string }, description: "Every genre in dataset A" }
+        primary_genres: { type: array, items: { type: string } }
+        year_range: { $ref: "#/components/schemas/YearRange" }
+        availability: { $ref: "#/components/schemas/VocabularyPair" }
+        consumption: { $ref: "#/components/schemas/VocabularyPair" }
+        consumption_months: { $ref: "#/components/schemas/MonthRange" }
+        distributors: { type: array, items: { type: string } }
+        themes: { type: array, items: { $ref: "#/components/schemas/ThemeOption" } }
+
+    MovieSummary:
+      type: object
+      additionalProperties: false
+      required: [title_id, title, year, genres, primary_genre, rating, vote_count, runtime_minutes, image_url]
+      properties:
+        title_id: { type: string }
+        title: { type: string }
+        year: { type: integer }
+        runtime_minutes: { type: [integer, "null"] }
+        primary_genre: { type: [string, "null"] }
+        genres: { type: array, items: { type: string } }
+        rating: { type: [number, "null"] }
+        vote_count: { type: [integer, "null"] }
+        image_url: { type: [string, "null"] }
+
+    MovieDetail:
+      type: object
+      additionalProperties: false
+      required: [title_id, title, year, genres, primary_genre, rating, vote_count, runtime_minutes, image_url, plot_summary, directors, principal_cast, cast, title_url, theme]
+      properties:
+        title_id: { type: string }
+        title: { type: string }
+        year: { type: integer }
+        runtime_minutes: { type: [integer, "null"] }
+        primary_genre: { type: [string, "null"] }
+        genres: { type: array, items: { type: string } }
+        rating: { type: [number, "null"] }
+        vote_count: { type: [integer, "null"] }
+        image_url: { type: [string, "null"] }
+        plot_summary: { type: [string, "null"] }
+        directors: { type: array, items: { type: string } }
+        principal_cast: { type: array, items: { type: string } }
+        cast: { type: array, items: { type: string } }
+        title_url: { type: [string, "null"] }
+        theme:
+          oneOf:
+            - $ref: "#/components/schemas/ThemeOption"
+            - type: "null"
+
+    MovieList:
+      type: object
+      additionalProperties: false
+      required: [results]
+      properties:
+        results: { type: array, items: { $ref: "#/components/schemas/MovieSummary" } }
+
+    ScoredMovie:
+      type: object
+      additionalProperties: false
+      required: [movie, score]
+      properties:
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        score: { type: number, description: "Cosine similarity rounded to 4 decimals" }
+
+    ScoredMovieList:
+      type: object
+      additionalProperties: false
+      required: [results]
+      properties:
+        results: { type: array, items: { $ref: "#/components/schemas/ScoredMovie" } }
+
+    SearchFilters:
+      type: object
+      additionalProperties: false
+      required: [genres, year_min, year_max, countries, platforms, people]
+      properties:
+        genres: { type: array, items: { type: string } }
+        year_min: { type: [integer, "null"] }
+        year_max: { type: [integer, "null"] }
+        countries: { type: array, items: { type: string } }
+        platforms: { type: array, items: { type: string } }
+        people: { type: array, items: { type: string } }
+
+    Interpretation:
+      type: object
+      additionalProperties: false
+      required: [status, semantic_query, proposed_filters]
+      properties:
+        status: { $ref: "#/components/schemas/LlmStatus" }
+        semantic_query: { type: [string, "null"] }
+        proposed_filters:
+          oneOf:
+            - $ref: "#/components/schemas/SearchFilters"
+            - type: "null"
+
+    SearchResponse:
+      type: object
+      additionalProperties: false
+      required: [query, semantic_query, interpretation, applied_filters, results]
+      properties:
+        query: { type: string }
+        semantic_query: { type: string, description: "The text that was embedded" }
+        interpretation: { $ref: "#/components/schemas/Interpretation" }
+        applied_filters: { $ref: "#/components/schemas/SearchFilters" }
+        results: { type: array, items: { $ref: "#/components/schemas/ScoredMovie" } }
+
+    PlatformOffer:
+      type: object
+      additionalProperties: false
+      required: [platform, platform_type, original_flag, is_original, countries]
+      properties:
+        platform: { type: string }
+        platform_type: { type: string, enum: [SVOD, AVOD] }
+        original_flag: { type: [string, "null"] }
+        is_original: { type: boolean }
+        countries: { type: array, items: { type: string } }
+
+    Availability:
+      type: object
+      additionalProperties: false
+      required: [title_id, snapshot_month, countries, offers]
+      properties:
+        title_id: { type: string }
+        snapshot_month:
+          oneOf:
+            - $ref: "#/components/schemas/Month"
+            - type: "null"
+        countries: { type: array, items: { type: string } }
+        offers: { type: array, items: { $ref: "#/components/schemas/PlatformOffer" } }
+
+    MetricTotals:
+      type: object
+      additionalProperties: false
+      required: [streams, viewing_hours]
+      properties:
+        streams: { type: integer, minimum: 0 }
+        viewing_hours: { type: number, minimum: 0 }
+
+    MonthlyPoint:
+      type: object
+      additionalProperties: false
+      required: [month, streams, viewing_hours]
+      properties:
+        month: { $ref: "#/components/schemas/Month" }
+        streams: { type: integer, minimum: 0 }
+        viewing_hours: { type: number, minimum: 0 }
+
+    ShareItem:
+      type: object
+      additionalProperties: false
+      required: [key, streams, viewing_hours, share_of_streams]
+      properties:
+        key: { type: string }
+        streams: { type: integer, minimum: 0 }
+        viewing_hours: { type: number, minimum: 0 }
+        share_of_streams: { type: number, minimum: 0, maximum: 1 }
+
+    ConsumptionFilters:
+      type: object
+      additionalProperties: false
+      required: [countries, platforms]
+      properties:
+        countries: { type: array, items: { type: string } }
+        platforms: { type: array, items: { type: string } }
+
+    Performance:
+      type: object
+      additionalProperties: false
+      required: [title_id, applied_filters, options, period, totals, series, by_country, by_platform]
+      properties:
+        title_id: { type: string }
+        applied_filters: { $ref: "#/components/schemas/ConsumptionFilters" }
+        options: { $ref: "#/components/schemas/ConsumptionFilters" }
+        period:
+          oneOf:
+            - $ref: "#/components/schemas/MonthRange"
+            - type: "null"
+        totals: { $ref: "#/components/schemas/MetricTotals" }
+        series: { type: array, items: { $ref: "#/components/schemas/MonthlyPoint" } }
+        by_country: { type: array, items: { $ref: "#/components/schemas/ShareItem" } }
+        by_platform: { type: array, items: { $ref: "#/components/schemas/ShareItem" } }
+
+    Narrative:
+      type: object
+      additionalProperties: false
+      required: [status, text]
+      properties:
+        status: { $ref: "#/components/schemas/LlmStatus" }
+        text: { type: [string, "null"] }
+
+    InsightFacts:
+      type: object
+      additionalProperties: false
+      required: [total_streams, viewing_hours, months_with_data, first_month, last_month, peak_month, peak_streams, top_country, top_country_share, top_platform, top_platform_share, engagement]
+      properties:
+        total_streams: { type: integer }
+        viewing_hours: { type: number }
+        months_with_data: { type: integer }
+        first_month:
+          oneOf:
+            - $ref: "#/components/schemas/Month"
+            - type: "null"
+        last_month:
+          oneOf:
+            - $ref: "#/components/schemas/Month"
+            - type: "null"
+        peak_month:
+          oneOf:
+            - $ref: "#/components/schemas/Month"
+            - type: "null"
+        peak_streams: { type: [integer, "null"] }
+        top_country: { type: [string, "null"] }
+        top_country_share: { type: [number, "null"] }
+        top_platform: { type: [string, "null"] }
+        top_platform_share: { type: [number, "null"] }
+        engagement: { type: [number, "null"] }
+
+    Insight:
+      type: object
+      additionalProperties: false
+      required: [title_id, facts, narrative]
+      properties:
+        title_id: { type: string }
+        facts: { $ref: "#/components/schemas/InsightFacts" }
+        narrative: { $ref: "#/components/schemas/Narrative" }
+
+    DashboardFilters:
+      type: object
+      additionalProperties: false
+      required: [start, end, countries, platforms, genres, distributors]
+      properties:
+        start: { $ref: "#/components/schemas/Month" }
+        end: { $ref: "#/components/schemas/Month" }
+        countries: { type: array, items: { type: string } }
+        platforms: { type: array, items: { type: string } }
+        genres: { type: array, items: { type: string } }
+        distributors: { type: array, items: { type: string } }
+
+    Kpi:
+      type: object
+      additionalProperties: false
+      required: [value, previous, change_pct, change_pp]
+      properties:
+        value: { type: [number, "null"] }
+        previous: { type: [number, "null"] }
+        change_pct: { type: [number, "null"], description: "Relative change, for counts" }
+        change_pp: { type: [number, "null"], description: "Change in percentage points, for ratios" }
+
+    DashboardSummary:
+      type: object
+      additionalProperties: false
+      required: [filters, previous_period, streams, viewing_hours, titles_with_consumption, engagement]
+      properties:
+        filters: { $ref: "#/components/schemas/DashboardFilters" }
+        previous_period:
+          oneOf:
+            - $ref: "#/components/schemas/MonthRange"
+            - type: "null"
+        streams: { $ref: "#/components/schemas/Kpi" }
+        viewing_hours: { $ref: "#/components/schemas/Kpi" }
+        titles_with_consumption: { $ref: "#/components/schemas/Kpi" }
+        engagement: { $ref: "#/components/schemas/Kpi" }
+
+    DashboardTrend:
+      type: object
+      additionalProperties: false
+      required: [filters, series]
+      properties:
+        filters: { $ref: "#/components/schemas/DashboardFilters" }
+        series: { type: array, items: { $ref: "#/components/schemas/MonthlyPoint" } }
+
+    BreakdownDimension:
+      type: string
+      enum: [platform, country, primary_genre, theme, release_year]
+
+    BreakdownItem:
+      type: object
+      additionalProperties: false
+      required: [key, label, streams, viewing_hours, titles, streams_per_title, share_of_streams]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        streams: { type: integer, minimum: 0 }
+        viewing_hours: { type: number, minimum: 0 }
+        titles: { type: integer, minimum: 0 }
+        streams_per_title: { type: [number, "null"] }
+        share_of_streams: { type: number, minimum: 0, maximum: 1 }
+
+    DashboardBreakdown:
+      type: object
+      additionalProperties: false
+      required: [filters, dimension, items]
+      properties:
+        filters: { $ref: "#/components/schemas/DashboardFilters" }
+        dimension: { $ref: "#/components/schemas/BreakdownDimension" }
+        items: { type: array, items: { $ref: "#/components/schemas/BreakdownItem" } }
+
+    MatrixCell:
+      type: object
+      additionalProperties: false
+      required: [platform, country, streams, titles, streams_per_title]
+      properties:
+        platform: { type: string }
+        country: { type: string }
+        streams: { type: integer, minimum: 0 }
+        titles: { type: integer, minimum: 0 }
+        streams_per_title: { type: [number, "null"] }
+
+    DashboardMatrix:
+      type: object
+      additionalProperties: false
+      required: [filters, platforms, countries, cells]
+      properties:
+        filters: { $ref: "#/components/schemas/DashboardFilters" }
+        platforms: { type: array, items: { type: string } }
+        countries: { type: array, items: { type: string } }
+        cells: { type: array, items: { $ref: "#/components/schemas/MatrixCell" } }
+
+    TitleSort:
+      type: string
+      enum: [streams, viewing_hours, engagement, growth]
+      default: streams
+
+    RankedTitle:
+      type: object
+      additionalProperties: false
+      required: [rank, movie, streams, viewing_hours, engagement, growth_pct]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        streams: { type: integer, minimum: 0 }
+        viewing_hours: { type: number, minimum: 0 }
+        engagement: { type: [number, "null"] }
+        growth_pct: { type: [number, "null"] }
+
+    DashboardTitles:
+      type: object
+      additionalProperties: false
+      required: [filters, sort, total, offset, limit, items]
+      properties:
+        filters: { $ref: "#/components/schemas/DashboardFilters" }
+        sort: { $ref: "#/components/schemas/TitleSort" }
+        total: { type: integer, minimum: 0 }
+        offset: { type: integer, minimum: 0 }
+        limit: { type: integer, minimum: 1 }
+        items: { type: array, items: { $ref: "#/components/schemas/RankedTitle" } }
+
+    Mover:
+      type: object
+      additionalProperties: false
+      required: [movie, streams, previous_streams, change]
+      properties:
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        streams: { type: integer, minimum: 0 }
+        previous_streams: { type: integer, minimum: 0 }
+        change: { type: integer }
+
+    ShareShift:
+      type: object
+      additionalProperties: false
+      required: [dimension, key, share, previous_share, change_pp]
+      properties:
+        dimension: { type: string, enum: [platform, country] }
+        key: { type: string }
+        share: { type: number }
+        previous_share: { type: number }
+        change_pp: { type: number }
+
+    DashboardChanges:
+      type: object
+      additionalProperties: false
+      required: [filters, previous_period, gainers, decliners, share_shifts, narrative]
+      properties:
+        filters: { $ref: "#/components/schemas/DashboardFilters" }
+        previous_period:
+          oneOf:
+            - $ref: "#/components/schemas/MonthRange"
+            - type: "null"
+        gainers: { type: array, maxItems: 5, items: { $ref: "#/components/schemas/Mover" } }
+        decliners: { type: array, maxItems: 5, items: { $ref: "#/components/schemas/Mover" } }
+        share_shifts: { type: array, items: { $ref: "#/components/schemas/ShareShift" } }
+        narrative: { $ref: "#/components/schemas/Narrative" }
+
+    CollectionSection:
+      type: string
+      enum: [country, now, platform, theme]
+
+    CollectionSummary:
+      type: object
+      additionalProperties: false
+      required: [collection_id, title, description, section, metric_label, preview]
+      properties:
+        collection_id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        section: { $ref: "#/components/schemas/CollectionSection" }
+        metric_label: { type: string }
+        preview: { type: array, maxItems: 4, items: { $ref: "#/components/schemas/MovieSummary" } }
+
+    CollectionList:
+      type: object
+      additionalProperties: false
+      required: [collections]
+      properties:
+        collections: { type: array, items: { $ref: "#/components/schemas/CollectionSummary" } }
+
+    CollectionItem:
+      type: object
+      additionalProperties: false
+      required: [rank, movie, metric_value]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        metric_value: { type: [number, "null"] }
+
+    Collection:
+      type: object
+      additionalProperties: false
+      required: [collection_id, title, description, section, metric_label, items]
+      properties:
+        collection_id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        section: { $ref: "#/components/schemas/CollectionSection" }
+        metric_label: { type: string }
+        items: { type: array, maxItems: 30, items: { $ref: "#/components/schemas/CollectionItem" } }
+
+    DemandSignal:
+      type: string
+      enum: [strong, moderate, weak, insufficient_evidence]
+
+    Comparable:
+      type: object
+      additionalProperties: false
+      required: [movie, similarity, first_six_month_streams, eligible]
+      properties:
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        similarity: { type: number }
+        first_six_month_streams: { type: [integer, "null"], description: "Null when the movie never streamed on the target platform and country" }
+        eligible: { type: boolean, description: "True when the full 6-month window is observed" }
+
+    ExpectedRange:
+      type: object
+      additionalProperties: false
+      required: [status, p25, median, p75, benchmark, eligible_count]
+      properties:
+        status: { type: string, enum: [ok, insufficient_evidence] }
+        p25: { type: [number, "null"] }
+        median: { type: [number, "null"] }
+        p75: { type: [number, "null"] }
+        benchmark: { type: [number, "null"] }
+        eligible_count: { type: integer, minimum: 0 }
+
+    PlatformFitItem:
+      type: object
+      additionalProperties: false
+      required: [platform, titles, streams_per_title]
+      properties:
+        platform: { type: string }
+        titles: { type: integer, minimum: 0 }
+        streams_per_title: { type: [number, "null"] }
+
+    WhitespaceItem:
+      type: object
+      additionalProperties: false
+      required: [country, comparables_with_streams]
+      properties:
+        country: { type: string }
+        comparables_with_streams: { type: integer, minimum: 0 }
+
+    LicensingTarget:
+      type: object
+      additionalProperties: false
+      required: [platform, country]
+      properties:
+        platform: { type: string }
+        country: { type: string }
+
+    LicensingAssessment:
+      type: object
+      additionalProperties: false
+      required: [movie, target, already_on_target, title_totals, availability_countries, comparables, expected_range, signal, platform_fit, whitespace]
+      properties:
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        target: { $ref: "#/components/schemas/LicensingTarget" }
+        already_on_target: { type: boolean }
+        title_totals: { $ref: "#/components/schemas/MetricTotals" }
+        availability_countries: { type: array, items: { type: string } }
+        comparables: { type: array, maxItems: 20, items: { $ref: "#/components/schemas/Comparable" } }
+        expected_range: { $ref: "#/components/schemas/ExpectedRange" }
+        signal: { $ref: "#/components/schemas/DemandSignal" }
+        platform_fit: { type: array, items: { $ref: "#/components/schemas/PlatformFitItem" } }
+        whitespace: { type: array, items: { $ref: "#/components/schemas/WhitespaceItem" } }
+
+    LicensingMemo:
+      type: object
+      additionalProperties: false
+      required: [status, signal, headline, evidence, risks, caveats]
+      properties:
+        status: { $ref: "#/components/schemas/LlmStatus" }
+        signal: { $ref: "#/components/schemas/DemandSignal" }
+        headline: { type: [string, "null"] }
+        evidence: { type: array, items: { type: string } }
+        risks: { type: array, items: { type: string } }
+        caveats: { type: array, items: { type: string } }
+
+    ConceptsRequest:
+      type: object
+      additionalProperties: false
+      required: [loglines]
+      properties:
+        loglines:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items: { type: string, minLength: 20, maxLength: 600 }
+
+    ConceptResult:
+      type: object
+      additionalProperties: false
+      required: [index, logline, rank, demand_index, eligible_count, saturation, comparables, demand_by_country]
+      properties:
+        index: { type: integer, minimum: 0, description: "Position in the request" }
+        logline: { type: string }
+        rank: { type: integer, minimum: 1 }
+        demand_index: { type: [number, "null"] }
+        eligible_count: { type: integer, minimum: 0 }
+        saturation: { type: integer, minimum: 0 }
+        comparables: { type: array, maxItems: 20, items: { $ref: "#/components/schemas/ScoredMovie" } }
+        demand_by_country: { type: array, items: { $ref: "#/components/schemas/ShareItem" } }
+
+    ConceptsEvaluation:
+      type: object
+      additionalProperties: false
+      required: [concepts]
+      properties:
+        concepts: { type: array, items: { $ref: "#/components/schemas/ConceptResult" } }
+
+    ConceptsMemo:
+      type: object
+      additionalProperties: false
+      required: [status, summary, per_concept, caveats]
+      properties:
+        status: { $ref: "#/components/schemas/LlmStatus" }
+        summary: { type: [string, "null"] }
+        per_concept: { type: array, items: { type: string } }
+        caveats: { type: array, items: { type: string } }
