@@ -146,8 +146,9 @@ tools, and every answer carries the evidence it came from.
 3. Up to 4 tool calls are executed. Each result is returned to the model and recorded as evidence.
 4. The model ends with a JSON object: `{"status": "answered" | "no_data" | "out_of_scope",
    "answer": "..."}`.
-5. The server validates the answer (below) and returns it with the evidence. Timeout for the whole
-   exchange: 45 s.
+5. The server validates the answer (below). If the number guard rejects it and tool calls remain,
+   the model gets one more turn with the numbers that could not be found, to query for them or
+   drop them. Then the answer is returned with the evidence. Timeout for the whole exchange: 60 s.
 
 ### Tools
 
@@ -176,6 +177,9 @@ tools, and every answer carries the evidence it came from.
 - Coverage: consumption only for Argentina, Brazil, Colombia, Mexico on Amazon, Disney+, HBO Max,
   Netflix, from 2023-01 to 2026-06; availability is a single snapshot (2026-06); no revenue, box
   office, audience demographics or data for other countries.
+- The SQL must return every number the answer will mention already computed: growth, shares,
+  differences and rankings are calculated in the query, not by the model. The prompt includes
+  example queries for a year-over-year comparison and for the distributor filter.
 - Rules: every number in the answer must come from a tool result in this conversation. Never
   estimate, extrapolate or use outside knowledge for figures. If a query returns no rows, answer with
   `no_data` and say which filter had no data. If the question needs data the datasets do not have,

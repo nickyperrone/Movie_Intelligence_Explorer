@@ -116,8 +116,8 @@ default 8.
 3. For each cluster, the 10 movies closest to the centroid (title, genres, first 300 characters of the
    plot) are named: either by the LLM (`make themes`, `06-llm.md`), or by a person with
    `--names data/curated/theme_names.json` (a list of `{name, description}` in cluster order;
-   `--show` prints each cluster's movies to write it). Names: at most 4 words; descriptions: at most
-   20 words. `themes.json` records which one was used in `named_by`.
+   `--show` prints each cluster's movies to write it). Names: at most 18 characters, so they fit on a
+   cover without being cut; descriptions: at most 20 words. `themes.json` records which one was used in `named_by`.
 4. Output `data/curated/themes.json`:
 
 ```json
