@@ -49,8 +49,8 @@ function Row({
   return (
     <>
       {columns.map((column, index) => (
-        <div key={column.titleId} className="border-t border-white/5 px-3 py-3">
-          <p className="flex items-center gap-2 text-xs text-subtle">
+        <div key={column.titleId} className="border-t border-white/5 px-3 py-3 text-center">
+          <p className="flex items-center justify-center gap-2 text-xs text-subtle">
             {label}
             {top === index && (
               <span
@@ -61,7 +61,7 @@ function Row({
               </span>
             )}
           </p>
-          <div className="mt-1 min-h-6">
+          <div className="mt-1 flex min-h-6 justify-center">
             {column.missing ? (
               <span className="text-subtle">—</span>
             ) : column.movie && column.performance ? (
@@ -74,7 +74,6 @@ function Row({
       ))}
       {/* The add slot has no values; an empty cell keeps the grid's rows aligned. */}
       {pad && <div className="border-t border-white/5" />}
-      <div className="border-t border-white/5 max-sm:hidden" />
     </>
   )
 }
@@ -83,7 +82,7 @@ function ColumnHeader({ column, onRemove }: { column: Column; onRemove: () => vo
   const { movie } = column
   return (
     <div className="px-3 pb-3">
-      <div className="relative max-w-56">
+      <div className="relative mx-auto max-w-56">
         {column.missing ? (
           <div className="grid aspect-[2/3] place-items-center rounded-lg bg-raised p-4 text-center text-sm text-subtle">
             Title not found
@@ -108,9 +107,9 @@ function ColumnHeader({ column, onRemove }: { column: Column; onRemove: () => vo
           <X className="size-4" />
         </button>
       </div>
-      {!movie && !column.missing && <Skeleton className="mt-3 h-6 w-3/4" />}
+      {!movie && !column.missing && <Skeleton className="mx-auto mt-3 h-6 w-40" />}
       {movie && (
-        <div className="mt-3 flex items-start gap-2">
+        <div className="mx-auto mt-3 flex max-w-64 items-start justify-center gap-2 text-center">
           <span
             className="mt-2 h-1 w-4 shrink-0 rounded-full"
             style={{ background: column.color }}
@@ -123,7 +122,7 @@ function ColumnHeader({ column, onRemove }: { column: Column; onRemove: () => vo
             >
               {movie.title}
             </Link>
-            <p className="mt-1 flex flex-wrap gap-x-2 text-sm text-subtle">
+            <p className="mt-1 flex flex-wrap justify-center gap-x-2 text-sm text-subtle">
               <span>{movie.year}</span>
               {movie.genres.slice(0, 2).map((genre) => (
                 <GenreLink key={genre} genre={genre} icon={false} />
@@ -139,7 +138,7 @@ function ColumnHeader({ column, onRemove }: { column: Column; onRemove: () => vo
 function AddSlot({ exclude, onAdd }: { exclude: string[]; onAdd: (titleId: string) => void }) {
   return (
     <div className="px-3 pb-3">
-      <div className="max-w-56">
+      <div className="mx-auto max-w-56">
         {/* Above the box, so its results open over the empty space instead of off screen. */}
         <TitlePicker
           selected={undefined}
@@ -335,7 +334,7 @@ export function CompareTab() {
       <div className="-mx-3 overflow-x-auto scrollbar-none max-sm:snap-x max-sm:snap-mandatory">
         <div
           style={{ '--slots': slots } as CSSProperties}
-          className="grid [grid-template-columns:repeat(var(--slots),15rem)_minmax(0,1fr)] max-sm:w-max max-sm:[grid-template-columns:repeat(var(--slots),78vw)] max-sm:[&>*]:snap-start"
+          className="grid [grid-template-columns:repeat(var(--slots),minmax(0,1fr))] max-sm:w-max max-sm:[grid-template-columns:repeat(var(--slots),78vw)] max-sm:[&>*]:snap-start"
         >
           {columns.map((column) => (
             <ColumnHeader
@@ -347,8 +346,6 @@ export function CompareTab() {
           {slots > columns.length && (
             <AddSlot exclude={titleIds} onAdd={(titleId) => setTitles([...titleIds, titleId])} />
           )}
-          {/* Fills the rest of the width on wider screens so the columns stay together. */}
-          <div className="max-sm:hidden" />
 
           {/* Spans every column; on phones it keeps the screen's width and stays put while the
               columns swipe under it. */}
@@ -491,7 +488,7 @@ function CompareRows({
       cell: (column) => {
         const first = column.performance!.by_country[0]
         return first ? (
-          <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="inline-flex flex-wrap items-center justify-center gap-2">
             <CountryLabel country={first.key} />
             <span className="text-subtle tabular">{percent(first.share_of_streams)}</span>
           </span>
@@ -505,7 +502,7 @@ function CompareRows({
       cell: (column) => {
         const first = column.performance!.by_platform[0]
         return first ? (
-          <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="inline-flex flex-wrap items-center justify-center gap-2">
             <PlatformLabel platform={first.key} />
             <span className="text-subtle tabular">{percent(first.share_of_streams)}</span>
           </span>
@@ -522,7 +519,7 @@ function CompareRows({
         ) : availability.offers.length === 0 ? (
           <span className="text-subtle">No availability in the snapshot</span>
         ) : (
-          <span className="flex flex-wrap items-center gap-2">
+          <span className="flex flex-wrap items-center justify-center gap-2">
             <span className="tabular">
               {availability.countries.length}{' '}
               {availability.countries.length === 1 ? 'country' : 'countries'}
