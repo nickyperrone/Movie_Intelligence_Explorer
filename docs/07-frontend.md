@@ -12,7 +12,7 @@ Recharts. All UI copy in English.
 | `/discover/:collectionId` | `CollectionPage` | — |
 | `/search` | `SearchPage` | `q`, `interpret`, `genres`, `year_min`, `year_max`, `countries`, `platforms`, `people` |
 | `/movies/:titleId` | `MoviePage` | `countries`, `platforms`, `metric` |
-| `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `concepts` \| `ask`), `title`, `platform`, `country` |
+| `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `markets` \| `genres` \| `concepts` \| `ask`), `title`, `platform`, `country` |
 | `*` | `NotFoundPage` | — |
 
 `src/lib/url-state.ts` reads and writes these parameters. Filters, tabs and search text change the
@@ -29,8 +29,9 @@ The whole app follows the layout patterns of a music streaming desktop client:
 - Top bar inside the main panel: back and forward buttons (history), and a pill-shaped search input
   with a search icon. `/` focuses it unless the user is typing in a field.
 - Suggestions as you type: 250 ms after the last keystroke (at least 2 characters) a dropdown under
-  the search box shows up to 3 "Titles" (title matches, `/movies/lookup`) and up to 5 "Matches by
-  meaning" (`/search?interpret=false`, embeddings only, tens of milliseconds, no LLM cost), and a
+  the search box shows up to 3 "Titles" (title matches, `/movies/lookup`), up to 3 "People"
+  (`/people/lookup`; choosing one opens `/search?q=<name>&people=<name>&interpret=false`) and up to 5
+  "Matches by meaning" (`/search?interpret=false`, embeddings only, tens of milliseconds, no LLM cost), and a
   last row "See all results for …". Typing never changes the page. Arrow keys move through the
   options, Enter opens the highlighted movie or, with nothing highlighted, the search page with
   `interpret=true`, which also asks the LLM for filters. Escape or a click outside closes the
@@ -134,7 +135,27 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 
 ### Decision Studio
 
-Tabs "Licensing", "Concepts" and "Ask the data".
+The page opens with a grid of five question cards (icon, question, one-line description). The
+selected card is outlined in pink and its tool renders below; the choice is kept in `tab`:
+
+| Card | `tab` |
+|---|---|
+| Should we license this title? | `licensing` |
+| Where should this title go next? | `markets` |
+| Which genres are gaining? | `genres` |
+| Which project should we pursue? | `concepts` |
+| Ask your own question | `ask` |
+
+Best market:
+- A title picker, then a ranked table of the 16 platform × country targets: platform logo and flag,
+  demand signal, comparables' median first-6-month streams, typical title, ratio, and an "Already
+  available" tag. The top row links to the licensing assessment for that target.
+
+Rising genres:
+- Country and platform `SelectPill`s (optional). A table of primary genres: streams per title in
+  the last 12 months, in the 12 months before, and the change (green up, red down), sorted by
+  change. Genres with fewer than 5 titles streamed in either period are listed last and marked
+  "few titles".
 
 Licensing:
 - The form reads as a sentence: "License [title] to [platform] in [country]", with the title as a

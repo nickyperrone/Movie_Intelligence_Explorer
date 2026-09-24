@@ -62,6 +62,14 @@ brief's first query (0.0–0.2 → 0.6) is the reason to pay for it.
 
 An empty result list is a valid 200 response. The UI shows it as an empty state with suggestions.
 
+### People
+
+- `GET /people/lookup?q=` returns directors and cast members whose name contains `q`
+  (case-insensitive), with their role(s) and number of movies; names starting with `q` first, then
+  by number of movies.
+- If `q` is exactly the name of a director or cast member (case-insensitive) and no `people` filter
+  was sent or proposed, the search applies `people=[that name]` itself. This works without the LLM.
+
 ### Filter semantics
 
 | Filter | Source | Match |

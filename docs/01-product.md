@@ -62,7 +62,15 @@ Question: what is this title and how has it performed?
 
 ### 5. Decision Studio — `/decide`
 
-Question: should we do this deal / pursue this project?
+Question: should we do this deal / pursue this project? The page opens with five question cards:
+license a title, find the best market for a title, spot rising genres, compare project ideas, and ask
+your own question (the chat).
+
+- Best market (`/decide?tab=markets&title=...`): for one title, every consumption platform and
+  country ranked by how comparable titles did there against a typical title, marking where it is
+  already available.
+- Rising genres (`/decide?tab=genres`): streams per title by primary genre in the last 12 months
+  vs the 12 before, optionally for one country and platform.
 
 - Licensing assessment (`/decide?tab=licensing&title=...&platform=...&country=...`): the title's
   current availability and consumption, its comparables, the comparables' streams in their first
@@ -90,6 +98,9 @@ Question: should we do this deal / pursue this project?
 | 8 | analyst | browse shelves like "Top in Argentina" | I spot titles without a query |
 | 9 | sales | assess licensing a title to Netflix in Brazil | I have evidence for the negotiation |
 | 10 | development | compare the demand signal of 3 loglines | I choose which project to revive |
+| 15 | analyst | type an actor's or director's name and see their movies | I can find a talent's titles without knowing them |
+| 16 | sales | see the best platform and country for a title in one list | I know where to pitch it first |
+| 17 | acquisitions | see which genres are gaining streams per title | I know what to look for |
 | 13 | analyst | ask a question in plain language and see the query behind the answer | I can trust or check the number |
 | 14 | analyst | be told clearly when the data cannot answer | I do not act on an invented number |
 | 11 | any user | share the URL of what I am looking at | a colleague sees the same view |

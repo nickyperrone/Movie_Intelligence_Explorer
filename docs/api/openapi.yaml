@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.1.0
+  version: 1.2.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -131,6 +131,27 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/MovieList" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /people/lookup:
+    get:
+      tags: [movies]
+      operationId: lookupPeople
+      summary: Find directors and cast members by name (added in 1.2.0)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 60 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 20, default: 5 }
+      responses:
+        "200":
+          description: Matching people, names starting with q first, then by number of movies
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PersonList" }
         "422": { $ref: "#/components/responses/ValidationError" }
 
   /movies/{title_id}:
@@ -410,6 +431,25 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LicensingAssessment" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /decisions/markets:
+    get:
+      tags: [decisions]
+      operationId: getMarketOpportunities
+      summary: Every consumption platform and country ranked for one title (added in 1.2.0)
+      parameters:
+        - name: title_id
+          in: query
+          required: true
+          schema: { type: string, pattern: "^tt\\d+$" }
+      responses:
+        "200":
+          description: Targets sorted by ratio of comparables' median to the typical title
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MarketOpportunities" }
         "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/ValidationError" }
 
@@ -1223,3 +1263,42 @@ components:
         status: { $ref: "#/components/schemas/AssistantStatus" }
         answer: { type: [string, "null"] }
         evidence: { type: array, items: { $ref: "#/components/schemas/Evidence" } }
+
+    Person:
+      type: object
+      additionalProperties: false
+      required: [name, roles, movie_count]
+      properties:
+        name: { type: string }
+        roles: { type: array, items: { type: string, enum: [director, cast] } }
+        movie_count: { type: integer, minimum: 1 }
+
+    PersonList:
+      type: object
+      additionalProperties: false
+      required: [results]
+      properties:
+        results: { type: array, items: { $ref: "#/components/schemas/Person" } }
+
+    MarketOpportunity:
+      type: object
+      additionalProperties: false
+      required: [platform, country, signal, median, benchmark, ratio, eligible_count, already_available]
+      properties:
+        platform: { type: string }
+        country: { type: string }
+        signal: { $ref: "#/components/schemas/DemandSignal" }
+        median: { type: [number, "null"] }
+        benchmark: { type: [number, "null"] }
+        ratio: { type: [number, "null"] }
+        eligible_count: { type: integer, minimum: 0 }
+        already_available: { type: boolean }
+
+    MarketOpportunities:
+      type: object
+      additionalProperties: false
+      required: [movie, comparable_count, targets]
+      properties:
+        movie: { $ref: "#/components/schemas/MovieSummary" }
+        comparable_count: { type: integer, minimum: 0 }
+        targets: { type: array, items: { $ref: "#/components/schemas/MarketOpportunity" } }

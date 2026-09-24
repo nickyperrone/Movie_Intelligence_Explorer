@@ -73,6 +73,8 @@ The 100-stream floor keeps tiny titles from topping growth rankings (a move from
 | Expected range | 25th percentile, median and 75th percentile of first-6-month streams across eligible comparables. Requires at least 3 values; otherwise status `insufficient_evidence` |
 | Benchmark | Median first-6-month streams of all eligible movies on the target (platform, country) |
 | Demand signal | `comparables median / benchmark`: `strong` when ≥ 1.2, `moderate` when ≥ 0.8, `weak` below 0.8, `insufficient_evidence` when the expected range is unavailable. Computed in SQL/Python, never by the LLM |
+| Market opportunities | For one title and its comparables: for every (C platform, C country), the expected range, benchmark, ratio `median / benchmark` and demand signal, as in the licensing assessment. Sorted by ratio descending; targets with insufficient evidence last |
+| Genre momentum | Per primary genre, `streams_per_title` in the last 12 months of data and in the 12 months before, and the relative change. Computed by the frontend from two dashboard breakdowns with the same filters |
 | Platform fit | For comparables, per C platform in the target country: `streams_per_title` over all months, and the number of comparables with streams there |
 | Whitespace | Countries of C where at least 3 comparables have streams and the target movie has no availability row in B |
 | Currently on target | Whether the movie has an availability row in the target country on any B platform mapped from the target C platform (`03-data.md`) |
