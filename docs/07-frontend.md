@@ -9,7 +9,7 @@ Recharts. All UI copy in English.
 |---|---|---|
 | `/` | `DashboardPage` | `start`, `end` (`YYYY-MM`), `countries`, `platforms`, `genres`, `distributors` (repeated), `metric` (`streams` \| `hours`), `sort` |
 | `/discover` | `DiscoverPage` | `section` (`country` \| `now` \| `platform` \| `theme`) |
-| `/discover/:collectionId` | `CollectionPage` | — |
+| `/discover/:collectionId` | `CollectionPage` | `sort` (`rank` \| `title` \| `genres` \| `metric`), `dir` (`asc` \| `desc`) |
 | `/search` | `SearchPage` | `q`, `interpret`, `genres`, `year_min`, `year_max`, `countries`, `platforms`, `people` |
 | `/movies/:titleId` | `MoviePage` | `countries`, `platforms`, `metric` |
 | `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `markets` \| `genres` \| `concepts` \| `ask`), `title`, `platform`, `country` |
@@ -110,6 +110,9 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 - `CollectionPage`, also dark: a header with the large cover, the label "Collection", the title,
   the description and the number of movies; then the ranked list as rows (rank, poster thumbnail,
   title with year and genres, metric value aligned right). A row links to the movie.
+  - Every column header sorts the list: an arrow appears on hover; the first click sorts (numbers
+    high to low, text A to Z), the second reverses. The active column keeps its arrow. `#` always
+    shows the movie's rank in the collection. The order is kept in the URL (`sort`, `dir`).
 
 ### Search
 
