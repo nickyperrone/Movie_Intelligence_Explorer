@@ -194,6 +194,50 @@ Current results with the chosen setup (`make eval`):
 "Family movies about overcoming loss" stays low with every model: the catalog's family movies rarely
 describe grief in their plots, and the relevance rule only counts explicit plot mentions.
 
+### Example: "scary movie with an animal as the main character"
+
+1. **While typing**, the search box embeds the text as `query: scary movie with an animal as the
+   main character` and shows the closest movies and any matching titles or people. No LLM is
+   involved at this step.
+2. **On Enter**, the LLM reads the query and proposes only the filters the user asked for
+   (genres, years, countries, platforms, people) plus a cleaner descriptive text. Every proposed
+   value is checked against the real vocabularies, and the filters appear as chips that can be
+   removed.
+3. **The query becomes a vector.** `multilingual-e5-large` turns the text into 1,024 numbers that
+   encode its meaning. The 1,590 movie vectors (genres + plot) were computed once at build time.
+4. **Every movie is scored** by cosine similarity with the query vector, in one NumPy operation.
+   Structured filters are applied in SQL first, so only matching movies are ranked.
+5. **The cutoff keeps what stands out.** Without filters, a movie is kept when its score is at
+   least 2.5 standard deviations above the catalog average for this query. With filters, every
+   candidate is kept and ranked.
+
+What comes back (embeddings only, no LLM): *Falcon Express*, *Primate*, *Nightbitch*,
+*Winnie-the-Pooh: Blood and Honey*, *Wolf Man*, *Goat*. The model matches the idea of an animal at
+the center of the story rather than the exact words, which is why animated animal adventures mix
+with horror: "scary" is only part of the meaning. Adding the Horror genre (as a chip, or when the
+LLM proposes it) narrows it to *Primate*, *Nightbitch*, *Winnie-the-Pooh: Blood and Honey*,
+*Wolf Man*, *Winnie-the-Pooh: Blood and Honey II* and *The Conjuring: Last Rites*.
+
+### Themes: how they were made
+
+Discover's theme shelves ("Haunted Families", "Survival Thrillers", "Music Docs"...) and the
+dashboard's theme filter come from grouping the same plot embeddings, offline
+(`backend/pipeline/build_themes.py`):
+
+1. **Grouping.** k-means on the 1,590 normalized movie vectors. The number of groups was chosen by
+   trying every k from 16 to 32 and keeping the one with the best silhouette score (cosine): 22.
+2. **Classification.** Each movie belongs to exactly one theme, the one whose center is closest to
+   it. Themes range from 28 to 151 movies.
+3. **Naming.** For each theme, the 10 movies closest to its center (title, genres, start of the
+   plot) were read, and a name of at most 18 characters and a one-line description were written by
+   hand (`data/curated/theme_names.json`). The pipeline can also ask the LLM for names
+   (`make themes`), but a person reviews them before they are committed either way.
+4. **Storage.** The result is committed as `data/curated/themes.json` and loaded into the
+   `movie_themes` table when the database is built, so the app never clusters at runtime.
+
+The silhouette is close to zero, so themes are useful groupings for browsing, not strict
+categories (see "Known limitations").
+
 ## Where the LLM is used, and where it is not
 
 The LLM never computes numbers and never makes a decision.
@@ -238,9 +282,10 @@ correct.
 
 ## Time spent
 
-About 5 hours of my own working time, spread over two days (Sep 23 and 24; the commit history shows
-the dates), within the suggested 6-hour time box. Claude Code did much of the typing, testing and
-browser checks alongside me (see "AI-assisted development").
+About 4.5 hours in total: roughly half an hour of ideation and 4 hours of building, spread over two
+days (Sep 23 and 24; the commit history shows the dates). That is within the suggested 6-hour time
+box. Claude Code did much of the typing, testing and browser checks alongside me (see
+"AI-assisted development").
 
 ## The product
 
