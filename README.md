@@ -345,6 +345,10 @@ What I would do with more time, most useful first:
 - **Check the licensing verdicts against the past.** Hide the last 6 months of consumption, run the
   comparables for titles that launched before that, and measure how often the actual streams fall
   inside the expected range. Today the range is evidence with no measured accuracy.
+- **Login.** The app is public today, protected only by rate limits. Sign-in through the studio's
+  identity provider (SSO with OIDC) would restrict it to employees, give each user their own usage
+  limits and chat history on the server, and allow roles, for example keeping the licensing tools
+  to the sales team.
 - **Rerank the top results.** A cross-encoder over the top 50 would lift precision on subtle queries
   such as "family movies about overcoming loss" (0.20 today).
 - **Mix keyword and semantic search.** BM25 on titles and people, merged with the embedding ranking,
