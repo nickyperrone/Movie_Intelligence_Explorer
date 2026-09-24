@@ -97,7 +97,9 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
   - Cover = poster of the collection's number 1 movie at the poster ratio (2:3), rounded corners.
     If an earlier collection in the page order already uses that poster, the next movie in the
     ranking is used (number 2, then 3). The collection page uses the same cover.
-  - A colored band across the lower part of the cover with the collection name in bold
+  - A colored band across the lower part of the cover with the collection name in bold. Every
+    band has the same height and a single line; names use the same text size unless they would not
+    fit, then that name alone shrinks to fit
     ("Top in Brazil"). Country collections use the main color of the country's flag (Argentina
     `#74ACDF`, Brazil `#009C3B`, Colombia `#FCD116`, Mexico `#006847`); the others take a color from a
     fixed palette by a hash of the collection id, so it is stable across reloads. Text is black or
