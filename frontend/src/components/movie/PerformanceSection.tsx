@@ -1,3 +1,4 @@
+import { CountryLabel, PlatformLabel } from '@/components/common/Brand'
 import { BarList } from '@/components/charts/BarList'
 import { TrendChart } from '@/components/charts/TrendChart'
 import { MultiSelectPill } from '@/components/common/MultiSelectPill'
@@ -42,12 +43,14 @@ export function PerformanceSection({ titleId }: { titleId: string }) {
             <span className="mx-1 h-5 w-px bg-white/15" aria-hidden />
             <MultiSelectPill
               label="Countries"
+              renderOption={(country) => <CountryLabel country={country} />}
               options={data.options.countries}
               selected={countries}
               onChange={(next) => update({ countries: next })}
             />
             <MultiSelectPill
               label="Platforms"
+              renderOption={(platform) => <PlatformLabel platform={platform} />}
               options={data.options.platforms}
               selected={platforms}
               onChange={(next) => update({ platforms: next })}
@@ -97,7 +100,12 @@ export function PerformanceSection({ titleId }: { titleId: string }) {
                     highlight={highlight}
                     items={items.map((item) => ({
                       key: item.key,
-                      label: item.key,
+                      label:
+                        title === 'By country' ? (
+                          <CountryLabel country={item.key} />
+                        ) : (
+                          <PlatformLabel platform={item.key} />
+                        ),
                       value: metric === 'hours' ? item.viewing_hours : item.streams,
                       detail: percent(item.share_of_streams),
                     }))}

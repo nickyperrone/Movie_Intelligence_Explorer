@@ -1,3 +1,4 @@
+import { CountryFlag, PlatformLabel } from '@/components/common/Brand'
 import type { Schemas } from '@/api/client'
 import { compact } from '@/lib/format'
 
@@ -16,7 +17,10 @@ export function MatrixGrid({ matrix }: { matrix: Schemas['DashboardMatrix'] }) {
             </th>
             {matrix.countries.map((country) => (
               <th key={country} scope="col" className="px-2 text-center font-normal text-subtle">
-                {country}
+                <span className="inline-flex items-center gap-1.5">
+                  <CountryFlag country={country} />
+                  {country}
+                </span>
               </th>
             ))}
           </tr>
@@ -25,7 +29,7 @@ export function MatrixGrid({ matrix }: { matrix: Schemas['DashboardMatrix'] }) {
           {matrix.platforms.map((platform) => (
             <tr key={platform}>
               <th scope="row" className="pr-3 text-left font-medium">
-                {platform}
+                <PlatformLabel platform={platform} />
               </th>
               {matrix.countries.map((country) => {
                 const cell = cells.get(`${platform}|${country}`)

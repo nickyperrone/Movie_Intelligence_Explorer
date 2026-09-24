@@ -27,16 +27,39 @@ export function TopBar() {
           <ChevronRight className="size-5" />
         </button>
       </div>
-      {/* Remounting on a new URL query resets the input without syncing state in an effect. */}
-      <GlobalSearch key={urlQuery} initial={urlQuery} />
+      <GlobalSearch urlQuery={urlQuery} />
     </header>
   )
 }
 
-function GlobalSearch({ initial }: { initial: string }) {
+const LIVE_SEARCH_DELAY_MS = 250
+
+function GlobalSearch({ urlQuery }: { urlQuery: string }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [text, setText] = useState(initial)
+  const [text, setText] = useState(urlQuery)
+  const [syncedQuery, setSyncedQuery] = useState(urlQuery)
+
+  // When the URL changes from outside (back button, a link), show its query. Adjusting state
+  // during render avoids an extra effect pass.
+  if (urlQuery !== syncedQuery) {
+    setSyncedQuery(urlQuery)
+    setText(urlQuery)
+  }
+
+  useEffect(() => {
+    // Search as you type with embeddings only; the LLM runs only when the user presses Enter.
+    const query = text.trim()
+    if (query.length < 2 || query === urlQuery.trim()) return
+    const timer = setTimeout(() => {
+      setSyncedQuery(query)
+      navigate(`/search?q=${encodeURIComponent(query)}&interpret=false`, {
+        replace: location.pathname === '/search',
+      })
+    }, LIVE_SEARCH_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [text, urlQuery, navigate, location.pathname])
 
   useEffect(() => {
     // "/" focuses the search box unless the user is already typing somewhere.
@@ -56,11 +79,13 @@ function GlobalSearch({ initial }: { initial: string }) {
   function submit(event: FormEvent) {
     event.preventDefault()
     const query = text.trim()
-    if (query.length >= 2) navigate(`/search?q=${encodeURIComponent(query)}`)
+    if (query.length < 2) return
+    setSyncedQuery(query)
+    navigate(`/search?q=${encodeURIComponent(query)}`)
   }
 
   return (
-    <form role="search" onSubmit={submit} className="relative w-full max-w-md">
+    <form role="search" onSubmit={submit} className="relative w-full max-w-2xl">
       <label htmlFor="global-search" className="sr-only">
         Search movies
       </label>

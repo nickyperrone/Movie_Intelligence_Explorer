@@ -1,3 +1,4 @@
+import { CountryLabel, GenreLabel, PlatformLabel } from '@/components/common/Brand'
 import type { Schemas } from '@/api/client'
 import type { DashboardQuery } from '@/api/queries'
 import { MultiSelectPill } from '@/components/common/MultiSelectPill'
@@ -87,18 +88,21 @@ export function DashboardFilters({
       />
       <MultiSelectPill
         label="Countries"
+        renderOption={(country) => <CountryLabel country={country} />}
         options={options.consumption.countries}
         selected={query.countries}
         onChange={(countries) => onChange({ countries })}
       />
       <MultiSelectPill
         label="Platforms"
+        renderOption={(platform) => <PlatformLabel platform={platform} />}
         options={options.consumption.platforms}
         selected={query.platforms}
         onChange={(platforms) => onChange({ platforms })}
       />
       <MultiSelectPill
         label="Genres"
+        renderOption={(genre) => <GenreLabel genre={genre} />}
         options={options.primary_genres}
         selected={query.genres}
         onChange={(genres) => onChange({ genres })}

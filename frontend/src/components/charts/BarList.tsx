@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
-export type BarItem = { key: string; label: string; value: number; detail?: string }
+export type BarItem = { key: string; label: ReactNode; value: number; detail?: string }
 
 type BarListProps = {
   items: BarItem[]
@@ -27,9 +28,7 @@ export function BarList({ items, format, label, highlight = [] }: BarListProps) 
             <div
               className={cn(
                 'h-full rounded-full',
-                highlight.length === 0 || highlight.includes(item.key)
-                  ? 'bg-brand'
-                  : 'bg-subtle/50',
+                highlight.length === 0 || highlight.includes(item.key) ? 'bg-pink' : 'bg-subtle/50',
               )}
               style={{ width: max ? `${(item.value / max) * 100}%` : '0%' }}
             />

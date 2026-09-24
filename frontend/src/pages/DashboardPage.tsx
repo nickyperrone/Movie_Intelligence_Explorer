@@ -1,3 +1,4 @@
+import { CountryLabel, GenreLabel, PlatformLabel } from '@/components/common/Brand'
 import { useMemo } from 'react'
 import type { Schemas } from '@/api/client'
 import {
@@ -49,7 +50,12 @@ function ShareCard({
           format={percent}
           items={breakdown.data.items.map((item) => ({
             key: item.key,
-            label: item.label,
+            label:
+              dimension === 'country' ? (
+                <CountryLabel country={item.label} />
+              ) : (
+                <PlatformLabel platform={item.label} />
+              ),
             value: item.share_of_streams,
             detail: compact(item.streams),
           }))}
@@ -93,7 +99,7 @@ function EfficiencyCard({
           format={compact}
           items={items.map((item) => ({
             key: item.key,
-            label: item.label,
+            label: dimension === 'primary_genre' ? <GenreLabel genre={item.label} /> : item.label,
             value: item.streams_per_title ?? 0,
             detail: `${item.titles} titles`,
           }))}

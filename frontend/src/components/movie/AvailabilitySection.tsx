@@ -1,3 +1,4 @@
+import { CountryLabel, PlatformLabel } from '@/components/common/Brand'
 import { useAvailability } from '@/api/queries'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { EmptyState, ErrorState } from '@/components/common/States'
@@ -48,7 +49,9 @@ export function AvailabilitySection({ titleId }: { titleId: string }) {
                   key={`${offer.platform}-${offer.platform_type}`}
                   className="border-b border-white/5 last:border-none"
                 >
-                  <td className="px-4 py-3 font-medium">{offer.platform}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <PlatformLabel platform={offer.platform} />
+                  </td>
                   <td className="py-3">
                     <span className="rounded-full bg-pill px-2 py-0.5 text-xs font-bold">
                       {offer.platform_type}
@@ -57,7 +60,13 @@ export function AvailabilitySection({ titleId }: { titleId: string }) {
                   <td className="py-3 text-subtle">
                     {offer.is_original ? offer.original_flag : '—'}
                   </td>
-                  <td className="px-4 py-3">{offer.countries.join(', ')}</td>
+                  <td className="px-4 py-3">
+                    <span className="flex flex-wrap gap-x-3 gap-y-1">
+                      {offer.countries.map((country) => (
+                        <CountryLabel key={country} country={country} />
+                      ))}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

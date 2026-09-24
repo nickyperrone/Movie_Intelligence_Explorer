@@ -2,6 +2,7 @@ import { ExternalLink, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import type { Schemas } from '@/api/client'
+import { GenreLabel } from '@/components/common/Brand'
 import { Poster } from '@/components/common/Poster'
 import { compact, rating, runtime } from '@/lib/format'
 
@@ -25,7 +26,11 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
             <span className="text-subtle">·</span>
             <span>{runtime(movie.runtime_minutes)}</span>
             <span className="text-subtle">·</span>
-            <span>{movie.genres.join(', ') || '—'}</span>
+            <span className="inline-flex flex-wrap gap-x-3">
+              {movie.genres.length
+                ? movie.genres.map((genre) => <GenreLabel key={genre} genre={genre} />)
+                : '—'}
+            </span>
             <span className="text-subtle">·</span>
             <span className="inline-flex items-center gap-1">
               <Star className="size-3.5 fill-pink text-pink" />
@@ -67,7 +72,7 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link
               to={`/decide?tab=licensing&title=${movie.title_id}`}
-              className="rounded-full bg-brand px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105"
+              className="rounded-full bg-pink px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105"
             >
               Assess a deal
             </Link>

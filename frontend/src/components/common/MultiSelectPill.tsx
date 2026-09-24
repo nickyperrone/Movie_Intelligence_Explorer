@@ -1,4 +1,5 @@
 import { Check, ChevronDown } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/cn'
 import { toggle } from '@/lib/url-state'
@@ -8,9 +9,16 @@ type MultiSelectPillProps = {
   options: string[]
   selected: string[]
   onChange: (selected: string[]) => void
+  renderOption?: (option: string) => ReactNode
 }
 
-export function MultiSelectPill({ label, options, selected, onChange }: MultiSelectPillProps) {
+export function MultiSelectPill({
+  label,
+  options,
+  selected,
+  onChange,
+  renderOption = (option) => option,
+}: MultiSelectPillProps) {
   const summary =
     selected.length === 0
       ? label
@@ -47,7 +55,7 @@ export function MultiSelectPill({ label, options, selected, onChange }: MultiSel
                   onClick={() => onChange(toggle(selected, option))}
                   className="flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm hover:bg-white/10"
                 >
-                  <span className={checked ? 'text-pink' : undefined}>{option}</span>
+                  <span className={checked ? 'text-pink' : undefined}>{renderOption(option)}</span>
                   {checked && <Check className="size-4 text-pink" />}
                 </button>
               </li>

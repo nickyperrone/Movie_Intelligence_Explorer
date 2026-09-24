@@ -1,3 +1,4 @@
+import { CountryLabel, GenreLabel, PlatformLabel } from '@/components/common/Brand'
 import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Schemas } from '@/api/client'
@@ -81,18 +82,21 @@ export function SearchFilterBar({ filters, options, onChange }: SearchFilterBarP
       ))}
       <MultiSelectPill
         label="Genres"
+        renderOption={(genre) => <GenreLabel genre={genre} />}
         options={options.genres}
         selected={filters.genres}
         onChange={(genres) => onChange({ ...filters, genres })}
       />
       <MultiSelectPill
         label="Platform"
+        renderOption={(platform) => <PlatformLabel platform={platform} />}
         options={options.availability.platforms}
         selected={filters.platforms}
         onChange={(platforms) => onChange({ ...filters, platforms })}
       />
       <MultiSelectPill
         label="Country"
+        renderOption={(country) => <CountryLabel country={country} />}
         options={options.availability.countries}
         selected={filters.countries}
         onChange={(countries) => onChange({ ...filters, countries })}

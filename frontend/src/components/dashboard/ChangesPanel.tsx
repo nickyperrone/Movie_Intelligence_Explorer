@@ -1,3 +1,4 @@
+import { CountryLabel, PlatformLabel } from '@/components/common/Brand'
 import { Link } from 'react-router'
 import type { Schemas } from '@/api/client'
 import { Narrative } from '@/components/common/Narrative'
@@ -77,7 +78,11 @@ export function ChangesPanel({ changes }: { changes: Schemas['DashboardChanges']
                 key={`${shift.dimension}-${shift.key}`}
                 className="flex justify-between gap-3 text-sm"
               >
-                <span>{shift.key}</span>
+                {shift.dimension === 'country' ? (
+                  <CountryLabel country={shift.key} />
+                ) : (
+                  <PlatformLabel platform={shift.key} />
+                )}
                 <span
                   className={cn(
                     'font-bold tabular',

@@ -43,8 +43,16 @@ export function Sidebar() {
           </li>
         ))}
       </ul>
-      <p className="mt-auto px-3 text-xs leading-relaxed text-subtle max-lg:hidden">
-        Consumption: Argentina, Brazil, Colombia, Mexico on 4 platforms, Jan 2023–Jun 2026.
+      <p className="mt-auto px-3 text-xs text-subtle max-lg:hidden">
+        Built by{' '}
+        <a
+          href="https://www.linkedin.com/in/perronenicole/"
+          target="_blank"
+          rel="noreferrer"
+          className="font-bold text-white underline-offset-2 hover:text-pink hover:underline"
+        >
+          Nicole Perrone
+        </a>
       </p>
     </nav>
   )

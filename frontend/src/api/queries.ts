@@ -36,6 +36,8 @@ export function useSearch(query: SearchQuery | null) {
     queryKey: ['search', query],
     queryFn: () => unwrap(api.GET('/search', { params: { query: { ...query!, limit: 30 } } })),
     enabled: query !== null && query.q.trim().length >= 2,
+    // Keeps the previous results on screen while the next keystroke's results load.
+    placeholderData: keepPreviousData,
   })
 }
 

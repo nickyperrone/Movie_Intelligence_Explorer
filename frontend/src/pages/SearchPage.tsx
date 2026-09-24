@@ -106,6 +106,11 @@ export function SearchPage() {
             {hasFilters ? ' with the filters below' : ''}
           </p>
         )}
+        {data?.interpretation.status === 'skipped' && !hasFilters && (
+          <p className="mt-2 text-sm text-subtle">
+            Press Enter to let AI infer filters such as years, platforms or people.
+          </p>
+        )}
         {data && INTERPRETATION_NOTES[data.interpretation.status] && (
           <p className="mt-2 text-sm text-subtle">
             {INTERPRETATION_NOTES[data.interpretation.status]}
