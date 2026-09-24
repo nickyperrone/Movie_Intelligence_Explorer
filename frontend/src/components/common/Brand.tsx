@@ -1,15 +1,5 @@
 import { AR, BR, CL, CO, EC, MX, PE, VE } from 'country-flag-icons/react/3x2'
-import {
-  siAppletv,
-  siCrunchyroll,
-  siHbomax,
-  siMubi,
-  siNetflix,
-  siParamountplus,
-  siPlex,
-  siTubi,
-  type SimpleIcon,
-} from 'simple-icons'
+import { useState } from 'react'
 import {
   Eye,
   Film,
@@ -61,31 +51,29 @@ export function CountryFlag({ country, className }: { country: string; className
   )
 }
 
-const LOGOS: Record<string, SimpleIcon> = {
-  Netflix: siNetflix,
-  'HBO Max': siHbomax,
-  'Apple TV': siAppletv,
-  Crunchyroll: siCrunchyroll,
-  'Paramount+': siParamountplus,
-  Plex: siPlex,
-  Tubi: siTubi,
-  MUBI: siMubi,
-}
-
-// Platforms whose logos are not in simple-icons get a monogram on their brand color.
-const MONOGRAMS: Record<string, { text: string; color: string }> = {
-  Amazon: { text: 'a', color: '#00A8E1' },
-  'Amazon Prime Video': { text: 'a', color: '#00A8E1' },
-  'Amazon Other': { text: 'a', color: '#232F3E' },
-  'Disney+': { text: 'D+', color: '#113CCF' },
-  'Claro Video': { text: 'C', color: '#DA291C' },
-  Filmzie: { text: 'F', color: '#6C2BD9' },
-  Globoplay: { text: 'G', color: '#FB0234' },
-  MercadoLibre: { text: 'M', color: '#FFE600' },
-  'Pluto TV': { text: 'P', color: '#FFF200' },
-  ViX: { text: 'V', color: '#FF6600' },
-  'ViX+': { text: 'V+', color: '#FF6600' },
-  Viki: { text: 'V', color: '#1E90FF' },
+// Official app icons, fetched by domain from Google's favicon service so every platform shows
+// its real logo. A monogram on the brand color is the fallback when an icon cannot load.
+const PLATFORMS: Record<string, { domain: string; monogram: string; color: string }> = {
+  Netflix: { domain: 'netflix.com', monogram: 'N', color: '#E50914' },
+  Amazon: { domain: 'primevideo.com', monogram: 'a', color: '#00A8E1' },
+  'Amazon Prime Video': { domain: 'primevideo.com', monogram: 'a', color: '#00A8E1' },
+  'Amazon Other': { domain: 'amazon.com', monogram: 'a', color: '#232F3E' },
+  'Disney+': { domain: 'disneyplus.com', monogram: 'D+', color: '#113CCF' },
+  'HBO Max': { domain: 'hbomax.com', monogram: 'M', color: '#002BE7' },
+  'Apple TV': { domain: 'tv.apple.com', monogram: 'tv', color: '#2a2a2a' },
+  'Claro Video': { domain: 'clarovideo.com', monogram: 'C', color: '#DA291C' },
+  Crunchyroll: { domain: 'crunchyroll.com', monogram: 'C', color: '#FF5E00' },
+  Filmzie: { domain: 'filmzie.com', monogram: 'F', color: '#6C2BD9' },
+  Globoplay: { domain: 'globoplay.globo.com', monogram: 'G', color: '#FB0234' },
+  MUBI: { domain: 'mubi.com', monogram: 'M', color: '#2a2a2a' },
+  MercadoLibre: { domain: 'mercadolibre.com', monogram: 'M', color: '#FFE600' },
+  'Paramount+': { domain: 'paramountplus.com', monogram: 'P+', color: '#0064FF' },
+  Plex: { domain: 'plex.tv', monogram: 'P', color: '#EBAF00' },
+  'Pluto TV': { domain: 'pluto.tv', monogram: 'P', color: '#FFF200' },
+  Tubi: { domain: 'tubitv.com', monogram: 'T', color: '#7408FF' },
+  ViX: { domain: 'vix.com', monogram: 'V', color: '#FF6600' },
+  'ViX+': { domain: 'vix.com', monogram: 'V+', color: '#FF6600' },
+  Viki: { domain: 'viki.com', monogram: 'V', color: '#1E90FF' },
 }
 
 function isLight(hex: string): boolean {
@@ -95,32 +83,33 @@ function isLight(hex: string): boolean {
 }
 
 export function PlatformIcon({ platform, className }: { platform: string; className?: string }) {
-  const logo = LOGOS[platform]
-  const box = cn('inline-grid size-[18px] shrink-0 place-items-center rounded-[4px]', className)
-  if (logo) {
-    const background = logo.hex === '000000' ? '#2a2a2a' : `#${logo.hex}`
+  const [failed, setFailed] = useState(false)
+  const brand = PLATFORMS[platform]
+  const box = cn(
+    'inline-grid size-[18px] shrink-0 place-items-center overflow-hidden rounded-[4px]',
+    className,
+  )
+  if (brand && !failed) {
     return (
-      <span className={box} style={{ background }} title={platform}>
-        <svg
-          viewBox="0 0 24 24"
-          className="size-[70%]"
-          aria-hidden
-          fill={isLight(background) ? '#000' : '#fff'}
-        >
-          <path d={logo.path} />
-        </svg>
-      </span>
+      <img
+        src={`https://www.google.com/s2/favicons?domain=${brand.domain}&sz=64`}
+        alt=""
+        title={platform}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className={cn(box, 'object-contain')}
+      />
     )
   }
-  const monogram = MONOGRAMS[platform] ?? { text: platform.charAt(0), color: '#2a2a2a' }
+  const color = brand?.color ?? '#2a2a2a'
   return (
     <span
       className={cn(box, 'text-[9px] font-black leading-none')}
-      style={{ background: monogram.color, color: isLight(monogram.color) ? '#000' : '#fff' }}
+      style={{ background: color, color: isLight(color) ? '#000' : '#fff' }}
       title={platform}
       aria-hidden
     >
-      {monogram.text}
+      {brand?.monogram ?? platform.charAt(0)}
     </span>
   )
 }

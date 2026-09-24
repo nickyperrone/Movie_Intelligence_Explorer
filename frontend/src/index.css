@@ -17,8 +17,8 @@
   --color-pill: #2a2a2a;
   --color-subtle: #b3b3b3;
   --color-pink: #ff6fcf;
-  --color-positive: #ff6fcf;
-  --color-negative: #a5a8ff;
+  --color-positive: #3ddc84;
+  --color-negative: #ff5c5c;
   --color-warning: #ffa42b;
 
   /* shadcn/ui tokens mapped onto the palette. */
@@ -68,7 +68,7 @@
   --muted-foreground: #b3b3b3;
   --accent: #333333;
   --accent-foreground: #ffffff;
-  --destructive: #a5a8ff;
+  --destructive: #ff5c5c;
   --border: rgb(255 255 255 / 0.1);
   --input: #2a2a2a;
   --ring: rgb(255 255 255 / 0.6);

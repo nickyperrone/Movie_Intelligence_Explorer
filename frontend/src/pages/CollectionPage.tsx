@@ -6,6 +6,7 @@ import { ErrorState } from '@/components/common/States'
 import { CollectionCover } from '@/components/discover/CollectionCover'
 import { assignCovers } from '@/components/discover/covers'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/cn'
 import { compact, percent, rating } from '@/lib/format'
 import { NotFoundPage } from './NotFoundPage'
 
@@ -98,7 +99,12 @@ export function CollectionPage() {
               <td className="py-2 text-subtle max-md:hidden">
                 {item.movie.genres.slice(0, 3).join(', ')}
               </td>
-              <td className="rounded-r-md py-2 pr-3 text-right tabular">
+              <td
+                className={cn(
+                  'rounded-r-md py-2 pr-3 text-right tabular',
+                  data.metric_label === 'Growth' && 'text-positive',
+                )}
+              >
                 {formatMetric(data.metric_label, item.metric_value)}
               </td>
             </tr>

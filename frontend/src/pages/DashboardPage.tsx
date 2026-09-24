@@ -17,7 +17,7 @@ import { TrendChart } from '@/components/charts/TrendChart'
 import { Pill } from '@/components/common/Pill'
 import { EmptyState, ErrorState, Panel } from '@/components/common/States'
 import { ChangesPanel } from '@/components/dashboard/ChangesPanel'
-import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
+import { DashboardToolbar } from '@/components/dashboard/DashboardToolbar'
 import { KpiRow } from '@/components/dashboard/KpiRow'
 import { TopTitlesTable } from '@/components/dashboard/TopTitlesTable'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -146,11 +146,11 @@ export function DashboardPage() {
         </p>
       </header>
 
-      {options.data && summary.data && (
-        <DashboardFilters
+      {options.data && (
+        <DashboardToolbar
           options={options.data}
           query={query}
-          period={summary.data.filters}
+          summary={summary.data}
           onChange={(changes) => update(changes)}
           onReset={() => update(Object.fromEntries(FILTER_KEYS.map((key) => [key, undefined])))}
         />
