@@ -28,11 +28,13 @@ The whole app follows the layout patterns of a music streaming desktop client:
   Search, Decision Studio). The active item is white; the others are grey and turn white on hover.
 - Top bar inside the main panel: back and forward buttons (history), and a pill-shaped search input
   with a search icon. `/` focuses it unless the user is typing in a field.
-- Search as you type: 250 ms after the last keystroke (and with at least 2 characters) the app shows
-  `/search?q=...&interpret=false`, replacing the history entry instead of adding one. This path uses
-  embeddings only, so it responds in tens of milliseconds and costs nothing. Enter runs the same
-  query with `interpret=true`, which also asks the LLM for filters. The LLM is never called per
-  keystroke.
+- Suggestions as you type: 250 ms after the last keystroke (at least 2 characters) a dropdown under
+  the search box shows up to 3 "Titles" (title matches, `/movies/lookup`) and up to 5 "Matches by
+  meaning" (`/search?interpret=false`, embeddings only, tens of milliseconds, no LLM cost), and a
+  last row "See all results for …". Typing never changes the page. Arrow keys move through the
+  options, Enter opens the highlighted movie or, with nothing highlighted, the search page with
+  `interpret=true`, which also asks the LLM for filters. Escape or a click outside closes the
+  dropdown. The LLM is never called per keystroke.
 - Main panel content: 24 px padding (16 px on small screens), max width 1440 px.
 
 ## Pages
@@ -100,8 +102,9 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 
 ### Search
 
-- The query comes from the top bar (search as you type). While results come from typing, a hint
-  says "Press Enter to let AI infer filters". Previous results stay visible while new ones load.
+- The query comes from the top bar. When the page was opened without interpretation
+  (`interpret=false`), a hint says "Press Enter to let AI infer filters". Previous results stay
+  visible while new ones load.
 - `InterpretationNote`: "Searching for: comedy" when the LLM rewrote the query; a short note when
   status is `disabled` or `failed`.
 - `FilterBar`: applied filters as removable chips, and an "Add filter" popover (genres, years,
