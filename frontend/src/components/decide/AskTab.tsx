@@ -18,7 +18,7 @@ type Turn = { role: 'user'; content: string } | AssistantTurn
 
 const SUGGESTIONS = [
   'Which 5 movies had the most streams in Brazil in 2025?',
-  '¿Qué plataforma creció más en México entre 2024 y 2025?',
+  'Which platform grew the most in Mexico from 2024 to 2025?',
   'How did Sony titles perform on Netflix compared with Amazon?',
   'What was the box office of Zootopia 2?',
 ]
