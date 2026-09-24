@@ -110,8 +110,9 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 - `CollectionPage`, also dark: a header with the large cover, the label "Collection", the title,
   the description and the number of movies; then the ranked list as rows (rank, poster thumbnail,
   title with year and genres, metric value aligned right). A row links to the movie.
-  - Every column header sorts the list: an arrow appears on hover; the first click sorts (numbers
-    high to low, text A to Z), the second reverses. The active column keeps its arrow. `#` always
+  - Every column header sorts the list. Only the active column shows an arrow, always to the right
+    of its label, pointing in the current direction; clicking it reverses the direction. Clicking
+    another header sorts by it (numbers high to low, text A to Z). `#` always
     shows the movie's rank in the collection. The order is kept in the URL (`sort`, `dir`).
 
 ### Search
