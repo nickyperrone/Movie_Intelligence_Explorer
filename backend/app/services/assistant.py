@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 MAX_TOOL_CALLS = 6
 GROUNDING_RETRIES = 1
+STATUSES = {"answered", "no_data", "out_of_scope", "conversation"}
 ROW_LIMIT = 200
 SQL_TIMEOUT_SECONDS = 5
 EXCHANGE_TIMEOUT_SECONDS = 60
@@ -34,7 +35,8 @@ RELATIVE_TOLERANCE = 0.01
 # A number, optionally followed by a compact suffix (12.4K, 3.1M) or a percent sign.
 NUMBER_IN_TEXT = re.compile(r"(?<![\w.])(\d[\d,]*(?:\.\d+)?)(?:([KkMm])(?![A-Za-z])|\s?(%))?")
 
-SYSTEM_PROMPT = """You answer questions about a movie streaming dataset for a film studio in LATAM.
+SYSTEM_PROMPT = """You are Reel, the Movie Intelligence assistant: friendly, plain and brief.
+You help a film studio in LATAM answer questions about its movie streaming data.
 You can only learn facts by calling the tools. Use at most 4 tool calls.
 
 Tables (DuckDB SQL):
@@ -79,11 +81,24 @@ Rules for the answer:
 - If the question needs data these tables do not have (box office, revenue, budgets, audience
   demographics, other countries or platforms, months outside the range), use status
   "out_of_scope" and name the missing data. Do not call tools for it.
-- Answer in the language of the question, in at most 120 words. Mention the period and the
-  countries or platforms the numbers cover.
+- Answer in the language of the question, like an analyst talking to a colleague: warm, plain and
+  direct, never robotic. Structure:
+  1. One sentence that answers the question directly.
+  2. Up to 4 short bullets starting with "- " with the supporting figures (a short label, then the
+     figure), when there is more than one figure to show.
+  3. One short last line on what the figures cover (period, countries, platforms).
+  Separate the parts with a blank line. Write numbers with thousands separators (177,760) or compact
+  units (341.9K). Use **bold** only for the key figure. At most 120 words. Refer to movies by title,
+  never by id.
+- End every reply with a short, friendly offer of further help in the same language, for example
+  "Can I help you with anything else?" or "¿Te ayudo con algo más?".
+- For greetings, thanks, questions about what you can do, or when you need to ask the user to
+  clarify, use status "conversation". Say briefly what you can answer (performance by title,
+  country, platform, genre or period; availability; search by theme). A "conversation" reply must
+  not contain figures.
 
 When you are done, reply with only this JSON object:
-{"status": "answered" | "no_data" | "out_of_scope", "answer": "..."}"""
+{"status": "answered" | "no_data" | "out_of_scope" | "conversation", "answer": "..."}"""
 
 TOOLS = [
     {
@@ -332,8 +347,14 @@ def answer(messages: list[m.ChatMessage]) -> m.AssistantReply:
             final = run_exchange(client, conversation, evidence, deadline)
             status = final.get("status") if isinstance(final, dict) else None
             text = final.get("answer") if isinstance(final, dict) else None
-            if status not in {"answered", "no_data", "out_of_scope"} or not isinstance(text, str):
+            if status not in STATUSES or not isinstance(text, str):
                 return reply("failed", None, evidence)
+            if status == "conversation":
+                # Small talk carries no data: any figure in it would be unverifiable.
+                has_figures = bool(
+                    ungrounded_numbers(text, [], " ".join(m.content for m in messages))
+                )
+                return reply("failed" if has_figures else "conversation", text.strip(), evidence)
             if status != "answered":
                 return reply(status, text.strip(), evidence)
             succeeded = [item for item in evidence if item.error is None]

@@ -836,8 +836,11 @@ export interface components {
         AssistantRequest: {
             messages: components["schemas"]["ChatMessage"][];
         };
-        /** @enum {string} */
-        AssistantStatus: "answered" | "no_data" | "out_of_scope" | "disabled" | "failed";
+        /**
+         * @description conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed.
+         * @enum {string}
+         */
+        AssistantStatus: "answered" | "no_data" | "out_of_scope" | "conversation" | "disabled" | "failed";
         Evidence: {
             /** @enum {string} */
             tool: "run_sql" | "search_movies";

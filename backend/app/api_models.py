@@ -608,9 +608,14 @@ class AssistantRequest(BaseModel):
 
 
 class AssistantStatus(
-    RootModel[Literal["answered", "no_data", "out_of_scope", "disabled", "failed"]]
+    RootModel[Literal["answered", "no_data", "out_of_scope", "conversation", "disabled", "failed"]]
 ):
-    root: Literal["answered", "no_data", "out_of_scope", "disabled", "failed"]
+    root: Literal["answered", "no_data", "out_of_scope", "conversation", "disabled", "failed"] = (
+        Field(
+            ...,
+            description="conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed.",
+        )
+    )
 
 
 class Evidence(BaseModel):

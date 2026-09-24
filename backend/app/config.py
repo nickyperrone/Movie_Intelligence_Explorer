@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
-API_VERSION = "1.3.0"
+API_VERSION = "1.4.0"
 
 
 class Settings(BaseSettings):

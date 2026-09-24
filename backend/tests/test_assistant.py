@@ -96,6 +96,21 @@ def test_no_data_answer_is_shown(monkeypatch):
     assert "Chile" in result.answer
 
 
+def test_conversation_needs_no_query(monkeypatch):
+    result, _ = ask(
+        monkeypatch,
+        final("conversation", "Hi, I'm Reel. Ask me about streams by title, country or platform."),
+        question="hola",
+    )
+    assert result.status.root == "conversation"
+    assert result.evidence == []
+
+
+def test_conversation_with_figures_is_rejected(monkeypatch):
+    result, _ = ask(monkeypatch, final("conversation", "Sure, Brazil had 3.7M streams."))
+    assert result.status.root == "failed"
+
+
 def test_out_of_scope_answer_is_shown(monkeypatch):
     result, _ = ask(monkeypatch, final("out_of_scope", "The datasets have no box office revenue."))
     assert result.status.root == "out_of_scope"
