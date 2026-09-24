@@ -27,8 +27,12 @@ The whole app follows the layout patterns of a music streaming desktop client:
 - Sidebar: app name "Movie Intelligence" and navigation items with icons (Dashboard, Discover,
   Search, Decision Studio). The active item is white; the others are grey and turn white on hover.
 - Top bar inside the main panel: back and forward buttons (history), and a pill-shaped search input
-  with a search icon. `/` focuses it unless the user is typing in a field. Enter navigates to
-  `/search?q=...`.
+  with a search icon. `/` focuses it unless the user is typing in a field.
+- Search as you type: 250 ms after the last keystroke (and with at least 2 characters) the app shows
+  `/search?q=...&interpret=false`, replacing the history entry instead of adding one. This path uses
+  embeddings only, so it responds in tens of milliseconds and costs nothing. Enter runs the same
+  query with `interpret=true`, which also asks the LLM for filters. The LLM is never called per
+  keystroke.
 - Main panel content: 24 px padding (16 px on small screens), max width 1440 px.
 
 ## Pages
@@ -78,7 +82,8 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 
 ### Search
 
-- A large `SearchBar` pre-filled from `q`.
+- The query comes from the top bar (search as you type). While results come from typing, a hint
+  says "Press Enter to let AI infer filters". Previous results stay visible while new ones load.
 - `InterpretationNote`: "Searching for: comedy" when the LLM rewrote the query; a short note when
   status is `disabled` or `failed`.
 - `FilterBar`: applied filters as removable chips, and an "Add filter" popover (genres, years,
@@ -185,10 +190,10 @@ names are used.
 | `--pill` | `#2a2a2a` | Inactive pills, inputs |
 | `--text` | `#ffffff` | Headings, primary text, active pill background |
 | `--text-muted` | `#b3b3b3` | Subtitles, secondary text, axis labels |
-| `--pink` | `#ff6fcf` | Accent: active states, main chart series, links on hover |
-| `--brand-gradient` | `#ffd6f0 → #ff7ad6 → #e157f5` (left to right) | Primary buttons, logo, highlighted words in page titles, bars |
-| `--positive` | `#4ade80` | Positive changes only |
-| `--negative` | `#f3727f` | Negative changes, errors |
+| `--pink` | `#ff6fcf` | Accent: primary buttons (solid), active states, main chart series, bars |
+| `--brand-gradient` | `#ffd6f0 → #ff7ad6 → #e157f5` (left to right) | Only the logo and one highlighted word per page title. Never on buttons |
+| `--positive` | `#ff6fcf` | Positive changes (always with a + sign) |
+| `--negative` | `#a5a8ff` | Negative changes (always with a − sign), errors |
 | `--warning` | `#ffa42b` | Engagement above 100%, "already available" warnings |
 
 - Dark only. The app does not switch to a light theme.
@@ -202,8 +207,8 @@ names are used.
 - Rows of cards: a heading on the left and "Show all" on the right, as on Discover.
 - Charts: `--pink` for the main series with a pink-to-transparent area fill, greys for secondary series, no gridlines except faint
   horizontal ones, tooltips on `--surface-hover`.
-- Primary action buttons: `--brand-gradient` background, black bold text, pill shape, slight scale on
-  hover.
+- Buttons always use solid colors. Primary actions: `--pink` background, black bold text, pill
+  shape, slight scale on hover. Secondary actions: white or `--pill`.
 - Page titles may highlight their key word with the gradient as text fill.
 - Motion: 150–200 ms transitions on hover and focus only.
 
