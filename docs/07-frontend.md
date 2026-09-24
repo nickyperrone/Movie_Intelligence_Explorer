@@ -302,7 +302,9 @@ names are used.
 - Page titles may highlight their key word with the gradient as text fill.
 - Motion: 150–200 ms transitions on hover and focus; a 300 ms fade with a small upward slide when
   the page changes, when a panel's content appears after loading, and when a tab, tool or section
-  is switched. Pressable elements scale to 97% while pressed. No motion when the system asks for
+  is switched. Pressable elements scale to 97% while pressed.
+- Dashboard first load: its blocks fade in one after another, 60 ms apart; KPI values count up from
+  zero over 600 ms (ease-out) the first time they appear, and update without animation afterwards. No motion when the system asks for
   reduced motion.
 - Focus: a white ring with a dark gap, drawn with box-shadow so it follows rounded shapes.
 
