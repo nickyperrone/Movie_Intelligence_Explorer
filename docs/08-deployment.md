@@ -32,6 +32,13 @@ paths in `app/config.py` work the same locally and in the container.
 | `LLM_CALLS_PER_CLIENT_MINUTE` | no | `20` | Model calls per client per minute (`06-llm.md`) |
 | `LLM_CALLS_PER_CLIENT_DAY` | no | `200` | Model calls per client per day |
 | `LLM_CALLS_PER_DAY` | no | `2000` | Model calls per day for the whole app |
+| `LLM_DAILY_BUDGET_USD` | no | `1.0` | Maximum OpenAI spend per UTC day (`06-llm.md`) |
+| `LLM_USD_PER_MILLION_INPUT` | no | `0.15` | Input price of `OPENAI_MODEL` |
+| `LLM_USD_PER_MILLION_OUTPUT` | no | `0.60` | Output price of `OPENAI_MODEL` |
+| `LLM_MAX_OUTPUT_TOKENS` | no | `700` | Output tokens per model call |
+| `CHAT_QUESTIONS_PER_DEVICE_DAY` | no | `10` | Chat questions per device per day |
+| `CHAT_QUESTIONS_PER_IP_DAY` | no | `30` | Chat questions per IP address per day |
+| `STATE_DIR` | no | `data/state` (`/app/data/state` in the image) | Where the day's OpenAI spend is saved |
 | `LOG_LEVEL` | no | `INFO` | Python logging level |
 | `PORT` | no | `4040` | Port the container serves the app and the API on |
 
@@ -63,8 +70,9 @@ As an Application (recommended):
 1. Create an Application from the GitHub repository, branch `main`.
 2. Build type: Dockerfile, path `./Dockerfile`, context `.`.
 3. Environment: `OPENAI_API_KEY` (optional), `OPENAI_MODEL` (optional).
-4. Domains: add a domain with container port 4040. Traefik issues the HTTPS certificate.
-5. Enable auto-deploy so every push to `main` rebuilds and redeploys.
+4. Volume: mount a volume at `/app/data/state`, so the day's OpenAI spend survives redeploys.
+5. Domains: add a domain with container port 4040. Traefik issues the HTTPS certificate.
+6. Enable auto-deploy so every push to `main` rebuilds and redeploys.
 
 As a Compose service: point Dokploy at `docker-compose.yml`; it builds the image and publishes
 port 4040.

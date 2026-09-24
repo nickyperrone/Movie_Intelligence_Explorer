@@ -261,6 +261,10 @@ Ask the data:
 - Under each reply, a collapsed "How this was answered" section lists the evidence: the purpose and
   the first 20 rows in a table with readable column names (`streams_2024` → "Streams 2024") and
   formatted numbers, plus the total row count. The SQL is hidden behind a "Show query" button.
+- Daily questions: the browser keeps a random device id in `localStorage` and sends it as
+  `X-Device-Id`. Before the first reply of the day the input reads "Up to 10 questions a day"; after
+  each reply it shows "N questions left today" from `questions_left`. At 0 the input is disabled
+  with "You've used today's questions. Come back tomorrow."
 - A permanent note above the input: "Answers use only the datasets: consumption for AR, BR, CO, MX on
   4 platforms (Jan 2023–Jun 2026) and one availability snapshot."
 - The conversation is saved in the browser (`localStorage`, key `ask-history`, last 40 messages,

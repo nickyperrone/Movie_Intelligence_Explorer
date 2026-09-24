@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.6.0
+  version: 1.7.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -543,6 +543,13 @@ paths:
         Stateless: the client sends the conversation. The model can only use read-only SQL over the
         datasets and semantic search. Answers that cannot be checked against tool results are not
         returned (status `failed`). See docs/06-llm.md.
+        Each device may ask a limited number of questions a day (added in 1.7.0).
+      parameters:
+        - name: X-Device-Id
+          in: header
+          required: false
+          description: Random id the browser keeps for itself; counts the device's daily questions. Without a valid one, the IP address is used.
+          schema: { type: string, format: uuid }
       requestBody:
         required: true
         content:
@@ -1331,11 +1338,12 @@ components:
     AssistantReply:
       type: object
       additionalProperties: false
-      required: [status, answer, evidence]
+      required: [status, answer, evidence, questions_left]
       properties:
         status: { $ref: "#/components/schemas/AssistantStatus" }
         answer: { type: [string, "null"] }
         evidence: { type: array, items: { $ref: "#/components/schemas/Evidence" } }
+        questions_left: { type: integer, minimum: 0, description: "Questions this device can still ask today (added in 1.7.0)" }
 
     Person:
       type: object

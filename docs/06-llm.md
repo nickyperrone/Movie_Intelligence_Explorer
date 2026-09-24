@@ -39,22 +39,42 @@ latency. Prompts, keys and user text are not logged.
 
 ## Usage limits
 
-The app is public and the API key is paid, so model calls are capped. Every call to the model
-(each step of a chat exchange included) first takes one unit from three counters:
+The app is public and the API key is paid, so spend is capped at about 1 US dollar a day.
 
-| Counter | Default | Env var |
+**Daily budget (the hard cap).** Every model response reports its tokens. Their cost is added to
+the day's spend (UTC day) with the model's prices. Before each call, if the day's spend has reached
+the budget, the model is not called. Each response is capped at `LLM_MAX_OUTPUT_TOKENS`, so a single
+call cannot overshoot by more than about a tenth of a cent. The spend is saved to
+`$STATE_DIR/llm_spend.json` after each call, so restarts and redeploys keep it when that directory
+is on a volume (`08-deployment.md`).
+
+**Chat questions.** Each device may ask 10 questions a day, and each IP address 30 (several people
+in one office share an address). A device is the random id the browser keeps in `localStorage`
+and sends as `X-Device-Id`; without a valid id, the IP address is used. Replies carry
+`questions_left`, the smaller of the two counts remaining after that question.
+
+**Call counters.** Every model call (each step of a chat exchange included) also takes one unit
+from three counters, which stop a burst before it reaches the budget.
+
+| Limit | Default | Env var |
 |---|---|---|
-| Per client, per minute | 20 calls | `LLM_CALLS_PER_CLIENT_MINUTE` |
-| Per client, per day | 200 calls | `LLM_CALLS_PER_CLIENT_DAY` |
-| Whole app, per day | 2,000 calls | `LLM_CALLS_PER_DAY` |
+| Daily budget | 1.00 USD | `LLM_DAILY_BUDGET_USD` |
+| Price per million input tokens | 0.15 USD (`gpt-4o-mini`) | `LLM_USD_PER_MILLION_INPUT` |
+| Price per million output tokens | 0.60 USD (`gpt-4o-mini`) | `LLM_USD_PER_MILLION_OUTPUT` |
+| Output tokens per call | 700 | `LLM_MAX_OUTPUT_TOKENS` |
+| Chat questions per device, per day | 10 | `CHAT_QUESTIONS_PER_DEVICE_DAY` |
+| Chat questions per IP address, per day | 30 | `CHAT_QUESTIONS_PER_IP_DAY` |
+| Model calls per client, per minute | 20 | `LLM_CALLS_PER_CLIENT_MINUTE` |
+| Model calls per client, per day | 200 | `LLM_CALLS_PER_CLIENT_DAY` |
+| Model calls for the whole app, per day | 2,000 | `LLM_CALLS_PER_DAY` |
 
-- Answers served from the cache do not call the model and are not counted.
-- When any counter is full, the model is not called and the feature returns `rate_limited`; the
-  rest of the response is unchanged (search still runs on embeddings only).
-- The client is identified as described in `08-deployment.md` ("Rate limits"). Counters live in
-  memory in the single worker and reset on restart.
-- At the defaults, the daily cap bounds spend to a few dollars a day with `gpt-4o-mini`. A monthly
-  budget set on the OpenAI project is the last line of defense.
+- Answers served from the cache do not call the model and cost nothing.
+- When a limit is reached, the model is not called and the feature returns `rate_limited`; the rest
+  of the response is unchanged (search still runs on embeddings only). A chat question that is
+  refused does not count against the device.
+- With a different `OPENAI_MODEL`, set its prices, or the budget is computed with the wrong ones.
+- The question and call counters live in memory in the single worker and reset on restart; only the
+  spend is saved. A monthly budget on the OpenAI project is the last line of defense.
 
 ## Number guard
 
@@ -246,6 +266,8 @@ each (`07-frontend.md`).
 - An `answered` reply with no tool call → `failed`.
 - No API key → `disabled` with no network access.
 - A full usage counter → `rate_limited`, and the fake client receives no call.
+- A day's spend at the budget → `rate_limited` with no call; a new UTC day starts from zero.
+- An 11th question from one device in a day → `rate_limited` with `questions_left = 0`, and no call.
 
 ## Prompt injection
 
