@@ -165,8 +165,10 @@ A split screen of up to 3 titles. It uses the existing movie endpoints (metadata
 performance) once per title; no new endpoint.
 
 0. With no title yet, the tool shows only a start panel: "Compare up to 3 titles", one line on how
-   it works, the title picker, and up to 3 ready-made comparisons ("Top of 2025", "Top in Brazil",
-   "Rising now"), each loading the first 3 titles of that Discover shelf in one click.
+   it works, the title picker, and 3 ready-made comparisons picked at random from the Discover
+   shelves that have at least 2 titles (countries, platforms, rising, themes and the rest). Each
+   loads the first 3 titles of its shelf in one click. A small "Other ideas" button shows 3
+   different shelves, cycling through all of them before any repeats.
 1. Shared filters above the columns, in three labeled groups: "Measure" (streams, viewing hours),
    "Filter" (country and platform multi-selects, dataset C values) and "Timeline" ("Calendar" or
    "From launch": month 1 is each title's first month with consumption).
