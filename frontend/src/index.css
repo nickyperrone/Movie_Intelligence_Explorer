@@ -126,6 +126,17 @@
 }
 
 /* Content that appears after loading, or after switching a tab, fades in and rises slightly. */
+/* The caret after the typed example in the search box. */
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 @keyframes appear {
   from {
     opacity: 0;

@@ -6,7 +6,7 @@ import { useMovieLookup, usePeopleLookup, useSearchSuggestions } from '@/api/que
 import { Poster } from '@/components/common/Poster'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
-import { useExamples } from '@/lib/examples'
+import { useTypedExample } from '@/lib/examples'
 
 const SUGGESTION_DELAY_MS = 250
 
@@ -39,7 +39,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
     setText(urlQuery)
   }
 
-  const [example] = useExamples(1, text !== '' || open).examples
+  const example = useTypedExample(text !== '' || open)
   const debounced = useDebounced(text.trim(), SUGGESTION_DELAY_MS)
   const titles = useMovieLookup(debounced.length >= 2 ? debounced : '')
   const meaning = useSearchSuggestions(debounced)
@@ -122,7 +122,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
   return (
     <form role="search" onSubmit={submit} className="relative w-full max-w-2xl">
       <label htmlFor="global-search" className="sr-only">
-        Search movies
+        Search movies, people or themes
       </label>
       <Search className="pointer-events-none absolute left-3.5 top-6 size-5 -translate-y-1/2 text-subtle" />
       <input
@@ -142,12 +142,27 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={onKeyDown}
-        placeholder={`Find a movie and its performance, e.g. “${example}”`}
         className={cn(
           'h-12 w-full bg-pill pl-11 pr-4 text-sm text-white placeholder:text-subtle outline-none transition-shadow hover:bg-hover focus:ring-2 focus:ring-white',
           showDropdown ? 'rounded-t-3xl' : 'rounded-full',
         )}
       />
+      {/* Drawn over the input instead of a placeholder, so the example can type itself with a
+          caret. Screen readers get the fixed label above instead. */}
+      {text === '' && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-11 right-4 top-6 flex -translate-y-1/2 items-center overflow-hidden whitespace-nowrap text-sm text-subtle"
+        >
+          <span className="max-sm:hidden">Find a movie and its performance, e.g.&nbsp;</span>
+          <span className="sm:hidden">Try&nbsp;</span>
+          <span className="truncate">“{example.text}</span>
+          {example.animating && (
+            <span className="mx-px h-4 w-px shrink-0 animate-[caret-blink_1s_steps(1)_infinite] bg-white/70" />
+          )}
+          <span>”</span>
+        </span>
+      )}
       {showDropdown && (
         <ul
           id="search-suggestions"
