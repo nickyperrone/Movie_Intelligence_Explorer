@@ -214,6 +214,34 @@ per client per day, and 2,000 per day for the whole app, plus 300 API requests p
 minute. Above a limit, the LLM parts say so and everything else keeps working. All limits are
 environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
 
+## Why it is shown this way
+
+The brief asks for semantic search and a movie view. The rest of the app comes from what I heard in
+the earlier interviews about the team and the people it works for: executives and analysts who
+decide what to license, where to place a title and which projects to back, and who need numbers they
+can trust. That led to a few choices:
+
+- **Three views for three questions.** The dashboard answers how the catalog performs, Discover
+  helps spot titles without a query, and Decision Studio handles one specific deal or project.
+- **Answer first, evidence one click away.** Each decision tool opens with its conclusion, and the
+  comparable movies, the rows or the SQL behind it are one click below.
+- **Decisions are computed, not generated.** Rankings, verdicts and their reasons come from SQL and
+  code. The LLM only writes summaries around them, and the chat always shows its query.
+- **Saying "not enough data" is part of the design.** Evidence levels, "not enough evidence"
+  verdicts and "no data" answers are shown as results, not hidden as errors.
+
+I also allowed myself to have fun with the form. The layout borrows the patterns of a music
+streaming app (shelves of covers, pill filters, a dark theme) with a pink accent, and adds small
+touches: the search box types its own examples, the dashboard counts up on load, and the chat
+answers in the user's language. The aim was a tool people want to open, not only one that is
+correct.
+
+## Time spent
+
+About 5 hours of my own working time, spread over two days (Sep 23 and 24; the commit history shows
+the dates), within the suggested 6-hour time box. Claude Code did much of the typing, testing and
+browser checks alongside me (see "AI-assisted development").
+
 ## The product
 
 | Page | Decision it supports |
