@@ -1,15 +1,17 @@
-import { Search } from 'lucide-react'
+import { Search, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router'
 import type { Schemas } from '@/api/client'
-import { useMovieLookup, useSearchSuggestions } from '@/api/queries'
+import { useMovieLookup, usePeopleLookup, useSearchSuggestions } from '@/api/queries'
 import { Poster } from '@/components/common/Poster'
 import { cn } from '@/lib/cn'
 
 const SUGGESTION_DELAY_MS = 250
 
 type Option =
-  { kind: 'movie'; movie: Schemas['MovieSummary']; detail: string } | { kind: 'all'; query: string }
+  | { kind: 'movie'; movie: Schemas['MovieSummary']; detail: string }
+  | { kind: 'person'; person: Schemas['Person'] }
+  | { kind: 'all'; query: string }
 
 function useDebounced(value: string, delay: number): string {
   const [debounced, setDebounced] = useState(value)
@@ -38,6 +40,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
   const debounced = useDebounced(text.trim(), SUGGESTION_DELAY_MS)
   const titles = useMovieLookup(debounced.length >= 2 ? debounced : '')
   const meaning = useSearchSuggestions(debounced)
+  const people = usePeopleLookup(debounced)
 
   const titleMatches = debounced.length >= 2 ? (titles.data?.results ?? []).slice(0, 3) : []
   const titleIds = new Set(titleMatches.map((movie) => movie.title_id))
@@ -45,7 +48,9 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
     debounced.length >= 2
       ? (meaning.data?.results ?? []).filter((r) => !titleIds.has(r.movie.title_id)).slice(0, 5)
       : []
+  const peopleMatches = debounced.length >= 2 ? (people.data?.results ?? []) : []
   const options: Option[] = [
+    ...peopleMatches.map((person) => ({ kind: 'person' as const, person })),
     ...titleMatches.map((movie) => ({
       kind: 'movie' as const,
       movie,
@@ -80,7 +85,10 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
     setActive(-1)
     inputRef.current?.blur()
     if (option.kind === 'movie') navigate(`/movies/${option.movie.title_id}`)
-    else navigate(`/search?q=${encodeURIComponent(option.query)}`)
+    else if (option.kind === 'person') {
+      const name = encodeURIComponent(option.person.name)
+      navigate(`/search?q=${name}&people=${name}&interpret=false`)
+    } else navigate(`/search?q=${encodeURIComponent(option.query)}`)
   }
 
   function submit(event: FormEvent) {
@@ -140,16 +148,26 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
           className="absolute inset-x-0 top-12 z-30 max-h-[70vh] overflow-y-auto rounded-b-3xl bg-hover p-2 shadow-2xl shadow-black/60"
         >
           {options.map((option, index) => {
-            const isFirstMeaning =
-              option.kind === 'movie' && index === titleMatches.length && meaningMatches.length > 0
+            const firstTitle = peopleMatches.length
+            const firstMeaning = peopleMatches.length + titleMatches.length
             const heading =
-              index === 0 && titleMatches.length > 0
-                ? 'Titles'
-                : isFirstMeaning
-                  ? 'Matches by meaning'
-                  : null
+              index === 0 && peopleMatches.length > 0
+                ? 'People'
+                : index === firstTitle && titleMatches.length > 0
+                  ? 'Titles'
+                  : index === firstMeaning && meaningMatches.length > 0
+                    ? 'Matches by meaning'
+                    : null
             return (
-              <li key={option.kind === 'movie' ? option.movie.title_id : 'all'}>
+              <li
+                key={
+                  option.kind === 'movie'
+                    ? option.movie.title_id
+                    : option.kind === 'person'
+                      ? `person-${option.person.name}`
+                      : 'all'
+                }
+              >
                 {heading && (
                   <p className="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wider text-subtle">
                     {heading}
@@ -178,6 +196,22 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
                       <span className="min-w-0">
                         <span className="block truncate font-medium">{option.movie.title}</span>
                         <span className="text-xs text-subtle">{option.detail}</span>
+                      </span>
+                    </>
+                  ) : option.kind === 'person' ? (
+                    <>
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-pill">
+                        <UserRound className="size-5 text-subtle" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium">{option.person.name}</span>
+                        <span className="text-xs text-subtle">
+                          {option.person.roles
+                            .map((role) => (role === 'cast' ? 'actor' : role))
+                            .join(' and ')}{' '}
+                          · {option.person.movie_count}{' '}
+                          {option.person.movie_count === 1 ? 'movie' : 'movies'}
+                        </span>
                       </span>
                     </>
                   ) : (

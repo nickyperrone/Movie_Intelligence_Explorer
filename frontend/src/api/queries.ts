@@ -52,6 +52,25 @@ export function useSearchSuggestions(text: string) {
   })
 }
 
+export function usePeopleLookup(text: string) {
+  const q = text.trim()
+  return useQuery({
+    queryKey: ['people', q],
+    queryFn: () => unwrap(api.GET('/people/lookup', { params: { query: { q, limit: 3 } } })),
+    enabled: q.length >= 2,
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useMarketOpportunities(titleId: string) {
+  return useQuery({
+    queryKey: ['markets', titleId],
+    queryFn: () =>
+      unwrap(api.GET('/decisions/markets', { params: { query: { title_id: titleId } } })),
+    enabled: titleId !== '',
+  })
+}
+
 export function useMovieLookup(text: string) {
   return useQuery({
     queryKey: ['lookup', text],
