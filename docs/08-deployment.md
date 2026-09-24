@@ -73,6 +73,21 @@ Server resources: at least 4 GB RAM (the container uses about 1 GB idle, more un
 model runs) and about 6 GB of disk for the image. The first build takes 15 to 30 minutes because it
 embeds the catalog on CPU; later builds reuse the cached layers unless dependencies or data change.
 
+## New deploys and open tabs
+
+Every build gives the page files new hashed names and removes the old ones. A tab opened before a
+deploy still holds the old `index.html`, so opening a page it has not loaded yet asks for a file
+that no longer exists.
+
+- `index.html` (and every route that serves it) is sent with `Cache-Control: no-cache`, so a
+  reload always gets the current build. Hashed files under `/assets/` are sent with
+  `Cache-Control: public, max-age=31536000, immutable`.
+- When a page file fails to load, the app reloads itself once to pick up the new build. A marker in
+  `sessionStorage` (cleared after 30 seconds) stops it from reloading in a loop if the server is
+  really down.
+- Dokploy stops the old container once the new one is running. Requests in that window may get a
+  404 from Traefik; enabling Dokploy's health check on `/api/v1/health` shortens it.
+
 ## Rate limits
 
 Two layers, both in memory in the single uvicorn worker (counters reset on restart):

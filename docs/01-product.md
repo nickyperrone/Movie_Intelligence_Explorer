@@ -59,6 +59,17 @@ Question: what is this title and how has it performed?
 - Insight: key facts and a generated summary.
 - Similar titles.
 - "Assess a deal" opens Decision Studio with this title selected.
+- "Compare" opens the comparison with this title in the first column.
+
+### Compare — `/compare?titles=...`
+
+Question: how do these titles perform against each other?
+
+- Up to 3 titles side by side, one column each, with the same rows in the same order so every
+  figure lines up with its counterpart.
+- One chart with a line per title, by calendar month or by months since each title's first month
+  of data (titles released at different times start together).
+- Country and platform filters apply to every title at once.
 
 ### 5. Decision Studio — `/decide`
 
@@ -103,6 +114,7 @@ your own question (the chat).
 | 17 | acquisitions | see which genres are gaining streams per title | I know what to look for |
 | 13 | analyst | ask a question in plain language and see the query behind the answer | I can trust or check the number |
 | 14 | analyst | be told clearly when the data cannot answer | I do not act on an invented number |
+| 18 | analyst | compare up to 3 titles side by side | I see which one performs better, and where |
 | 11 | any user | share the URL of what I am looking at | a colleague sees the same view |
 | 12 | any user | use the app when the LLM is unavailable | the core features still work |
 

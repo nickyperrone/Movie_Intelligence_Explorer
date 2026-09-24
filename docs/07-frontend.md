@@ -12,6 +12,7 @@ Recharts. All UI copy in English.
 | `/discover/:collectionId` | `CollectionPage` | `sort` (`rank` \| `title` \| `genres` \| `metric`), `dir` (`asc` \| `desc`) |
 | `/search` | `SearchPage` | `q`, `interpret`, `genres`, `year_min`, `year_max`, `countries`, `platforms`, `people` |
 | `/movies/:titleId` | `MoviePage` | `countries`, `platforms`, `metric` |
+| `/compare` | `ComparePage` | `titles` (1 to 3 title ids, comma-separated, in column order), `countries`, `platforms`, `metric`, `align` (`calendar` \| `launch`) |
 | `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `markets` \| `genres` \| `concepts` \| `ask`), `title`, `platform`, `country` |
 | `*` | `NotFoundPage` | — |
 
@@ -135,7 +136,8 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 
 1. `MovieHeader`: poster (fallback when missing or broken), title, year, runtime, genres, rating and
    votes, directors, principal cast, plot, IMDb link, "Show full cast" toggle, "Assess a deal"
-   button → `/decide?tab=licensing&title=...`.
+   button → `/decide?tab=licensing&title=...`, and a "Compare" button → `/compare?titles=...` with
+   this title first.
 2. `PerformanceSection`: metric toggle, country and platform multi-selects (options from the
    response), totals, `PerformanceChart` (line over months), `BreakdownBars` by country and by
    platform. Coverage note for the four countries and platforms.
@@ -143,6 +145,30 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
    label, and the list of countries where the movie is available.
 4. `InsightPanel`: facts as a definition list, generated summary below it with its label.
 5. `SimilarMovies`: horizontal row of `MovieCard`s.
+
+### Compare
+
+A split screen of up to 3 titles. It uses the existing movie endpoints (metadata, availability,
+performance) once per title; no new endpoint.
+
+1. Header: "Compare titles" and the shared filters: metric toggle (streams, viewing hours), country
+   and platform multi-selects (dataset C values), and an alignment toggle: "Calendar" or "From
+   launch" (month 1 is each title's first month with consumption).
+2. Columns: one per title, equal width. With fewer than 3 titles, the next column is an "Add a
+   title" slot with the title picker (a title already on screen cannot be added twice). Each column
+   has a remove button; removing the last title leaves the empty slot.
+3. Rows, identical in every column so values line up: poster (2:3) with title, year and genres;
+   rating and votes; runtime; directors; total streams and viewing hours for the filtered scope;
+   months with consumption; peak month; top country and top platform with their share;
+   availability (number of countries, platform logos). In each numeric row the highest value
+   carries a small "Top" mark when 2 or more titles are shown.
+4. Chart: one line per title in the column's color (pink, white, sky blue), a legend with the titles,
+   and a tooltip with every title's value for the month.
+5. Phones: columns become a horizontal swipe, one and a bit columns per view, so the next title
+   peeks in; the chart stays full width above them.
+6. States: skeleton per column while loading; a column whose title does not exist shows "Title not
+   found" with the remove button; a title with no consumption shows "No consumption in these
+   filters" in the performance rows and no line.
 
 ### Decision Studio
 
