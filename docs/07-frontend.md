@@ -281,7 +281,7 @@ name, same size, grid of 2 to 6 columns). A tile opens the dashboard filtered by
 
 ## Search examples
 
-The examples come from a fixed list of 12, always in English (search still accepts Spanish and
+The examples come from a fixed list of 15, always in English, and each one returns relevant results (search still accepts Spanish and
 Portuguese). Each time the Search page opens (and on each app load for the search box), they come
 in a new random order, and the first one is never the one shown first the previous time.
 
