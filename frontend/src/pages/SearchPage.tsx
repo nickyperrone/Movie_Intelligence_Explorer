@@ -5,7 +5,7 @@ import { useFilterOptions, useSearch, type SearchQuery } from '@/api/queries'
 import { MovieCard, MovieCardSkeleton } from '@/components/common/MovieCard'
 import { EmptyState, ErrorState } from '@/components/common/States'
 import { SearchFilterBar } from '@/components/search/SearchFilterBar'
-import { examplesAt, useRotation } from '@/lib/examples'
+import { useExamples } from '@/lib/examples'
 import { useUrlState } from '@/lib/url-state'
 
 const INTERPRETATION_NOTES: Partial<Record<Schemas['LlmStatus'], string>> = {
@@ -15,15 +15,15 @@ const INTERPRETATION_NOTES: Partial<Record<Schemas['LlmStatus'], string>> = {
 
 function ExampleLinks() {
   const [paused, setPaused] = useState(false)
-  const index = useRotation(paused)
+  const { examples, tick } = useExamples(4, paused)
   return (
     <div
-      key={index}
+      key={tick}
       className="appear flex flex-wrap justify-center gap-2 sm:justify-start"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {examplesAt(index, 4).map((query) => (
+      {examples.map((query) => (
         <Link
           key={query}
           to={`/search?q=${encodeURIComponent(query)}`}

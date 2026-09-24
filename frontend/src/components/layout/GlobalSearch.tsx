@@ -6,7 +6,7 @@ import { useMovieLookup, usePeopleLookup, useSearchSuggestions } from '@/api/que
 import { Poster } from '@/components/common/Poster'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
-import { examplesAt, useRotation } from '@/lib/examples'
+import { useExamples } from '@/lib/examples'
 
 const SUGGESTION_DELAY_MS = 250
 
@@ -39,7 +39,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
     setText(urlQuery)
   }
 
-  const example = examplesAt(useRotation(text !== '' || open), 1)[0]
+  const [example] = useExamples(1, text !== '' || open).examples
   const debounced = useDebounced(text.trim(), SUGGESTION_DELAY_MS)
   const titles = useMovieLookup(debounced.length >= 2 ? debounced : '')
   const meaning = useSearchSuggestions(debounced)

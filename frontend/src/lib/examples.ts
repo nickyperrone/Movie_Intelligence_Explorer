@@ -6,10 +6,10 @@ export const EXAMPLE_QUERIES = [
   'animated adventures',
   'movies about artificial intelligence',
   'heist movies with a crew of thieves',
-  'películas de terror sobre casas embrujadas',
+  'horror movies about haunted houses',
   'true crime documentaries',
   'space exploration and astronauts',
-  'documentales sobre música',
+  'music documentaries',
   'romantic comedies at Christmas',
   'sports underdog stories',
   'Ryan Gosling',
@@ -17,20 +17,36 @@ export const EXAMPLE_QUERIES = [
 
 const ROTATION_MS = 4000
 
-// Advances an index every few seconds; stays still while paused or with reduced motion.
-export function useRotation(paused: boolean): number {
-  const [index, setIndex] = useState(0)
-  useEffect(() => {
-    if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const timer = setInterval(() => setIndex((current) => current + 1), ROTATION_MS)
-    return () => clearInterval(timer)
-  }, [paused])
-  return index
+// Keyed by how many examples a caller shows, so the Search page and the search box do not reset
+// each other's memory.
+const lastFirst = new Map<number, string>()
+
+// A new order on every mount, so opening Search again shows different examples.
+function shuffledExamples(count: number): string[] {
+  const order = [...EXAMPLE_QUERIES]
+  do {
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[order[i], order[j]] = [order[j], order[i]]
+    }
+  } while (order[0] === lastFirst.get(count))
+  return order
 }
 
-export function examplesAt(index: number, count: number): string[] {
-  return Array.from(
-    { length: count },
-    (_, i) => EXAMPLE_QUERIES[(index * count + i) % EXAMPLE_QUERIES.length],
-  )
+// Returns `count` examples that advance every few seconds; they stay still while paused or with
+// reduced motion. `tick` changes with each step, for keying a fade.
+export function useExamples(count: number, paused: boolean): { examples: string[]; tick: number } {
+  const [order] = useState(() => shuffledExamples(count))
+  // Remembered once shown: in development React builds the initial state twice and keeps one.
+  useEffect(() => {
+    lastFirst.set(count, order[0])
+  }, [count, order])
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const timer = setInterval(() => setTick((current) => current + 1), ROTATION_MS)
+    return () => clearInterval(timer)
+  }, [paused])
+  const examples = Array.from({ length: count }, (_, i) => order[(tick * count + i) % order.length])
+  return { examples, tick }
 }
