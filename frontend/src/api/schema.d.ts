@@ -4,1475 +4,1486 @@
  */
 
 export interface paths {
-  '/health': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Service status */
-    get: operations['getHealth']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/filters': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Vocabularies for every filter control */
-    get: operations['getFilterOptions']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/search': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Semantic search with optional structured filters
-     * @description 1. If `interpret=true`, the LLM parses `q` into a semantic query and proposed filters.
-     *     2. Explicit filter parameters override proposed filters, field by field.
-     *     3. Filters restrict the candidates (SQL); embeddings rank them (cosine similarity).
-     *     4. Results below the relevance threshold are dropped.
-     *     To apply edited filters without the LLM, send `q=<semantic_query>`, the filters and
-     *     `interpret=false`.
-     */
-    get: operations['searchMovies']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/movies/lookup': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Find movies by title text (for pickers)
-     * @description Case-insensitive substring match on the title; prefix matches first, then by vote count.
-     */
-    get: operations['lookupMovies']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/movies/{title_id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Movie metadata (dataset A) */
-    get: operations['getMovie']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/movies/{title_id}/availability': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Streaming availability from the dataset B snapshot
-     * @description A movie without availability rows returns 200 with empty lists.
-     */
-    get: operations['getMovieAvailability']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/movies/{title_id}/performance': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Monthly consumption from dataset C
-     * @description - `series`: monthly sums over the filtered rows, gap-filled with zeros between the first and
-     *       last month present.
-     *     - `by_country` applies only the platform filter; `by_platform` applies only the country filter.
-     *     - Filter values come from dataset C (`options`).
-     *     - No matching rows: 200 with `period: null`, empty `series` and zero totals.
-     */
-    get: operations['getMoviePerformance']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/movies/{title_id}/similar': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Nearest movies by embedding, excluding the movie itself */
-    get: operations['getSimilarMovies']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/movies/{title_id}/insight': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Performance facts and a generated summary */
-    get: operations['getMovieInsight']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/dashboard/summary': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** KPIs for the filters, compared with the previous period */
-    get: operations['getDashboardSummary']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/dashboard/trend': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Monthly streams and viewing hours */
-    get: operations['getDashboardTrend']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/dashboard/breakdown': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Totals, shares and streams per title by one dimension */
-    get: operations['getDashboardBreakdown']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/dashboard/matrix': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Platform × country streams per title */
-    get: operations['getDashboardMatrix']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/dashboard/titles': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Ranked titles for the filters */
-    get: operations['getDashboardTitles']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/dashboard/changes': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Movers and share shifts vs the previous period, with a generated summary */
-    get: operations['getDashboardChanges']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/collections': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** All shelves with a four-poster preview */
-    get: operations['listCollections']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/collections/{collection_id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Full ranked shelf (at most 30 movies) */
-    get: operations['getCollection']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/decisions/licensing': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Evidence for licensing a title to a platform in a country */
-    get: operations['getLicensingAssessment']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/decisions/licensing/memo': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Generated memo for a licensing assessment */
-    get: operations['getLicensingMemo']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/decisions/concepts': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Demand evidence for 1 to 3 project loglines
-     * @description Side-effect free. POST because loglines are long free text.
-     */
-    post: operations['evaluateConcepts']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/decisions/concepts/memo': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Generated memo comparing the concepts */
-    post: operations['getConceptsMemo']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/assistant/answer': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Answer a question about the datasets, with the evidence used
-     * @description Stateless: the client sends the conversation. The model can only use read-only SQL over the
-     *     datasets and semantic search. Answers that cannot be checked against tool results are not
-     *     returned (status `failed`). See docs/06-llm.md.
-     */
-    post: operations['askAssistant']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Service status */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Vocabularies for every filter control */
+        get: operations["getFilterOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Semantic search with optional structured filters
+         * @description 1. If `interpret=true`, the LLM parses `q` into a semantic query and proposed filters.
+         *     2. Explicit filter parameters override proposed filters, field by field.
+         *     3. Filters restrict the candidates (SQL); embeddings rank them (cosine similarity).
+         *     4. Results below the relevance threshold are dropped.
+         *     To apply edited filters without the LLM, send `q=<semantic_query>`, the filters and
+         *     `interpret=false`.
+         */
+        get: operations["searchMovies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find movies by title text (for pickers)
+         * @description Case-insensitive substring match on the title; prefix matches first, then by vote count.
+         */
+        get: operations["lookupMovies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/{title_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movie metadata (dataset A) */
+        get: operations["getMovie"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/{title_id}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Streaming availability from the dataset B snapshot
+         * @description A movie without availability rows returns 200 with empty lists.
+         */
+        get: operations["getMovieAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/{title_id}/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Monthly consumption from dataset C
+         * @description - `series`: monthly sums over the filtered rows, gap-filled with zeros between the first and
+         *       last month present.
+         *     - `by_country` applies only the platform filter; `by_platform` applies only the country filter.
+         *     - Filter values come from dataset C (`options`).
+         *     - No matching rows: 200 with `period: null`, empty `series` and zero totals.
+         */
+        get: operations["getMoviePerformance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/{title_id}/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Nearest movies by embedding, excluding the movie itself */
+        get: operations["getSimilarMovies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/{title_id}/insight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Performance facts and a generated summary */
+        get: operations["getMovieInsight"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** KPIs for the filters, compared with the previous period */
+        get: operations["getDashboardSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Monthly streams and viewing hours, optionally one series per platform or country
+         * @description `series` is always the total. With `group_by`, `groups` has one gap-filled series per value
+         *     of the dimension (within the active filters); without it, `groups` is empty.
+         *     Added in 1.1.0.
+         */
+        get: operations["getDashboardTrend"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/breakdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Totals, shares and streams per title by one dimension */
+        get: operations["getDashboardBreakdown"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform × country streams per title */
+        get: operations["getDashboardMatrix"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/titles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ranked titles for the filters */
+        get: operations["getDashboardTitles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movers and share shifts vs the previous period, with a generated summary */
+        get: operations["getDashboardChanges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All shelves with a four-poster preview */
+        get: operations["listCollections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/collections/{collection_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Full ranked shelf (at most 30 movies) */
+        get: operations["getCollection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/licensing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evidence for licensing a title to a platform in a country */
+        get: operations["getLicensingAssessment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/licensing/memo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Generated memo for a licensing assessment */
+        get: operations["getLicensingMemo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/concepts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demand evidence for 1 to 3 project loglines
+         * @description Side-effect free. POST because loglines are long free text.
+         */
+        post: operations["evaluateConcepts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/concepts/memo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generated memo comparing the concepts */
+        post: operations["getConceptsMemo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assistant/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer a question about the datasets, with the evidence used
+         * @description Stateless: the client sends the conversation. The model can only use read-only SQL over the
+         *     datasets and semantic search. Answers that cannot be checked against tool results are not
+         *     returned (status `failed`). See docs/06-llm.md.
+         */
+        post: operations["askAssistant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    Error: {
-      error: components['schemas']['ErrorBody']
-    }
-    ErrorBody: {
-      /** @enum {string} */
-      code: 'not_found' | 'validation_error' | 'method_not_allowed' | 'internal_error'
-      message: string
-    }
-    /** @example 2025-03 */
-    Month: string
-    MonthRange: {
-      start: components['schemas']['Month']
-      end: components['schemas']['Month']
-    }
-    /** @enum {string} */
-    LlmStatus: 'ok' | 'skipped' | 'disabled' | 'failed' | 'insufficient_evidence'
-    Health: {
-      /** @enum {string} */
-      status: 'ok'
-      api_version: string
-      llm_enabled: boolean
-    }
-    ThemeOption: {
-      theme_id: string
-      name: string
-    }
-    VocabularyPair: {
-      countries: string[]
-      platforms: string[]
-    }
-    YearRange: {
-      min: number
-      max: number
-    }
-    FilterOptions: {
-      /** @description Every genre in dataset A */
-      genres: string[]
-      primary_genres: string[]
-      year_range: components['schemas']['YearRange']
-      availability: components['schemas']['VocabularyPair']
-      consumption: components['schemas']['VocabularyPair']
-      consumption_months: components['schemas']['MonthRange']
-      distributors: string[]
-      themes: components['schemas']['ThemeOption'][]
-    }
-    MovieSummary: {
-      title_id: string
-      title: string
-      year: number
-      runtime_minutes: number | null
-      primary_genre: string | null
-      genres: string[]
-      rating: number | null
-      vote_count: number | null
-      image_url: string | null
-    }
-    MovieDetail: {
-      title_id: string
-      title: string
-      year: number
-      runtime_minutes: number | null
-      primary_genre: string | null
-      genres: string[]
-      rating: number | null
-      vote_count: number | null
-      image_url: string | null
-      plot_summary: string | null
-      directors: string[]
-      principal_cast: string[]
-      cast: string[]
-      title_url: string | null
-      theme: components['schemas']['ThemeOption'] | null
-    }
-    MovieList: {
-      results: components['schemas']['MovieSummary'][]
-    }
-    ScoredMovie: {
-      movie: components['schemas']['MovieSummary']
-      /** @description Cosine similarity rounded to 4 decimals */
-      score: number
-    }
-    ScoredMovieList: {
-      results: components['schemas']['ScoredMovie'][]
-    }
-    SearchFilters: {
-      genres: string[]
-      year_min: number | null
-      year_max: number | null
-      countries: string[]
-      platforms: string[]
-      people: string[]
-    }
-    Interpretation: {
-      status: components['schemas']['LlmStatus']
-      semantic_query: string | null
-      proposed_filters: components['schemas']['SearchFilters'] | null
-    }
-    SearchResponse: {
-      query: string
-      /** @description The text that was embedded */
-      semantic_query: string
-      interpretation: components['schemas']['Interpretation']
-      applied_filters: components['schemas']['SearchFilters']
-      results: components['schemas']['ScoredMovie'][]
-    }
-    PlatformOffer: {
-      platform: string
-      /** @enum {string} */
-      platform_type: 'SVOD' | 'AVOD'
-      original_flag: string | null
-      is_original: boolean
-      countries: string[]
-    }
-    Availability: {
-      title_id: string
-      snapshot_month: components['schemas']['Month'] | null
-      countries: string[]
-      offers: components['schemas']['PlatformOffer'][]
-    }
-    MetricTotals: {
-      streams: number
-      viewing_hours: number
-    }
-    MonthlyPoint: {
-      month: components['schemas']['Month']
-      streams: number
-      viewing_hours: number
-    }
-    ShareItem: {
-      key: string
-      streams: number
-      viewing_hours: number
-      share_of_streams: number
-    }
-    ConsumptionFilters: {
-      countries: string[]
-      platforms: string[]
-    }
-    Performance: {
-      title_id: string
-      applied_filters: components['schemas']['ConsumptionFilters']
-      options: components['schemas']['ConsumptionFilters']
-      period: components['schemas']['MonthRange'] | null
-      totals: components['schemas']['MetricTotals']
-      series: components['schemas']['MonthlyPoint'][]
-      by_country: components['schemas']['ShareItem'][]
-      by_platform: components['schemas']['ShareItem'][]
-    }
-    Narrative: {
-      status: components['schemas']['LlmStatus']
-      text: string | null
-    }
-    InsightFacts: {
-      total_streams: number
-      viewing_hours: number
-      months_with_data: number
-      first_month: components['schemas']['Month'] | null
-      last_month: components['schemas']['Month'] | null
-      peak_month: components['schemas']['Month'] | null
-      peak_streams: number | null
-      top_country: string | null
-      top_country_share: number | null
-      top_platform: string | null
-      top_platform_share: number | null
-      engagement: number | null
-    }
-    Insight: {
-      title_id: string
-      facts: components['schemas']['InsightFacts']
-      narrative: components['schemas']['Narrative']
-    }
-    DashboardFilters: {
-      start: components['schemas']['Month']
-      end: components['schemas']['Month']
-      countries: string[]
-      platforms: string[]
-      genres: string[]
-      distributors: string[]
-    }
-    Kpi: {
-      value: number | null
-      previous: number | null
-      /** @description Relative change, for counts */
-      change_pct: number | null
-      /** @description Change in percentage points, for ratios */
-      change_pp: number | null
-    }
-    DashboardSummary: {
-      filters: components['schemas']['DashboardFilters']
-      previous_period: components['schemas']['MonthRange'] | null
-      streams: components['schemas']['Kpi']
-      viewing_hours: components['schemas']['Kpi']
-      titles_with_consumption: components['schemas']['Kpi']
-      engagement: components['schemas']['Kpi']
-    }
-    DashboardTrend: {
-      filters: components['schemas']['DashboardFilters']
-      series: components['schemas']['MonthlyPoint'][]
-    }
-    /** @enum {string} */
-    BreakdownDimension: 'platform' | 'country' | 'primary_genre' | 'theme' | 'release_year'
-    BreakdownItem: {
-      key: string
-      label: string
-      streams: number
-      viewing_hours: number
-      titles: number
-      streams_per_title: number | null
-      share_of_streams: number
-    }
-    DashboardBreakdown: {
-      filters: components['schemas']['DashboardFilters']
-      dimension: components['schemas']['BreakdownDimension']
-      items: components['schemas']['BreakdownItem'][]
-    }
-    MatrixCell: {
-      platform: string
-      country: string
-      streams: number
-      titles: number
-      streams_per_title: number | null
-    }
-    DashboardMatrix: {
-      filters: components['schemas']['DashboardFilters']
-      platforms: string[]
-      countries: string[]
-      cells: components['schemas']['MatrixCell'][]
-    }
-    /**
-     * @default streams
-     * @enum {string}
-     */
-    TitleSort: 'streams' | 'viewing_hours' | 'engagement' | 'growth'
-    RankedTitle: {
-      rank: number
-      movie: components['schemas']['MovieSummary']
-      streams: number
-      viewing_hours: number
-      engagement: number | null
-      growth_pct: number | null
-    }
-    DashboardTitles: {
-      filters: components['schemas']['DashboardFilters']
-      sort: components['schemas']['TitleSort']
-      total: number
-      offset: number
-      limit: number
-      items: components['schemas']['RankedTitle'][]
-    }
-    Mover: {
-      movie: components['schemas']['MovieSummary']
-      streams: number
-      previous_streams: number
-      change: number
-    }
-    ShareShift: {
-      /** @enum {string} */
-      dimension: 'platform' | 'country'
-      key: string
-      share: number
-      previous_share: number
-      change_pp: number
-    }
-    DashboardChanges: {
-      filters: components['schemas']['DashboardFilters']
-      previous_period: components['schemas']['MonthRange'] | null
-      gainers: components['schemas']['Mover'][]
-      decliners: components['schemas']['Mover'][]
-      share_shifts: components['schemas']['ShareShift'][]
-      narrative: components['schemas']['Narrative']
-    }
-    /** @enum {string} */
-    CollectionSection: 'country' | 'now' | 'platform' | 'theme'
-    CollectionSummary: {
-      collection_id: string
-      title: string
-      description: string
-      section: components['schemas']['CollectionSection']
-      metric_label: string
-      preview: components['schemas']['MovieSummary'][]
-    }
-    CollectionList: {
-      collections: components['schemas']['CollectionSummary'][]
-    }
-    CollectionItem: {
-      rank: number
-      movie: components['schemas']['MovieSummary']
-      metric_value: number | null
-    }
-    Collection: {
-      collection_id: string
-      title: string
-      description: string
-      section: components['schemas']['CollectionSection']
-      metric_label: string
-      items: components['schemas']['CollectionItem'][]
-    }
-    /** @enum {string} */
-    DemandSignal: 'strong' | 'moderate' | 'weak' | 'insufficient_evidence'
-    Comparable: {
-      movie: components['schemas']['MovieSummary']
-      similarity: number
-      /** @description Null when the movie never streamed on the target platform and country */
-      first_six_month_streams: number | null
-      /** @description True when the full 6-month window is observed */
-      eligible: boolean
-    }
-    ExpectedRange: {
-      /** @enum {string} */
-      status: 'ok' | 'insufficient_evidence'
-      p25: number | null
-      median: number | null
-      p75: number | null
-      benchmark: number | null
-      eligible_count: number
-    }
-    PlatformFitItem: {
-      platform: string
-      titles: number
-      streams_per_title: number | null
-    }
-    WhitespaceItem: {
-      country: string
-      comparables_with_streams: number
-    }
-    LicensingTarget: {
-      platform: string
-      country: string
-    }
-    LicensingAssessment: {
-      movie: components['schemas']['MovieSummary']
-      target: components['schemas']['LicensingTarget']
-      already_on_target: boolean
-      title_totals: components['schemas']['MetricTotals']
-      availability_countries: string[]
-      comparables: components['schemas']['Comparable'][]
-      expected_range: components['schemas']['ExpectedRange']
-      signal: components['schemas']['DemandSignal']
-      platform_fit: components['schemas']['PlatformFitItem'][]
-      whitespace: components['schemas']['WhitespaceItem'][]
-    }
-    LicensingMemo: {
-      status: components['schemas']['LlmStatus']
-      signal: components['schemas']['DemandSignal']
-      headline: string | null
-      evidence: string[]
-      risks: string[]
-      caveats: string[]
-    }
-    ConceptsRequest: {
-      loglines: string[]
-    }
-    ConceptResult: {
-      /** @description Position in the request */
-      index: number
-      logline: string
-      rank: number
-      demand_index: number | null
-      eligible_count: number
-      saturation: number
-      comparables: components['schemas']['ScoredMovie'][]
-      demand_by_country: components['schemas']['ShareItem'][]
-    }
-    ConceptsEvaluation: {
-      concepts: components['schemas']['ConceptResult'][]
-    }
-    ConceptsMemo: {
-      status: components['schemas']['LlmStatus']
-      summary: string | null
-      per_concept: string[]
-      caveats: string[]
-    }
-    ChatMessage: {
-      /** @enum {string} */
-      role: 'user' | 'assistant'
-      content: string
-    }
-    AssistantRequest: {
-      messages: components['schemas']['ChatMessage'][]
-    }
-    /** @enum {string} */
-    AssistantStatus: 'answered' | 'no_data' | 'out_of_scope' | 'disabled' | 'failed'
-    Evidence: {
-      /** @enum {string} */
-      tool: 'run_sql' | 'search_movies'
-      purpose: string
-      sql: string | null
-      columns: string[]
-      rows: (string | number | boolean | null)[][]
-      row_count: number
-      error: string | null
-    }
-    AssistantReply: {
-      status: components['schemas']['AssistantStatus']
-      answer: string | null
-      evidence: components['schemas']['Evidence'][]
-    }
-  }
-  responses: {
-    /** @description Unknown resource */
-    NotFound: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
+    schemas: {
+        Error: {
+            error: components["schemas"]["ErrorBody"];
+        };
+        ErrorBody: {
+            /** @enum {string} */
+            code: "not_found" | "validation_error" | "method_not_allowed" | "internal_error";
+            message: string;
+        };
+        /** @example 2025-03 */
+        Month: string;
+        MonthRange: {
+            start: components["schemas"]["Month"];
+            end: components["schemas"]["Month"];
+        };
+        /** @enum {string} */
+        LlmStatus: "ok" | "skipped" | "disabled" | "failed" | "insufficient_evidence";
+        Health: {
+            /** @enum {string} */
+            status: "ok";
+            api_version: string;
+            llm_enabled: boolean;
+        };
+        ThemeOption: {
+            theme_id: string;
+            name: string;
+        };
+        VocabularyPair: {
+            countries: string[];
+            platforms: string[];
+        };
+        YearRange: {
+            min: number;
+            max: number;
+        };
+        FilterOptions: {
+            /** @description Every genre in dataset A */
+            genres: string[];
+            primary_genres: string[];
+            year_range: components["schemas"]["YearRange"];
+            availability: components["schemas"]["VocabularyPair"];
+            consumption: components["schemas"]["VocabularyPair"];
+            consumption_months: components["schemas"]["MonthRange"];
+            distributors: string[];
+            themes: components["schemas"]["ThemeOption"][];
+        };
+        MovieSummary: {
+            title_id: string;
+            title: string;
+            year: number;
+            runtime_minutes: number | null;
+            primary_genre: string | null;
+            genres: string[];
+            rating: number | null;
+            vote_count: number | null;
+            image_url: string | null;
+        };
+        MovieDetail: {
+            title_id: string;
+            title: string;
+            year: number;
+            runtime_minutes: number | null;
+            primary_genre: string | null;
+            genres: string[];
+            rating: number | null;
+            vote_count: number | null;
+            image_url: string | null;
+            plot_summary: string | null;
+            directors: string[];
+            principal_cast: string[];
+            cast: string[];
+            title_url: string | null;
+            theme: components["schemas"]["ThemeOption"] | null;
+        };
+        MovieList: {
+            results: components["schemas"]["MovieSummary"][];
+        };
+        ScoredMovie: {
+            movie: components["schemas"]["MovieSummary"];
+            /** @description Cosine similarity rounded to 4 decimals */
+            score: number;
+        };
+        ScoredMovieList: {
+            results: components["schemas"]["ScoredMovie"][];
+        };
+        SearchFilters: {
+            genres: string[];
+            year_min: number | null;
+            year_max: number | null;
+            countries: string[];
+            platforms: string[];
+            people: string[];
+        };
+        Interpretation: {
+            status: components["schemas"]["LlmStatus"];
+            semantic_query: string | null;
+            proposed_filters: components["schemas"]["SearchFilters"] | null;
+        };
+        SearchResponse: {
+            query: string;
+            /** @description The text that was embedded */
+            semantic_query: string;
+            interpretation: components["schemas"]["Interpretation"];
+            applied_filters: components["schemas"]["SearchFilters"];
+            results: components["schemas"]["ScoredMovie"][];
+        };
+        PlatformOffer: {
+            platform: string;
+            /** @enum {string} */
+            platform_type: "SVOD" | "AVOD";
+            original_flag: string | null;
+            is_original: boolean;
+            countries: string[];
+        };
+        Availability: {
+            title_id: string;
+            snapshot_month: components["schemas"]["Month"] | null;
+            countries: string[];
+            offers: components["schemas"]["PlatformOffer"][];
+        };
+        MetricTotals: {
+            streams: number;
+            viewing_hours: number;
+        };
+        MonthlyPoint: {
+            month: components["schemas"]["Month"];
+            streams: number;
+            viewing_hours: number;
+        };
+        ShareItem: {
+            key: string;
+            streams: number;
+            viewing_hours: number;
+            share_of_streams: number;
+        };
+        ConsumptionFilters: {
+            countries: string[];
+            platforms: string[];
+        };
+        Performance: {
+            title_id: string;
+            applied_filters: components["schemas"]["ConsumptionFilters"];
+            options: components["schemas"]["ConsumptionFilters"];
+            period: components["schemas"]["MonthRange"] | null;
+            totals: components["schemas"]["MetricTotals"];
+            series: components["schemas"]["MonthlyPoint"][];
+            by_country: components["schemas"]["ShareItem"][];
+            by_platform: components["schemas"]["ShareItem"][];
+        };
+        Narrative: {
+            status: components["schemas"]["LlmStatus"];
+            text: string | null;
+        };
+        InsightFacts: {
+            total_streams: number;
+            viewing_hours: number;
+            months_with_data: number;
+            first_month: components["schemas"]["Month"] | null;
+            last_month: components["schemas"]["Month"] | null;
+            peak_month: components["schemas"]["Month"] | null;
+            peak_streams: number | null;
+            top_country: string | null;
+            top_country_share: number | null;
+            top_platform: string | null;
+            top_platform_share: number | null;
+            engagement: number | null;
+        };
+        Insight: {
+            title_id: string;
+            facts: components["schemas"]["InsightFacts"];
+            narrative: components["schemas"]["Narrative"];
+        };
+        DashboardFilters: {
+            start: components["schemas"]["Month"];
+            end: components["schemas"]["Month"];
+            countries: string[];
+            platforms: string[];
+            genres: string[];
+            distributors: string[];
+        };
+        Kpi: {
+            value: number | null;
+            previous: number | null;
+            /** @description Relative change, for counts */
+            change_pct: number | null;
+            /** @description Change in percentage points, for ratios */
+            change_pp: number | null;
+        };
+        DashboardSummary: {
+            filters: components["schemas"]["DashboardFilters"];
+            previous_period: components["schemas"]["MonthRange"] | null;
+            streams: components["schemas"]["Kpi"];
+            viewing_hours: components["schemas"]["Kpi"];
+            titles_with_consumption: components["schemas"]["Kpi"];
+            engagement: components["schemas"]["Kpi"];
+        };
+        DashboardTrend: {
+            filters: components["schemas"]["DashboardFilters"];
+            series: components["schemas"]["MonthlyPoint"][];
+            groups: components["schemas"]["TrendGroup"][];
+        };
+        TrendGroup: {
+            key: string;
+            series: components["schemas"]["MonthlyPoint"][];
+        };
+        /** @enum {string} */
+        BreakdownDimension: "platform" | "country" | "primary_genre" | "theme" | "release_year";
+        BreakdownItem: {
+            key: string;
+            label: string;
+            streams: number;
+            viewing_hours: number;
+            titles: number;
+            streams_per_title: number | null;
+            share_of_streams: number;
+        };
+        DashboardBreakdown: {
+            filters: components["schemas"]["DashboardFilters"];
+            dimension: components["schemas"]["BreakdownDimension"];
+            items: components["schemas"]["BreakdownItem"][];
+        };
+        MatrixCell: {
+            platform: string;
+            country: string;
+            streams: number;
+            titles: number;
+            streams_per_title: number | null;
+        };
+        DashboardMatrix: {
+            filters: components["schemas"]["DashboardFilters"];
+            platforms: string[];
+            countries: string[];
+            cells: components["schemas"]["MatrixCell"][];
+        };
         /**
-         * @example {
-         *       "error": {
-         *         "code": "not_found",
-         *         "message": "Movie tt0000000 not found"
-         *       }
-         *     }
+         * @default streams
+         * @enum {string}
          */
-        'application/json': components['schemas']['Error']
-      }
-    }
-    /** @description Invalid parameters or body */
-    ValidationError: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        /**
-         * @example {
-         *       "error": {
-         *         "code": "validation_error",
-         *         "message": "q: String should have at least 2 characters"
-         *       }
-         *     }
-         */
-        'application/json': components['schemas']['Error']
-      }
-    }
-  }
-  parameters: {
-    TitleId: string
-    /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-    Start: components['schemas']['Month']
-    /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-    End: components['schemas']['Month']
-    /** @description Consumption countries (dataset C). Any listed value matches. */
-    ConsumptionCountries: string[]
-    /** @description Consumption platforms (dataset C). Any listed value matches. */
-    ConsumptionPlatforms: string[]
-    /** @description Primary genres. Any listed value matches. */
-    PrimaryGenres: string[]
-    /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-    Distributors: string[]
-  }
-  requestBodies: never
-  headers: never
-  pathItems: never
+        TitleSort: "streams" | "viewing_hours" | "engagement" | "growth";
+        RankedTitle: {
+            rank: number;
+            movie: components["schemas"]["MovieSummary"];
+            streams: number;
+            viewing_hours: number;
+            engagement: number | null;
+            growth_pct: number | null;
+        };
+        DashboardTitles: {
+            filters: components["schemas"]["DashboardFilters"];
+            sort: components["schemas"]["TitleSort"];
+            total: number;
+            offset: number;
+            limit: number;
+            items: components["schemas"]["RankedTitle"][];
+        };
+        Mover: {
+            movie: components["schemas"]["MovieSummary"];
+            streams: number;
+            previous_streams: number;
+            change: number;
+        };
+        ShareShift: {
+            /** @enum {string} */
+            dimension: "platform" | "country";
+            key: string;
+            share: number;
+            previous_share: number;
+            change_pp: number;
+        };
+        DashboardChanges: {
+            filters: components["schemas"]["DashboardFilters"];
+            previous_period: components["schemas"]["MonthRange"] | null;
+            gainers: components["schemas"]["Mover"][];
+            decliners: components["schemas"]["Mover"][];
+            share_shifts: components["schemas"]["ShareShift"][];
+            narrative: components["schemas"]["Narrative"];
+        };
+        /** @enum {string} */
+        CollectionSection: "country" | "now" | "platform" | "theme";
+        CollectionSummary: {
+            collection_id: string;
+            title: string;
+            description: string;
+            section: components["schemas"]["CollectionSection"];
+            metric_label: string;
+            preview: components["schemas"]["MovieSummary"][];
+        };
+        CollectionList: {
+            collections: components["schemas"]["CollectionSummary"][];
+        };
+        CollectionItem: {
+            rank: number;
+            movie: components["schemas"]["MovieSummary"];
+            metric_value: number | null;
+        };
+        Collection: {
+            collection_id: string;
+            title: string;
+            description: string;
+            section: components["schemas"]["CollectionSection"];
+            metric_label: string;
+            items: components["schemas"]["CollectionItem"][];
+        };
+        /** @enum {string} */
+        DemandSignal: "strong" | "moderate" | "weak" | "insufficient_evidence";
+        Comparable: {
+            movie: components["schemas"]["MovieSummary"];
+            similarity: number;
+            /** @description Null when the movie never streamed on the target platform and country */
+            first_six_month_streams: number | null;
+            /** @description True when the full 6-month window is observed */
+            eligible: boolean;
+        };
+        ExpectedRange: {
+            /** @enum {string} */
+            status: "ok" | "insufficient_evidence";
+            p25: number | null;
+            median: number | null;
+            p75: number | null;
+            benchmark: number | null;
+            eligible_count: number;
+        };
+        PlatformFitItem: {
+            platform: string;
+            titles: number;
+            streams_per_title: number | null;
+        };
+        WhitespaceItem: {
+            country: string;
+            comparables_with_streams: number;
+        };
+        LicensingTarget: {
+            platform: string;
+            country: string;
+        };
+        LicensingAssessment: {
+            movie: components["schemas"]["MovieSummary"];
+            target: components["schemas"]["LicensingTarget"];
+            already_on_target: boolean;
+            title_totals: components["schemas"]["MetricTotals"];
+            availability_countries: string[];
+            comparables: components["schemas"]["Comparable"][];
+            expected_range: components["schemas"]["ExpectedRange"];
+            signal: components["schemas"]["DemandSignal"];
+            platform_fit: components["schemas"]["PlatformFitItem"][];
+            whitespace: components["schemas"]["WhitespaceItem"][];
+        };
+        LicensingMemo: {
+            status: components["schemas"]["LlmStatus"];
+            signal: components["schemas"]["DemandSignal"];
+            headline: string | null;
+            evidence: string[];
+            risks: string[];
+            caveats: string[];
+        };
+        ConceptsRequest: {
+            loglines: string[];
+        };
+        ConceptResult: {
+            /** @description Position in the request */
+            index: number;
+            logline: string;
+            rank: number;
+            demand_index: number | null;
+            eligible_count: number;
+            saturation: number;
+            comparables: components["schemas"]["ScoredMovie"][];
+            demand_by_country: components["schemas"]["ShareItem"][];
+        };
+        ConceptsEvaluation: {
+            concepts: components["schemas"]["ConceptResult"][];
+        };
+        ConceptsMemo: {
+            status: components["schemas"]["LlmStatus"];
+            summary: string | null;
+            per_concept: string[];
+            caveats: string[];
+        };
+        ChatMessage: {
+            /** @enum {string} */
+            role: "user" | "assistant";
+            content: string;
+        };
+        AssistantRequest: {
+            messages: components["schemas"]["ChatMessage"][];
+        };
+        /** @enum {string} */
+        AssistantStatus: "answered" | "no_data" | "out_of_scope" | "disabled" | "failed";
+        Evidence: {
+            /** @enum {string} */
+            tool: "run_sql" | "search_movies";
+            purpose: string;
+            sql: string | null;
+            columns: string[];
+            rows: (string | number | boolean | null)[][];
+            row_count: number;
+            error: string | null;
+        };
+        AssistantReply: {
+            status: components["schemas"]["AssistantStatus"];
+            answer: string | null;
+            evidence: components["schemas"]["Evidence"][];
+        };
+    };
+    responses: {
+        /** @description Unknown resource */
+        NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": {
+                 *         "code": "not_found",
+                 *         "message": "Movie tt0000000 not found"
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Invalid parameters or body */
+        ValidationError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": {
+                 *         "code": "validation_error",
+                 *         "message": "q: String should have at least 2 characters"
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+    };
+    parameters: {
+        TitleId: string;
+        /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+        Start: components["schemas"]["Month"];
+        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+        End: components["schemas"]["Month"];
+        /** @description Consumption countries (dataset C). Any listed value matches. */
+        ConsumptionCountries: string[];
+        /** @description Consumption platforms (dataset C). Any listed value matches. */
+        ConsumptionPlatforms: string[];
+        /** @description Primary genres. Any listed value matches. */
+        PrimaryGenres: string[];
+        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+        Distributors: string[];
+    };
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 export interface operations {
-  getHealth: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Service is up and data is loaded */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Health']
-        }
-      }
-    }
-  }
-  getFilterOptions: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Filter options */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['FilterOptions']
-        }
-      }
-    }
-  }
-  searchMovies: {
-    parameters: {
-      query: {
-        q: string
-        interpret?: boolean
-        /** @description Movie must have all listed genres. */
-        genres?: string[]
-        year_min?: number
-        year_max?: number
-        /** @description Availability countries (dataset B), matched on the same row as platforms. */
-        countries?: string[]
-        /** @description Availability platforms (dataset B), matched on the same row as countries. */
-        platforms?: string[]
-        /** @description Case-insensitive substring match on directors or cast. */
-        people?: string[]
-        limit?: number
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Ranked results, possibly empty */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['SearchResponse']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  lookupMovies: {
-    parameters: {
-      query: {
-        q: string
-        limit?: number
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Matching movies */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['MovieList']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getMovie: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        title_id: components['parameters']['TitleId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Movie detail */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['MovieDetail']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getMovieAvailability: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        title_id: components['parameters']['TitleId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Offers grouped by platform and platform type */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Availability']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getMoviePerformance: {
-    parameters: {
-      query?: {
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-      }
-      header?: never
-      path: {
-        title_id: components['parameters']['TitleId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Consumption series and breakdowns */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Performance']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getSimilarMovies: {
-    parameters: {
-      query?: {
-        limit?: number
-      }
-      header?: never
-      path: {
-        title_id: components['parameters']['TitleId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Similar movies */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ScoredMovieList']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getMovieInsight: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        title_id: components['parameters']['TitleId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Insight */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Insight']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getDashboardSummary: {
-    parameters: {
-      query?: {
-        /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-        start?: components['parameters']['Start']
-        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-        end?: components['parameters']['End']
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-        /** @description Primary genres. Any listed value matches. */
-        genres?: components['parameters']['PrimaryGenres']
-        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-        distributors?: components['parameters']['Distributors']
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description KPIs */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DashboardSummary']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getDashboardTrend: {
-    parameters: {
-      query?: {
-        /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-        start?: components['parameters']['Start']
-        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-        end?: components['parameters']['End']
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-        /** @description Primary genres. Any listed value matches. */
-        genres?: components['parameters']['PrimaryGenres']
-        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-        distributors?: components['parameters']['Distributors']
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Gap-filled monthly series covering the whole period */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DashboardTrend']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getDashboardBreakdown: {
-    parameters: {
-      query: {
-        dimension: components['schemas']['BreakdownDimension']
-        /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-        start?: components['parameters']['Start']
-        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-        end?: components['parameters']['End']
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-        /** @description Primary genres. Any listed value matches. */
-        genres?: components['parameters']['PrimaryGenres']
-        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-        distributors?: components['parameters']['Distributors']
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description One item per value of the dimension, sorted by streams descending */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DashboardBreakdown']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getDashboardMatrix: {
-    parameters: {
-      query?: {
-        /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-        start?: components['parameters']['Start']
-        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-        end?: components['parameters']['End']
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-        /** @description Primary genres. Any listed value matches. */
-        genres?: components['parameters']['PrimaryGenres']
-        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-        distributors?: components['parameters']['Distributors']
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description One cell per platform and country with consumption */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DashboardMatrix']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getDashboardTitles: {
-    parameters: {
-      query?: {
-        /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-        start?: components['parameters']['Start']
-        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-        end?: components['parameters']['End']
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-        /** @description Primary genres. Any listed value matches. */
-        genres?: components['parameters']['PrimaryGenres']
-        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-        distributors?: components['parameters']['Distributors']
-        sort?: components['schemas']['TitleSort']
-        limit?: number
-        offset?: number
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Page of ranked titles; nulls sort last */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DashboardTitles']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getDashboardChanges: {
-    parameters: {
-      query?: {
-        /** @description First month, inclusive. Default: 11 months before the latest month of data. */
-        start?: components['parameters']['Start']
-        /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
-        end?: components['parameters']['End']
-        /** @description Consumption countries (dataset C). Any listed value matches. */
-        countries?: components['parameters']['ConsumptionCountries']
-        /** @description Consumption platforms (dataset C). Any listed value matches. */
-        platforms?: components['parameters']['ConsumptionPlatforms']
-        /** @description Primary genres. Any listed value matches. */
-        genres?: components['parameters']['PrimaryGenres']
-        /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
-        distributors?: components['parameters']['Distributors']
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Changes */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DashboardChanges']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  listCollections: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Collections in display order; empty collections are omitted */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['CollectionList']
-        }
-      }
-    }
-  }
-  getCollection: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        collection_id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Collection */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Collection']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getLicensingAssessment: {
-    parameters: {
-      query: {
-        title_id: string
-        /** @description A consumption platform (dataset C). */
-        platform: string
-        /** @description A consumption country (dataset C). */
-        country: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Assessment facts */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['LicensingAssessment']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  getLicensingMemo: {
-    parameters: {
-      query: {
-        title_id: string
-        /** @description A consumption platform (dataset C). */
-        platform: string
-        /** @description A consumption country (dataset C). */
-        country: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Memo */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['LicensingMemo']
-        }
-      }
-      404: components['responses']['NotFound']
-      422: components['responses']['ValidationError']
-    }
-  }
-  evaluateConcepts: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ConceptsRequest']
-      }
-    }
-    responses: {
-      /** @description One result per concept, in input order, with its rank */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ConceptsEvaluation']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  getConceptsMemo: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ConceptsRequest']
-      }
-    }
-    responses: {
-      /** @description Memo */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ConceptsMemo']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
-  askAssistant: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AssistantRequest']
-      }
-    }
-    responses: {
-      /** @description Answer with status and evidence */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AssistantReply']
-        }
-      }
-      422: components['responses']['ValidationError']
-    }
-  }
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Service is up and data is loaded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    getFilterOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Filter options */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FilterOptions"];
+                };
+            };
+        };
+    };
+    searchMovies: {
+        parameters: {
+            query: {
+                q: string;
+                interpret?: boolean;
+                /** @description Movie must have all listed genres. */
+                genres?: string[];
+                year_min?: number;
+                year_max?: number;
+                /** @description Availability countries (dataset B), matched on the same row as platforms. */
+                countries?: string[];
+                /** @description Availability platforms (dataset B), matched on the same row as countries. */
+                platforms?: string[];
+                /** @description Case-insensitive substring match on directors or cast. */
+                people?: string[];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ranked results, possibly empty */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    lookupMovies: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching movies */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovieList"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getMovie: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                title_id: components["parameters"]["TitleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Movie detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovieDetail"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getMovieAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                title_id: components["parameters"]["TitleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offers grouped by platform and platform type */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Availability"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getMoviePerformance: {
+        parameters: {
+            query?: {
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+            };
+            header?: never;
+            path: {
+                title_id: components["parameters"]["TitleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consumption series and breakdowns */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Performance"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getSimilarMovies: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                title_id: components["parameters"]["TitleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Similar movies */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoredMovieList"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getMovieInsight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                title_id: components["parameters"]["TitleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Insight */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Insight"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getDashboardSummary: {
+        parameters: {
+            query?: {
+                /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+                start?: components["parameters"]["Start"];
+                /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+                end?: components["parameters"]["End"];
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+                /** @description Primary genres. Any listed value matches. */
+                genres?: components["parameters"]["PrimaryGenres"];
+                /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+                distributors?: components["parameters"]["Distributors"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description KPIs */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardSummary"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getDashboardTrend: {
+        parameters: {
+            query?: {
+                /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+                start?: components["parameters"]["Start"];
+                /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+                end?: components["parameters"]["End"];
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+                /** @description Primary genres. Any listed value matches. */
+                genres?: components["parameters"]["PrimaryGenres"];
+                /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+                distributors?: components["parameters"]["Distributors"];
+                group_by?: "platform" | "country";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gap-filled monthly series covering the whole period */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardTrend"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getDashboardBreakdown: {
+        parameters: {
+            query: {
+                dimension: components["schemas"]["BreakdownDimension"];
+                /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+                start?: components["parameters"]["Start"];
+                /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+                end?: components["parameters"]["End"];
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+                /** @description Primary genres. Any listed value matches. */
+                genres?: components["parameters"]["PrimaryGenres"];
+                /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+                distributors?: components["parameters"]["Distributors"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One item per value of the dimension, sorted by streams descending */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardBreakdown"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getDashboardMatrix: {
+        parameters: {
+            query?: {
+                /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+                start?: components["parameters"]["Start"];
+                /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+                end?: components["parameters"]["End"];
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+                /** @description Primary genres. Any listed value matches. */
+                genres?: components["parameters"]["PrimaryGenres"];
+                /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+                distributors?: components["parameters"]["Distributors"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One cell per platform and country with consumption */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardMatrix"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getDashboardTitles: {
+        parameters: {
+            query?: {
+                /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+                start?: components["parameters"]["Start"];
+                /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+                end?: components["parameters"]["End"];
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+                /** @description Primary genres. Any listed value matches. */
+                genres?: components["parameters"]["PrimaryGenres"];
+                /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+                distributors?: components["parameters"]["Distributors"];
+                sort?: components["schemas"]["TitleSort"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Page of ranked titles; nulls sort last */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardTitles"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getDashboardChanges: {
+        parameters: {
+            query?: {
+                /** @description First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422. */
+                start?: components["parameters"]["Start"];
+                /** @description Last month, inclusive. Default: the latest month of data. Must not be before start. */
+                end?: components["parameters"]["End"];
+                /** @description Consumption countries (dataset C). Any listed value matches. */
+                countries?: components["parameters"]["ConsumptionCountries"];
+                /** @description Consumption platforms (dataset C). Any listed value matches. */
+                platforms?: components["parameters"]["ConsumptionPlatforms"];
+                /** @description Primary genres. Any listed value matches. */
+                genres?: components["parameters"]["PrimaryGenres"];
+                /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
+                distributors?: components["parameters"]["Distributors"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Changes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardChanges"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    listCollections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Collections in display order; empty collections are omitted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CollectionList"];
+                };
+            };
+        };
+    };
+    getCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                collection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Collection"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getLicensingAssessment: {
+        parameters: {
+            query: {
+                title_id: string;
+                /** @description A consumption platform (dataset C). */
+                platform: string;
+                /** @description A consumption country (dataset C). */
+                country: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Assessment facts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicensingAssessment"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getLicensingMemo: {
+        parameters: {
+            query: {
+                title_id: string;
+                /** @description A consumption platform (dataset C). */
+                platform: string;
+                /** @description A consumption country (dataset C). */
+                country: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Memo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicensingMemo"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    evaluateConcepts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConceptsRequest"];
+            };
+        };
+        responses: {
+            /** @description One result per concept, in input order, with its rank */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConceptsEvaluation"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getConceptsMemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConceptsRequest"];
+            };
+        };
+        responses: {
+            /** @description Memo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConceptsMemo"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    askAssistant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantRequest"];
+            };
+        };
+        responses: {
+            /** @description Answer with status and evidence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantReply"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
 }

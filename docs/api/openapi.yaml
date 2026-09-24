@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -249,8 +249,21 @@ paths:
     get:
       tags: [dashboard]
       operationId: getDashboardTrend
-      summary: Monthly streams and viewing hours
-      parameters: *dashboardFilters
+      summary: Monthly streams and viewing hours, optionally one series per platform or country
+      description: |
+        `series` is always the total. With `group_by`, `groups` has one gap-filled series per value
+        of the dimension (within the active filters); without it, `groups` is empty.
+        Added in 1.1.0.
+      parameters:
+        - $ref: "#/components/parameters/Start"
+        - $ref: "#/components/parameters/End"
+        - $ref: "#/components/parameters/ConsumptionCountries"
+        - $ref: "#/components/parameters/ConsumptionPlatforms"
+        - $ref: "#/components/parameters/PrimaryGenres"
+        - $ref: "#/components/parameters/Distributors"
+        - name: group_by
+          in: query
+          schema: { type: string, enum: [platform, country] }
       responses:
         "200":
           description: Gap-filled monthly series covering the whole period
@@ -870,9 +883,18 @@ components:
     DashboardTrend:
       type: object
       additionalProperties: false
-      required: [filters, series]
+      required: [filters, series, groups]
       properties:
         filters: { $ref: "#/components/schemas/DashboardFilters" }
+        series: { type: array, items: { $ref: "#/components/schemas/MonthlyPoint" } }
+        groups: { type: array, items: { $ref: "#/components/schemas/TrendGroup" } }
+
+    TrendGroup:
+      type: object
+      additionalProperties: false
+      required: [key, series]
+      properties:
+        key: { type: string }
         series: { type: array, items: { $ref: "#/components/schemas/MonthlyPoint" } }
 
     BreakdownDimension:

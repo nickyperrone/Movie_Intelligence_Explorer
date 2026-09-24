@@ -306,11 +306,11 @@ class DashboardSummary(BaseModel):
     engagement: Kpi
 
 
-class DashboardTrend(BaseModel):
+class TrendGroup(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    filters: DashboardFilters
+    key: str
     series: list[MonthlyPoint]
 
 
@@ -639,3 +639,12 @@ class Error(BaseModel):
         extra="forbid",
     )
     error: ErrorBody
+
+
+class DashboardTrend(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    filters: DashboardFilters
+    series: list[MonthlyPoint]
+    groups: list[TrendGroup]

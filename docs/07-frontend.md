@@ -39,22 +39,36 @@ The whole app follows the layout patterns of a music streaming desktop client:
 
 ### Dashboard
 
-1. `DashboardFilters`: month range (two selects), multi-selects for countries, platforms, genres and
-   distributors, "Reset" button. The coverage note "Consumption data: 4 countries, 4 platforms" is
-   shown next to the filters.
+1. `DashboardToolbar`, sticky under the top bar:
+   - Period presets as pills: `Last 3 months`, `Last 6 months`, `Last 12 months` (default), `2026`,
+     `2025`, `2024`, `2023`, `All time`, `Custom`. Presets are computed from the latest month of
+     data (Jun 2026), not from today. `Custom` reveals From/To month selects.
+   - Multi-select pills for countries, platforms, genres and distributors, and a `Sony titles`
+     shortcut.
+   - An active-filters line: the period, the comparison period ("vs Jul 2024–Jun 2025", or "no
+     comparison: the previous period starts before Jan 2023"), and one removable chip per active
+     filter, plus "Clear all".
 2. `KpiRow`: four `KpiCard`s (streams, viewing hours, titles with consumption, engagement), each with
-   its change vs the previous period and a tooltip with the metric definition.
-3. `TrendChart`: line chart, month on x, streams or hours on y (toggle).
-4. Two `ShareBars` side by side: share of streams by platform and by country (horizontal bars,
-   sorted).
-5. `PlatformCountryMatrix`: grid table, platforms as rows, countries as columns, cell = streams per
-   title, color intensity scaled per table.
-6. Two `EfficiencyBars`: streams per title by primary genre and by theme, with the title count on
-   each bar.
-7. `TopTitlesTable`: rank, poster thumbnail, title, year, streams, hours, engagement, growth.
-   Sort by clicking a column header (streams, hours, engagement, growth). 20 rows and a
-   "Show more" button (offset paging). A row links to the movie.
-8. `ChangesPanel`: top 5 up and top 5 down movers, share shifts, and the generated summary.
+   its change vs the previous period. A card is a button: it opens `KpiDetail`.
+3. `KpiDetail`, a side panel that answers "where does this number come from":
+   - The formula in words and the dataset it comes from (dataset C; distributors from dataset B).
+   - Current value, previous value and change, with both periods named.
+   - The same metric split by platform and by country (bars), and the 5 titles that contribute
+     most (for engagement: the 5 titles with the most streams and their engagement).
+   - The active filters it was computed with.
+4. `TrendChart` with a `Compare` selector: `Total` (one area), `By platform` and `By country`
+   (one line per value, overlaid), `Previous period` (current and previous period as two lines
+   aligned by month position). A legend names every line. Metric toggle: streams or hours.
+5. Two `ShareBars` side by side: share of streams by platform and by country.
+6. `PlatformCountryMatrix`: platforms as rows, countries as columns, cell = streams per title.
+7. Two `EfficiencyBars`: streams per title by primary genre and by theme, with the title count.
+8. `TopTitlesTable`: sortable by streams, hours, engagement, growth; "Show more" pages by 20.
+9. `ChangesPanel`: movers, share shifts and the generated summary.
+
+Every panel has a `Source` button in its header that shows, in a popover, the dataset, the formula
+and the grain behind the panel (text from `04-metrics.md`).
+
+Axis labels use short numbers (`600K`, `1.2M`) and reserve enough width to never clip.
 
 ### Discover
 
@@ -70,9 +84,13 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
   wrapping grid (with a single section selected).
 - `CollectionCard`:
   - Square cover = poster of the collection's number 1 movie, rounded corners, `object-fit: cover`.
+    If an earlier collection in the page order already uses that poster, the next movie in the
+    ranking is used (number 2, then 3). The collection page uses the same cover.
   - A colored band across the lower part of the cover with the collection name in bold
-    ("Top in Brazil"). The band color is picked from a fixed palette by a hash of the collection id,
-    so it is stable across reloads.
+    ("Top in Brazil"). Country collections use the main color of the country's flag (Argentina
+    `#74ACDF`, Brazil `#009C3B`, Colombia `#FCD116`, Mexico `#006847`); the others take a color from a
+    fixed palette by a hash of the collection id, so it is stable across reloads. Text is black or
+    white, whichever contrasts more.
   - Below the cover: the collection title (one line, truncated) and a muted subtitle listing the
     next titles ("Zootopia 2, Elio and more", two lines max).
   - On hover the card background lightens; the whole card is a link to `/discover/:collectionId`.
