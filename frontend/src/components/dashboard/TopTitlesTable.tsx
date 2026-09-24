@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import type { Schemas } from '@/api/client'
+import { GenreLink } from '@/components/common/CategoryLink'
 import { Poster } from '@/components/common/Poster'
 import { cn } from '@/lib/cn'
 import { compact, hours, percent, signedPercent } from '@/lib/format'
@@ -54,21 +55,31 @@ export function TopTitlesTable({ items, sort, onSort }: TopTitlesTableProps) {
             <tr key={item.movie.title_id} className="group hover:bg-hover">
               <td className="rounded-l-md py-2 pl-2 tabular text-subtle">{item.rank}</td>
               <td className="py-2">
-                <Link to={`/movies/${item.movie.title_id}`} className="flex items-center gap-3">
-                  <Poster
-                    src={item.movie.image_url}
-                    title={item.movie.title}
-                    className="h-12 w-8 shrink-0 rounded-sm text-[10px]"
-                  />
+                <div className="flex items-center gap-3">
+                  <Link to={`/movies/${item.movie.title_id}`} className="shrink-0">
+                    <Poster
+                      src={item.movie.image_url}
+                      title={item.movie.title}
+                      className="h-12 w-8 rounded-sm text-[10px]"
+                    />
+                  </Link>
                   <span className="min-w-0">
-                    <span className="block truncate font-medium group-hover:underline">
+                    <Link
+                      to={`/movies/${item.movie.title_id}`}
+                      className="block truncate font-medium hover:underline"
+                    >
                       {item.movie.title}
-                    </span>
+                    </Link>
                     <span className="text-xs text-subtle">
-                      {item.movie.year} · {item.movie.primary_genre ?? '—'}
+                      {item.movie.year} ·{' '}
+                      {item.movie.primary_genre ? (
+                        <GenreLink genre={item.movie.primary_genre} icon={false} />
+                      ) : (
+                        '—'
+                      )}
                     </span>
                   </span>
-                </Link>
+                </div>
               </td>
               <td className="py-2 pr-2 text-right tabular">{compact(item.streams)}</td>
               <td className="py-2 pr-2 text-right tabular">{hours(item.viewing_hours)}</td>

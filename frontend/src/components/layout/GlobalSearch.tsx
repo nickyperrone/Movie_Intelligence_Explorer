@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router'
 import type { Schemas } from '@/api/client'
 import { useMovieLookup, usePeopleLookup, useSearchSuggestions } from '@/api/queries'
 import { Poster } from '@/components/common/Poster'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
+import { examplesAt, useRotation } from '@/lib/examples'
 
 const SUGGESTION_DELAY_MS = 250
 
@@ -37,6 +39,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
     setText(urlQuery)
   }
 
+  const example = examplesAt(useRotation(text !== '' || open), 1)[0]
   const debounced = useDebounced(text.trim(), SUGGESTION_DELAY_MS)
   const titles = useMovieLookup(debounced.length >= 2 ? debounced : '')
   const meaning = useSearchSuggestions(debounced)
@@ -63,7 +66,11 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
     })),
     ...(debounced.length >= 2 ? [{ kind: 'all' as const, query: debounced }] : []),
   ]
-  const showDropdown = open && options.length > 0
+  const loading =
+    debounced.length >= 2 &&
+    options.length <= 1 &&
+    (titles.isFetching || meaning.isFetching || people.isFetching)
+  const showDropdown = open && (options.length > 0 || loading)
 
   useEffect(() => {
     // "/" focuses the search box unless the user is already typing somewhere.
@@ -135,7 +142,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={onKeyDown}
-        placeholder="Find a movie and its performance, e.g. “heist movies” or “Zootopia”"
+        placeholder={`Find a movie and its performance, e.g. “${example}”`}
         className={cn(
           'h-12 w-full bg-pill pl-11 pr-4 text-sm text-white placeholder:text-subtle outline-none transition-shadow hover:bg-hover focus:ring-2 focus:ring-white',
           showDropdown ? 'rounded-t-3xl' : 'rounded-full',
@@ -147,6 +154,20 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
           role="listbox"
           className="absolute inset-x-0 top-12 z-30 max-h-[70vh] overflow-y-auto rounded-b-3xl bg-hover p-2 shadow-2xl shadow-black/60"
         >
+          {loading &&
+            Array.from({ length: 3 }, (_, index) => (
+              <li
+                key={`loading-${index}`}
+                className="flex items-center gap-3 px-3 py-2"
+                aria-hidden
+              >
+                <Skeleton className="h-12 w-8 shrink-0 rounded-sm" />
+                <span className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-1/2" />
+                  <Skeleton className="h-3 w-1/4" />
+                </span>
+              </li>
+            ))}
           {options.map((option, index) => {
             const firstTitle = peopleMatches.length
             const firstMeaning = peopleMatches.length + titleMatches.length

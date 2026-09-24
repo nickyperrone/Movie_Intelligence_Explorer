@@ -2,7 +2,7 @@ import { ExternalLink, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import type { Schemas } from '@/api/client'
-import { GenreLabel } from '@/components/common/Brand'
+import { GenreLink, ThemeLink } from '@/components/common/CategoryLink'
 import { Poster } from '@/components/common/Poster'
 import { compact, rating, runtime } from '@/lib/format'
 
@@ -28,7 +28,7 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
             <span className="text-subtle">·</span>
             <span className="inline-flex flex-wrap gap-x-3">
               {movie.genres.length
-                ? movie.genres.map((genre) => <GenreLabel key={genre} genre={genre} />)
+                ? movie.genres.map((genre) => <GenreLink key={genre} genre={genre} />)
                 : '—'}
             </span>
             <span className="text-subtle">·</span>
@@ -40,12 +40,7 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
             {movie.theme && (
               <>
                 <span className="text-subtle">·</span>
-                <Link
-                  to={`/discover/theme-${movie.theme.theme_id}`}
-                  className="underline-offset-2 hover:underline"
-                >
-                  {movie.theme.name}
-                </Link>
+                <ThemeLink themeId={movie.theme.theme_id} name={movie.theme.name} />
               </>
             )}
           </p>

@@ -7,6 +7,7 @@ export type DashboardQuery = {
   countries: string[]
   platforms: string[]
   genres: string[]
+  themes: string[]
   distributors: string[]
 }
 

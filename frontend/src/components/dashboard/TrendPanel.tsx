@@ -95,6 +95,7 @@ export function TrendPanel({
   return (
     <Panel
       title={`${metricLabel} per month`}
+      refreshing={trend.isPlaceholderData}
       aside={
         <div className="flex items-center gap-2">
           <Pill active={metric === 'streams'} onClick={() => onMetric('streams')}>

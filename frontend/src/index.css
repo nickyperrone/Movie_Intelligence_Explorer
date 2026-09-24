@@ -90,8 +90,16 @@
   body {
     @apply bg-frame text-foreground;
   }
+  /* Box-shadow rings follow rounded corners; outlines draw odd shapes on pills in some browsers. */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-white;
+    outline: none;
+    box-shadow:
+      0 0 0 2px #121212,
+      0 0 0 4px #ffffff;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -114,5 +122,38 @@
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Content that appears after loading, or after switching a tab, fades in and rises slightly. */
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility appear {
+  animation: appear 300ms ease-out both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Pressable elements shrink slightly while pressed. */
+@utility pressable {
+  transition-property: transform, background-color, color, opacity;
+  transition-duration: 150ms;
+  &:active {
+    transform: scale(0.97);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      transform: none;
+    }
   }
 }

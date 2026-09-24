@@ -29,7 +29,7 @@ export function MultiSelectPill({
     <Popover>
       <PopoverTrigger
         className={cn(
-          'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors',
+          'pressable inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors',
           selected.length ? 'bg-white text-black' : 'bg-pill text-white hover:bg-hover',
         )}
         aria-label={`${label} filter`}

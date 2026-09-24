@@ -65,7 +65,7 @@ export function DecisionStudioPage() {
       <div
         role="tablist"
         aria-label="Decision tools"
-        className="grid grid-cols-5 gap-3 max-xl:grid-cols-3 max-md:grid-cols-2"
+        className="-mx-1 grid grid-cols-5 gap-3 px-1 pb-1 max-xl:grid-cols-3 max-md:flex max-md:snap-x max-md:overflow-x-auto max-md:scrollbar-none"
       >
         {TOOLS.map((tool) => {
           const selected = tab === tool.id
@@ -80,7 +80,7 @@ export function DecisionStudioPage() {
                 update({ tab: tool.id, title: undefined, platform: undefined, country: undefined })
               }
               className={cn(
-                'flex flex-col items-start gap-3 rounded-lg p-4 text-left ring-2 transition-colors duration-200',
+                'pressable flex flex-col items-start gap-3 rounded-lg p-4 text-left ring-2 ring-inset transition-colors duration-200 max-md:w-44 max-md:shrink-0 max-md:snap-start max-md:gap-2 max-md:p-3',
                 selected ? 'bg-hover ring-pink' : 'bg-raised ring-transparent hover:bg-hover',
               )}
             >
@@ -92,14 +92,16 @@ export function DecisionStudioPage() {
               >
                 <tool.icon className="size-4" />
               </span>
-              <span className="font-bold leading-snug">{tool.question}</span>
-              <span className="text-xs leading-relaxed text-subtle">{tool.description}</span>
+              <span className="font-bold leading-snug max-md:text-sm">{tool.question}</span>
+              <span className="text-xs leading-relaxed text-subtle max-md:hidden">
+                {tool.description}
+              </span>
             </button>
           )
         })}
       </div>
 
-      <div role="tabpanel">
+      <div role="tabpanel" key={tab} className="appear">
         {tab === 'licensing' && <LicensingTab />}
         {tab === 'markets' && <MarketsTab />}
         {tab === 'genres' && <GenresTab />}

@@ -23,23 +23,38 @@ import { SOURCES } from '@/components/dashboard/sources'
 import { TrendPanel, type Compare } from '@/components/dashboard/TrendPanel'
 import { TopTitlesTable } from '@/components/dashboard/TopTitlesTable'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/cn'
 import { compact, monthRange, percent } from '@/lib/format'
 import { useUrlState } from '@/lib/url-state'
 
-const FILTER_KEYS = ['start', 'end', 'countries', 'platforms', 'genres', 'distributors'] as const
+const FILTER_KEYS = [
+  'start',
+  'end',
+  'countries',
+  'platforms',
+  'genres',
+  'themes',
+  'distributors',
+] as const
 
 function ShareCard({
   title,
   query,
   dimension,
+  onSelect,
 }: {
   title: string
   query: DashboardQuery
   dimension: Schemas['BreakdownDimension']
+  onSelect: (key: string) => void
 }) {
   const breakdown = useDashboardBreakdown(query, dimension)
   return (
-    <Panel title={title} aside={<SourceNote>{SOURCES.shares}</SourceNote>}>
+    <Panel
+      title={title}
+      aside={<SourceNote>{SOURCES.shares}</SourceNote>}
+      refreshing={breakdown.isPlaceholderData}
+    >
       {breakdown.isError ? (
         <ErrorState error={breakdown.error} onRetry={() => breakdown.refetch()} />
       ) : !breakdown.data ? (
@@ -49,6 +64,7 @@ function ShareCard({
       ) : (
         <BarList
           label={title}
+          onSelect={onSelect}
           format={percent}
           items={breakdown.data.items.map((item) => ({
             key: item.key,
@@ -71,10 +87,12 @@ function EfficiencyCard({
   title,
   query,
   dimension,
+  onSelect,
 }: {
   title: string
   query: DashboardQuery
   dimension: Schemas['BreakdownDimension']
+  onSelect: (key: string) => void
 }) {
   const breakdown = useDashboardBreakdown(query, dimension)
   const items = (breakdown.data?.items ?? [])
@@ -84,6 +102,7 @@ function EfficiencyCard({
   return (
     <Panel
       title={title}
+      refreshing={breakdown.isPlaceholderData}
       aside={
         <span className="flex items-center gap-2 text-xs text-subtle">
           Streams per title
@@ -106,6 +125,7 @@ function EfficiencyCard({
       ) : (
         <BarList
           label={title}
+          onSelect={onSelect}
           format={compact}
           items={items.map((item) => ({
             key: item.key,
@@ -129,6 +149,7 @@ export function DashboardPage() {
       countries: getList('countries'),
       platforms: getList('platforms'),
       genres: getList('genres'),
+      themes: getList('themes'),
       distributors: getList('distributors'),
     }),
     [get, getList],
@@ -170,7 +191,14 @@ export function DashboardPage() {
       {summary.isError ? (
         <ErrorState error={summary.error} onRetry={() => summary.refetch()} />
       ) : (
-        <KpiRow summary={summary.data} onOpen={setOpenKpi} />
+        <div
+          className={cn(
+            'transition-opacity duration-200',
+            summary.isPlaceholderData && 'opacity-60',
+          )}
+        >
+          <KpiRow summary={summary.data} onOpen={setOpenKpi} />
+        </div>
       )}
 
       <TrendPanel
@@ -183,11 +211,22 @@ export function DashboardPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ShareCard title="Share of streams by platform" query={query} dimension="platform" />
-        <ShareCard title="Share of streams by country" query={query} dimension="country" />
+        <ShareCard
+          title="Share of streams by platform"
+          query={query}
+          dimension="platform"
+          onSelect={(key) => update({ platforms: [key] })}
+        />
+        <ShareCard
+          title="Share of streams by country"
+          query={query}
+          dimension="country"
+          onSelect={(key) => update({ countries: [key] })}
+        />
       </div>
 
       <Panel
+        refreshing={matrix.isPlaceholderData}
         title="Streams per title, platform × country"
         aside={<SourceNote>{SOURCES.matrix}</SourceNote>}
       >
@@ -203,11 +242,22 @@ export function DashboardPage() {
       </Panel>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <EfficiencyCard title="Genres" query={query} dimension="primary_genre" />
-        <EfficiencyCard title="Themes" query={query} dimension="theme" />
+        <EfficiencyCard
+          title="Genres"
+          query={query}
+          dimension="primary_genre"
+          onSelect={(key) => update({ genres: [key] })}
+        />
+        <EfficiencyCard
+          title="Themes"
+          query={query}
+          dimension="theme"
+          onSelect={(key) => update({ themes: [key] })}
+        />
       </div>
 
       <Panel
+        refreshing={titles.isPlaceholderData}
         title="Top titles"
         aside={
           <span className="flex items-center gap-2 text-xs text-subtle">

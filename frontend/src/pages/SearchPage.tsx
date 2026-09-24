@@ -1,17 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import type { Schemas } from '@/api/client'
 import { useFilterOptions, useSearch, type SearchQuery } from '@/api/queries'
 import { MovieCard, MovieCardSkeleton } from '@/components/common/MovieCard'
 import { EmptyState, ErrorState } from '@/components/common/States'
 import { SearchFilterBar } from '@/components/search/SearchFilterBar'
+import { examplesAt, useRotation } from '@/lib/examples'
 import { useUrlState } from '@/lib/url-state'
-
-const EXAMPLE_QUERIES = [
-  'dark psychological thrillers about obsession',
-  'family movies about overcoming loss',
-  'animated adventures',
-  'movies about artificial intelligence',
-]
 
 const INTERPRETATION_NOTES: Partial<Record<Schemas['LlmStatus'], string>> = {
   disabled: 'Filters are not inferred from the text because no language model is configured.',
@@ -19,18 +14,25 @@ const INTERPRETATION_NOTES: Partial<Record<Schemas['LlmStatus'], string>> = {
 }
 
 function ExampleLinks() {
+  const [paused, setPaused] = useState(false)
+  const index = useRotation(paused)
   return (
-    <>
-      {EXAMPLE_QUERIES.map((query) => (
+    <div
+      key={index}
+      className="appear flex flex-wrap justify-center gap-2 sm:justify-start"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {examplesAt(index, 4).map((query) => (
         <Link
           key={query}
           to={`/search?q=${encodeURIComponent(query)}`}
-          className="rounded-full bg-pill px-3.5 py-1.5 text-sm hover:bg-hover"
+          className="pressable rounded-full bg-pill px-3.5 py-1.5 text-sm hover:bg-hover"
         >
           {query}
         </Link>
       ))}
-    </>
+    </div>
   )
 }
 
@@ -64,7 +66,7 @@ export function SearchPage() {
           Describe a theme, a mood or a plot in English or Spanish. Results are ranked by meaning,
           using embeddings of each movie’s genres and plot.
         </p>
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6">
           <ExampleLinks />
         </div>
       </div>

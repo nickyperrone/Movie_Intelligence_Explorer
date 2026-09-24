@@ -29,6 +29,7 @@ export function GenresTab() {
     countries: country ? [country] : [],
     platforms: platform ? [platform] : [],
     genres: [],
+    themes: [],
     distributors: [],
   }
   const current: DashboardQuery = { ...base, start: shiftMonth(last, -11), end: last }

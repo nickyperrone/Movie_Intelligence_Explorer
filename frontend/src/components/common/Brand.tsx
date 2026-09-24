@@ -1,33 +1,7 @@
 import { AR, BR, CL, CO, EC, MX, PE, VE } from 'country-flag-icons/react/3x2'
-import { useState } from 'react'
-import {
-  Eye,
-  Film,
-  Fingerprint,
-  Ghost,
-  Heart,
-  KeyRound,
-  Landmark,
-  Laugh,
-  Mic,
-  Mountain,
-  Music,
-  Music2,
-  Palette,
-  Rocket,
-  Swords,
-  Tent,
-  Theater,
-  Trophy,
-  Tv,
-  UserRound,
-  Users,
-  Video,
-  WandSparkles,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react'
+import { createElement, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { genreIcon } from '@/lib/genres'
 
 const FLAGS: Record<string, typeof AR> = {
   Argentina: AR,
@@ -132,37 +106,13 @@ export function PlatformLabel({ platform }: { platform: string }) {
   )
 }
 
-const GENRE_ICONS: Record<string, LucideIcon> = {
-  Action: Zap,
-  Adventure: Mountain,
-  Animation: Palette,
-  Biography: UserRound,
-  Comedy: Laugh,
-  Crime: Fingerprint,
-  Documentary: Video,
-  Drama: Theater,
-  Family: Users,
-  Fantasy: WandSparkles,
-  History: Landmark,
-  Horror: Ghost,
-  Music: Music,
-  Musical: Music2,
-  Mystery: KeyRound,
-  'Reality-TV': Tv,
-  Romance: Heart,
-  'Sci-Fi': Rocket,
-  Sport: Trophy,
-  'Talk-Show': Mic,
-  Thriller: Eye,
-  War: Swords,
-  Western: Tent,
-}
-
 export function GenreLabel({ genre }: { genre: string }) {
-  const Icon = GENRE_ICONS[genre] ?? Film
   return (
     <span className="inline-flex items-center gap-2">
-      <Icon className="size-3.5 shrink-0 text-subtle" aria-hidden />
+      {createElement(genreIcon(genre), {
+        className: 'size-3.5 shrink-0 text-subtle',
+        'aria-hidden': true,
+      })}
       {genre}
     </span>
   )

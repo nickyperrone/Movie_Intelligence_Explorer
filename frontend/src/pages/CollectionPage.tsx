@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router'
 import { ApiError } from '@/api/client'
 import { useCollection, useCollections } from '@/api/queries'
+import { GenreLink } from '@/components/common/CategoryLink'
 import { Poster } from '@/components/common/Poster'
 import { ErrorState } from '@/components/common/States'
 import { CollectionCover } from '@/components/discover/CollectionCover'
@@ -97,7 +98,11 @@ export function CollectionPage() {
                 </Link>
               </td>
               <td className="py-2 text-subtle max-md:hidden">
-                {item.movie.genres.slice(0, 3).join(', ')}
+                <span className="flex flex-wrap gap-x-3">
+                  {item.movie.genres.slice(0, 3).map((genre) => (
+                    <GenreLink key={genre} genre={genre} icon={false} />
+                  ))}
+                </span>
               </td>
               <td
                 className={cn(

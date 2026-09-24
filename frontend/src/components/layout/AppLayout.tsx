@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { PageSkeleton } from '@/components/common/PageSkeleton'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 
@@ -21,7 +22,7 @@ export function AppLayout() {
             key={pathname}
             className="mx-auto max-w-[1440px] px-6 pb-16 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 max-sm:px-4"
           >
-            <Suspense fallback={<div className="h-screen" aria-busy />}>
+            <Suspense fallback={<PageSkeleton />}>
               <Outlet />
             </Suspense>
           </div>

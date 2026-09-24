@@ -51,21 +51,26 @@ export function Panel({
   children,
   className,
   aside,
+  refreshing = false,
 }: {
   title?: string
   children: ReactNode
   className?: string
   aside?: ReactNode
+  // True while new data for changed filters loads: the old content stays, dimmed.
+  refreshing?: boolean
 }) {
   return (
-    <section className={cn('rounded-lg bg-raised p-5', className)}>
+    <section className={cn('appear rounded-lg bg-raised p-5 max-sm:p-4', className)}>
       {title && (
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-bold">{title}</h3>
           {aside}
         </div>
       )}
-      {children}
+      <div className={cn('transition-opacity duration-200', refreshing && 'opacity-60')}>
+        {children}
+      </div>
     </section>
   )
 }

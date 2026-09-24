@@ -2,7 +2,7 @@ import { useParams } from 'react-router'
 import { ApiError } from '@/api/client'
 import { useMovie, useSimilar } from '@/api/queries'
 import { CardRow } from '@/components/common/CardRow'
-import { MovieCard } from '@/components/common/MovieCard'
+import { MovieCard, MovieCardSkeleton } from '@/components/common/MovieCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { ErrorState } from '@/components/common/States'
 import { AvailabilitySection } from '@/components/movie/AvailabilitySection'
@@ -14,6 +14,18 @@ import { NotFoundPage } from './NotFoundPage'
 
 function SimilarMovies({ titleId }: { titleId: string }) {
   const similar = useSimilar(titleId)
+  if (similar.isLoading) {
+    return (
+      <section>
+        <SectionHeader title="More like this" description="Closest movies by plot and genres." />
+        <CardRow label="Similar movies loading">
+          {Array.from({ length: 5 }, (_, index) => (
+            <MovieCardSkeleton key={index} />
+          ))}
+        </CardRow>
+      </section>
+    )
+  }
   if (!similar.data?.results.length) return null
   return (
     <section>

@@ -31,7 +31,7 @@ export function SelectPill({
       <PopoverTrigger
         aria-label={label}
         className={cn(
-          'inline-flex shrink-0 items-center gap-2 rounded-full bg-pill font-medium text-white transition-colors hover:bg-hover',
+          'pressable inline-flex shrink-0 items-center gap-2 rounded-full bg-pill font-medium text-white transition-colors hover:bg-hover',
           size === 'lg' ? 'h-11 px-4 text-base' : 'h-8 px-3.5 text-sm',
         )}
       >

@@ -15,7 +15,7 @@ export function KpiChange({ kpi, ratio }: { kpi: Schemas['Kpi']; ratio: boolean 
       className={cn('text-sm font-bold tabular', change >= 0 ? 'text-positive' : 'text-negative')}
     >
       {ratio ? signedPoints(change) : signedPercent(change)}
-      <span className="ml-1 font-normal text-subtle">vs previous</span>
+      <span className="ml-1 font-normal text-subtle max-sm:hidden">vs previous</span>
     </span>
   )
 }
@@ -38,9 +38,9 @@ export function KpiRow({
             onClick={() => onOpen(definition.key)}
             disabled={!kpi}
             aria-label={`${definition.label}: see where this number comes from`}
-            className="group rounded-lg bg-raised p-5 text-left transition-colors duration-200 hover:bg-hover"
+            className="pressable group rounded-lg bg-raised p-5 text-left transition-colors duration-200 hover:bg-hover max-sm:p-4"
           >
-            <p className="flex items-center justify-between text-sm text-subtle">
+            <p className="flex items-center justify-between gap-2 truncate text-sm text-subtle">
               {definition.label}
               <span className="flex items-center gap-0.5 text-xs opacity-0 transition-opacity group-hover:opacity-100">
                 Details <ChevronRight className="size-3.5" />
@@ -48,7 +48,7 @@ export function KpiRow({
             </p>
             {kpi ? (
               <>
-                <p className="mt-2 text-3xl font-bold tracking-tight tabular">
+                <p className="mt-2 text-3xl font-bold tracking-tight tabular max-sm:text-2xl">
                   {definition.format(kpi.value)}
                 </p>
                 <div className="mt-1">

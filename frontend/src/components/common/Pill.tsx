@@ -9,7 +9,7 @@ export function Pill({ active = false, className, ...props }: PillProps) {
       type="button"
       aria-pressed={active}
       className={cn(
-        'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-150',
+        'pressable inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-150',
         active ? 'bg-white text-black' : 'bg-pill text-white hover:bg-hover',
         className,
       )}

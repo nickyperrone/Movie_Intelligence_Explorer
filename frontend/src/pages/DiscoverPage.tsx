@@ -8,6 +8,7 @@ import { SectionHeader } from '@/components/common/SectionHeader'
 import { EmptyState, ErrorState } from '@/components/common/States'
 import { CollectionCard } from '@/components/discover/CollectionCard'
 import { assignCovers } from '@/components/discover/covers'
+import { GenreTiles } from '@/components/discover/GenreTiles'
 import { useUrlState } from '@/lib/url-state'
 
 type Section = Schemas['CollectionSection']
@@ -69,7 +70,7 @@ export function DiscoverPage() {
             ) : null
           }
           return (
-            <section key={section.id} className="mt-8">
+            <section key={`${section.id}-${selected ?? 'all'}`} className="appear mt-8">
               <SectionHeader
                 title={section.title}
                 action={
@@ -116,6 +117,7 @@ export function DiscoverPage() {
           )
         })
       )}
+      {!selected && <GenreTiles />}
     </div>
   )
 }
