@@ -6,6 +6,8 @@ Discover shelves, and a Decision Studio for licensing and project decisions, inc
 answers from the data and says so when the data cannot answer.
 
 - **Live app:** added after the Dokploy deploy.
+- **Deploy:** one `Dockerfile` builds the data, the embeddings and the app, and serves everything on
+  port 4040. Steps in [08-deployment](docs/08-deployment.md#dokploy).
 - **API docs:** `/api/docs` on the running app (serves the hand-written OpenAPI contract).
 - Built by [Nicole Perrone](https://www.linkedin.com/in/perronenicole/).
 
@@ -25,7 +27,8 @@ LLM features are optional. To enable them, copy `.env.example` to `.env` and set
 (and `OPENAI_MODEL` if you want a model other than the default). Without a key every page works and
 the LLM parts say they are unavailable.
 
-With Docker instead: `docker compose up --build`, then open http://localhost:5001.
+With Docker instead: `docker compose up --build`, then open http://localhost:4040. The image serves
+the app and the API on one port (4040), which is also what Dokploy exposes.
 
 Other commands: `make test` (lint, type checks and all tests), `make eval` (search evaluation),
 `make codegen` (regenerate types from the API spec), `make themes` (rebuild the AI themes; needs an

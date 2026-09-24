@@ -12,30 +12,35 @@ ENV PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     HF_HOME=/app/.cache/hf
-RUN pip install --no-cache-dir uv==0.12.18
+RUN pip install --no-cache-dir uv==0.12.18 && \
+    useradd --create-home app && \
+    mkdir -p /app/backend && chown -R app:app /app
 
+# Everything below runs as the non-root user and is copied with its ownership, so no layer has to
+# re-own (and duplicate) the files afterwards.
+USER app
 WORKDIR /app/backend
-COPY backend/pyproject.toml backend/uv.lock ./
+COPY --chown=app:app backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-COPY backend/ ./
-COPY data/raw /app/data/raw
-COPY data/curated /app/data/curated
-COPY docs/api/openapi.yaml /app/docs/api/openapi.yaml
+COPY --chown=app:app backend/ ./
+COPY --chown=app:app data/raw /app/data/raw
+COPY --chown=app:app data/curated /app/data/curated
+COPY --chown=app:app docs/api/openapi.yaml /app/docs/api/openapi.yaml
 
 # Fails the build if any data validation fails. Downloads the embedding model into the image, so
 # the container starts without reaching Hugging Face.
 RUN uv run --no-sync python -m pipeline.build_db && \
     uv run --no-sync python -m pipeline.build_embeddings
 
-COPY --from=frontend /app/frontend/dist /app/frontend/dist
+COPY --chown=app:app --from=frontend /app/frontend/dist /app/frontend/dist
 
-RUN useradd --create-home app && chown -R app /app
-USER app
-ENV HF_HUB_OFFLINE=1
+ENV HF_HUB_OFFLINE=1 \
+    PORT=4040
 
-EXPOSE 5001
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5001/api/v1/health')"
+# One port serves the React app and the API (/api/v1). Set PORT to change it.
+EXPOSE 4040
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s \
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ[\"PORT\"]}/api/v1/health')"
 # One worker: each worker would load its own copy of the embedding model (about 2.2 GB).
-CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5001", "--workers", "1"]
+CMD exec uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --workers 1

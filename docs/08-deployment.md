@@ -52,12 +52,22 @@ Port 5000 is avoided because recent macOS versions use it for the AirPlay receiv
 
 ## Dokploy
 
+Either of these works; both build the same `Dockerfile`, which is the only file needed.
+
+As an Application (recommended):
+
 1. Create an Application from the GitHub repository, branch `main`.
 2. Build type: Dockerfile, path `./Dockerfile`, context `.`.
-3. Environment: `OPENAI_API_KEY`, `OPENAI_MODEL`.
-4. Container port 4040 (the only exposed port: app and API). Add a domain; Dokploy's Traefik issues the HTTPS certificate.
+3. Environment: `OPENAI_API_KEY` (optional), `OPENAI_MODEL` (optional).
+4. Domains: add a domain with container port 4040. Traefik issues the HTTPS certificate.
 5. Enable auto-deploy so every push to `main` rebuilds and redeploys.
-6. Server resources: at least 4 GB RAM (model plus Python process), about 5 GB disk for the image.
+
+As a Compose service: point Dokploy at `docker-compose.yml`; it builds the image and publishes
+port 4040.
+
+Server resources: at least 4 GB RAM (the container uses about 1 GB idle, more under load while the
+model runs) and about 6 GB of disk for the image. The first build takes 15 to 30 minutes because it
+embeds the catalog on CPU; later builds reuse the cached layers unless dependencies or data change.
 
 ## CI (`.github/workflows/ci.yml`)
 
