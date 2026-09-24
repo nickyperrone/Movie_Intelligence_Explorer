@@ -1,14 +1,17 @@
 import { Link, useParams } from 'react-router'
 import { ApiError } from '@/api/client'
+import type { Schemas } from '@/api/client'
 import { useCollection, useCollections } from '@/api/queries'
 import { GenreLink } from '@/components/common/CategoryLink'
 import { Poster } from '@/components/common/Poster'
 import { ErrorState } from '@/components/common/States'
 import { CollectionCover } from '@/components/discover/CollectionCover'
 import { assignCovers } from '@/components/discover/covers'
+import { SortHeader, type SortDirection } from '@/components/discover/SortHeader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
 import { compact, percent, rating } from '@/lib/format'
+import { useUrlState } from '@/lib/url-state'
 import { NotFoundPage } from './NotFoundPage'
 
 function formatMetric(label: string, value: number | null): string {
@@ -18,9 +21,33 @@ function formatMetric(label: string, value: number | null): string {
   return compact(value)
 }
 
+const SORT_KEYS = ['rank', 'title', 'genres', 'metric'] as const
+type SortKey = (typeof SORT_KEYS)[number]
+type Item = Schemas['CollectionItem']
+
 export function CollectionPage() {
   const { collectionId = '' } = useParams()
   const collection = useCollection(collectionId)
+  const { get, update } = useUrlState()
+  // Default order is the collection's ranking: highest metric first.
+  const sort = (SORT_KEYS as readonly string[]).includes(get('sort') ?? '')
+    ? (get('sort') as SortKey)
+    : 'metric'
+  const dir: SortDirection =
+    get('dir') === 'asc'
+      ? 'asc'
+      : get('dir') === 'desc'
+        ? 'desc'
+        : sort === 'metric'
+          ? 'desc'
+          : 'asc'
+
+  function sortBy(key: SortKey) {
+    // First click: numbers high to low, text A to Z. Second click reverses.
+    const firstDirection: SortDirection = key === 'metric' ? 'desc' : 'asc'
+    const next: SortDirection = sort === key ? (dir === 'asc' ? 'desc' : 'asc') : firstDirection
+    update({ sort: key, dir: next })
+  }
   const collections = useCollections()
 
   if (collection.error instanceof ApiError && collection.error.status === 404) {
@@ -42,6 +69,15 @@ export function CollectionPage() {
   }
 
   const data = collection.data
+  const items = [...data.items]
+  const compare: Record<SortKey, (a: Item, b: Item) => number> = {
+    rank: (a, b) => a.rank - b.rank,
+    title: (a, b) => a.movie.title.localeCompare(b.movie.title),
+    genres: (a, b) => (a.movie.genres[0] ?? '').localeCompare(b.movie.genres[0] ?? ''),
+    metric: (a, b) => (a.metric_value ?? -Infinity) - (b.metric_value ?? -Infinity),
+  }
+  items.sort(compare[sort])
+  const sortedItems = dir === 'asc' ? items : items.reverse()
   return (
     <div>
       <header className="-mx-6 flex items-end gap-6 bg-gradient-to-b from-pill to-surface px-6 pb-6 pt-8 max-sm:-mx-4 max-sm:flex-col max-sm:items-start max-sm:px-4">
@@ -64,22 +100,38 @@ export function CollectionPage() {
       <table className="mt-4 w-full text-sm">
         <thead className="border-b text-left text-subtle">
           <tr>
-            <th scope="col" className="w-10 py-2 pl-3 font-normal">
-              #
-            </th>
-            <th scope="col" className="py-2 font-normal">
-              Title
-            </th>
-            <th scope="col" className="py-2 font-normal max-md:hidden">
-              Genres
-            </th>
-            <th scope="col" className="py-2 pr-3 text-right font-normal">
-              {data.metric_label}
-            </th>
+            <SortHeader
+              label="#"
+              className="w-10 pl-3"
+              active={sort === 'rank'}
+              direction={dir}
+              onSort={() => sortBy('rank')}
+            />
+            <SortHeader
+              label="Title"
+              active={sort === 'title'}
+              direction={dir}
+              onSort={() => sortBy('title')}
+            />
+            <SortHeader
+              label="Genres"
+              className="max-md:hidden"
+              active={sort === 'genres'}
+              direction={dir}
+              onSort={() => sortBy('genres')}
+            />
+            <SortHeader
+              label={data.metric_label}
+              align="right"
+              className="pr-3"
+              active={sort === 'metric'}
+              direction={dir}
+              onSort={() => sortBy('metric')}
+            />
           </tr>
         </thead>
         <tbody>
-          {data.items.map((item) => (
+          {sortedItems.map((item) => (
             <tr key={item.movie.title_id} className="group hover:bg-hover">
               <td className="rounded-l-md py-2 pl-3 tabular text-subtle">{item.rank}</td>
               <td className="py-2">
