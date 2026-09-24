@@ -122,7 +122,7 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
   (`interpret=false`), a hint says "Press Enter to let AI infer filters". Previous results stay
   visible while new ones load.
 - `InterpretationNote`: "Searching for: comedy" when the LLM rewrote the query; a short note when
-  status is `disabled` or `failed`.
+  status is `disabled`, `failed` or `rate_limited`.
 - `FilterBar`: applied filters as removable chips, and an "Add filter" popover (genres, years,
   country, platform, person). Any change sets `interpret=false` and `q=semantic_query`.
 - Results as a grid of `MovieCard`s: poster, title, year, genres (max 3), rating, match score as
@@ -196,16 +196,28 @@ Ask the data:
   assistant before it is added).
 - A chat column: messages in bubbles (user right, assistant left), a multiline input with Enter to
   send and Shift+Enter for a new line, and suggested questions as pills before the first message.
+- The input bar stays pinned to the bottom of the screen (above the bottom nav on phones) while the
+  messages scroll. It grows with its text up to 6 lines and keeps focus after sending.
+- Chat flow: the question appears at once as a user bubble; a typing indicator (three dots) shows
+  while the assistant works; the reply's text then appears word by word over at most 1.5 s (shown
+  whole with reduced motion or when restored from history). The view follows new messages only while
+  the user is at the bottom; after scrolling up, a "Jump to latest" button appears. A request that
+  fails shows the error in the conversation with a "Try again" button that resends the same
+  question.
 - Each assistant reply shows a status label: "Answered from data", "No data for this question",
-  "Outside the dataset", "Unavailable" (disabled), "Could not verify" (failed). `conversation`
-  replies have no label.
+  "Outside the dataset", "Unavailable" (disabled), "Could not verify" (failed), "Limit reached"
+  (rate_limited, with "I've reached my usage limit for now. Please try again in a few minutes.").
+  `conversation` replies have no label. A 429 from the API is shown the same way.
 - Replies render short paragraphs, `- ` bullets and `**bold**`; no other markup is interpreted.
 - Under each reply, a collapsed "How this was answered" section lists the evidence: the purpose and
   the first 20 rows in a table with readable column names (`streams_2024` → "Streams 2024") and
   formatted numbers, plus the total row count. The SQL is hidden behind a "Show query" button.
 - A permanent note above the input: "Answers use only the datasets: consumption for AR, BR, CO, MX on
   4 platforms (Jan 2023–Jun 2026) and one availability snapshot."
-- The conversation lives in component state only; reloading clears it.
+- The conversation is saved in the browser (`localStorage`, key `ask-history`, last 40 messages,
+  evidence tables cut to their first 20 rows), so it survives reloads and returning to the tab. Only
+  this browser sees it; nothing is stored on the server. If storage is unavailable or full, the chat
+  works as before without saving. A "New chat" button above the conversation clears it.
 
 ## Categories are links
 
@@ -241,7 +253,7 @@ Every data view handles all of these:
 | Missing field | "—" for scalars; the section is hidden when a list is empty and that is the only content |
 | No availability | "Not available on any tracked platform in the Jun 2026 snapshot." |
 | No consumption | "No consumption recorded in Argentina, Brazil, Colombia or Mexico." |
-| LLM `disabled` / `failed` | Texts from `06-llm.md` |
+| LLM `disabled` / `failed` / `rate_limited` | Texts from `06-llm.md` |
 | Unknown movie (404) | `NotFoundPage` content inside the layout |
 | Engagement > 100% | Value shown with a tooltip: "Above 100%: viewers watched more minutes than the runtime per stream (rewatches)." |
 
