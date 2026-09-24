@@ -189,8 +189,10 @@ Ask the data:
   send and Shift+Enter for a new line, and suggested questions as pills before the first message.
 - Each assistant reply shows a status label: "Answered from data", "No data for this question",
   "Outside the dataset", "Unavailable" (disabled), "Could not verify" (failed).
-- Under each reply, a collapsed "How this was answered" section lists the evidence: purpose, SQL in
-  a code block, and the first 20 rows in a table with the total row count.
+- Replies render short paragraphs, `- ` bullets and `**bold**`; no other markup is interpreted.
+- Under each reply, a collapsed "How this was answered" section lists the evidence: the purpose and
+  the first 20 rows in a table with readable column names (`streams_2024` → "Streams 2024") and
+  formatted numbers, plus the total row count. The SQL is hidden behind a "Show query" button.
 - A permanent note above the input: "Answers use only the datasets: consumption for AR, BR, CO, MX on
   4 platforms (Jan 2023–Jun 2026) and one availability snapshot."
 - The conversation lives in component state only; reloading clears it.

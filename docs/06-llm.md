@@ -184,6 +184,10 @@ tools, and every answer carries the evidence it came from.
   estimate, extrapolate or use outside knowledge for figures. If a query returns no rows, answer with
   `no_data` and say which filter had no data. If the question needs data the datasets do not have,
   answer with `out_of_scope` and name the missing data. Answer in the language of the question.
+- Style: conversational, like an analyst answering a colleague. First sentence answers the question
+  directly; then up to 4 short bullets (`- `) with the supporting figures; last, one short line on
+  what the figures cover (period, countries, platforms). Numbers with thousands separators or
+  compact units (341.9K). `**bold**` only for the key figure. At most 120 words.
 
 ### Answer validation
 
