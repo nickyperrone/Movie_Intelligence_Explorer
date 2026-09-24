@@ -218,9 +218,22 @@ Licensing:
   facts.
 
 Concepts:
+- Intro in three steps: "Describe up to 3 projects", "We find the most similar movies in the
+  catalog", "We compare how those movies did in their first 6 months". A "Try an example" button
+  fills three sample loglines.
 - Up to three `LoglineInput`s (textarea, 20–600 characters, counter), "Add concept", "Evaluate".
-- Results: one column per concept, ordered by rank: rank, demand index, saturation, top 5
-  comparables, demand by country bars. `MemoPanel` with the summary and one sentence per concept.
+- Results, top to bottom:
+  1. Decision panel: a label ("Clear lead", "Narrow lead", "Too close to call", "One concept",
+     "Not enough evidence"), the headline, and the reasons, all from the API (computed in code).
+  2. One panel per concept, in rank order: rank, logline, demand index with "N× a typical movie",
+     evidence level chip, the concept's reasons, the range chart (each similar movie as a dot, middle
+     half, median, dashed line for the typical movie), demand by country bars, and a collapsed
+     "Similar movies used" table: title (link), similarity, first month, first-6-month streams or
+     "Under 6 months of data".
+  3. "How this was calculated": the method as numbered steps with the actual values (similarity
+     cutoff, the month the 6-month window must start by, the typical movie's streams, evidence
+     levels and the decision rule).
+  4. `MemoPanel` with the generated summary, labeled as generated.
 
 Ask the data:
 - The assistant has no name: its replies show a pink clapperboard avatar and no label above the

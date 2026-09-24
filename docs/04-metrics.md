@@ -79,9 +79,14 @@ The 100-stream floor keeps tiny titles from topping growth rankings (a move from
 | Platform fit | For comparables, per C platform in the target country: `streams_per_title` over all months, and the number of comparables with streams there |
 | Whitespace | Countries of C where at least 3 comparables have streams and the target movie has no availability row in B |
 | Currently on target | Whether the movie has an availability row in the target country on any B platform mapped from the target C platform (`03-data.md`) |
-| Demand index (concept) | Median, across eligible comparables, of first-6-month streams summed over all countries and platforms (window from the movie's overall `first_active_month`) |
-| Saturation (concept) | Number of comparables whose `first_active_month` is within the last 12 months of data |
+| Demand index (concept) | Median, across eligible comparables, of first-6-month streams summed over all countries and platforms (window from the movie's overall `first_active_month`). Requires at least 3 eligible comparables; otherwise null |
+| Concept range | 25th percentile, median and 75th percentile of the same values (an `ExpectedRange`) |
+| Typical movie (concept benchmark) | Median first-6-month streams, over all countries and platforms, of every eligible movie in the catalog |
+| Demand vs typical | `demand index / typical movie` |
+| Evidence level (concept) | By eligible comparables: `high` 10 or more, `medium` 5 to 9, `low` 3 or 4, `insufficient_evidence` under 3 |
+| Saturation (concept) | Number of comparables whose `first_active_month` is within the last 12 months of data. "Crowded" when it is at least 3 and at least half of the comparables |
 | Concept ranking | Concepts ordered by demand index descending; concepts without a demand index go last |
+| Concept decision | Compares the first two ranked concepts with a demand index. `insufficient_evidence`: no concept has one. `single`: only one has one. `too_close`: the leader's demand index is less than 1.15 times the second's. `clear_lead`: the leader's demand index is above the second's 75th percentile and the leader's evidence level is `medium` or `high`. `narrow_lead`: any other case |
 
 ## Collections (Discover)
 

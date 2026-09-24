@@ -86,8 +86,11 @@ compare project ideas, and ask your own question (the chat).
   rows it came from. When the data cannot answer the question, the reply says so and explains what
   is missing; it never estimates.
 - Concept evaluator (`/decide?tab=concepts`): 1 to 3 loglines of shelved or pitched projects. For
-  each: comparables, demand by country and platform, recent saturation, and a side-by-side
-  comparison with a generated memo that ranks them.
+  each: the similar catalog movies and how each did in its first 6 months, the demand index against
+  a typical movie, how much evidence backs it, demand by country, and recent saturation. A decision
+  computed from the data (clear lead, narrow lead, too close to call, or not enough evidence) with
+  the reasons behind it, a step-by-step explanation of the method, and a generated memo that must
+  agree with the decision.
 
 ## User stories
 

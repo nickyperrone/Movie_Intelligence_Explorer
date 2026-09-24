@@ -143,7 +143,8 @@ Fixed caveats, always included:
 ### `write_concepts_memo(facts) -> ConceptsMemo`
 
 Timeout 20 s. Input: for each concept, its logline, demand index, saturation and top comparables,
-plus the ranking computed in code. Output `{"summary": "...", "per_concept": ["one sentence per
+plus the ranking and the decision (status and headline) computed in code; the memo must agree with
+the decision. Output `{"summary": "...", "per_concept": ["one sentence per
 concept, same order"]}`. The ranking itself comes from code. The API adds the fixed caveats. Status
 `insufficient_evidence` when no concept has a demand index (no call is made).
 

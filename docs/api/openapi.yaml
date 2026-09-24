@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.5.0
+  version: 1.6.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -1233,23 +1233,48 @@ components:
     ConceptResult:
       type: object
       additionalProperties: false
-      required: [index, logline, rank, demand_index, eligible_count, saturation, comparables, demand_by_country]
+      description: "evidence, demand_vs_typical, evidence_level, crowded, comparable_evidence and reasons were added in 1.6.0 (docs/04-metrics.md)."
+      required: [index, logline, rank, demand_index, eligible_count, saturation, comparables, demand_by_country, evidence, demand_vs_typical, evidence_level, crowded, comparable_evidence, reasons]
       properties:
         index: { type: integer, minimum: 0, description: "Position in the request" }
         logline: { type: string }
         rank: { type: integer, minimum: 1 }
-        demand_index: { type: [number, "null"] }
+        demand_index: { type: [number, "null"], description: "Null with fewer than 3 eligible comparables (since 1.6.0)" }
         eligible_count: { type: integer, minimum: 0 }
         saturation: { type: integer, minimum: 0 }
         comparables: { type: array, maxItems: 20, items: { $ref: "#/components/schemas/ScoredMovie" } }
         demand_by_country: { type: array, items: { $ref: "#/components/schemas/ShareItem" } }
+        evidence: { $ref: "#/components/schemas/ExpectedRange" }
+        demand_vs_typical: { type: [number, "null"] }
+        evidence_level: { $ref: "#/components/schemas/EvidenceLevel" }
+        crowded: { type: boolean }
+        comparable_evidence: { type: array, maxItems: 20, items: { $ref: "#/components/schemas/Comparable" }, description: "Same movies as comparables, with their first-6-month streams over all countries and platforms" }
+        reasons: { type: array, items: { type: string }, description: "Plain sentences written by code from the figures above" }
+
+    EvidenceLevel:
+      type: string
+      enum: [high, medium, low, insufficient_evidence]
+
+    ConceptDecision:
+      type: object
+      additionalProperties: false
+      required: [status, headline, reasons]
+      properties:
+        status: { type: string, enum: [clear_lead, narrow_lead, too_close, single, insufficient_evidence] }
+        headline: { type: string }
+        reasons: { type: array, items: { type: string } }
 
     ConceptsEvaluation:
       type: object
       additionalProperties: false
-      required: [concepts]
+      description: "decision, typical_movie, window_start_limit and similarity_cutoff were added in 1.6.0."
+      required: [concepts, decision, typical_movie, window_start_limit, similarity_cutoff]
       properties:
         concepts: { type: array, items: { $ref: "#/components/schemas/ConceptResult" } }
+        decision: { $ref: "#/components/schemas/ConceptDecision" }
+        typical_movie: { type: [number, "null"], description: "Median first-6-month streams of every eligible movie" }
+        window_start_limit: { $ref: "#/components/schemas/Month" }
+        similarity_cutoff: { type: number, description: "Standard deviations above the catalog mean a movie's similarity must reach" }
 
     ConceptsMemo:
       type: object
