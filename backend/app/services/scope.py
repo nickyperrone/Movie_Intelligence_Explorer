@@ -31,6 +31,7 @@ class ConsumptionScope:
     countries: list[str] = field(default_factory=list)
     platforms: list[str] = field(default_factory=list)
     genres: list[str] = field(default_factory=list)
+    themes: list[str] = field(default_factory=list)
     distributors: list[str] = field(default_factory=list)
 
     def without(self, *names: str) -> "ConsumptionScope":
@@ -66,6 +67,12 @@ class ConsumptionScope:
                 "(SELECT title_id FROM movies WHERE list_contains(?, primary_genre))"
             )
             params.append(self.genres)
+        if self.themes:
+            conditions.append(
+                f"{alias}.title_id IN "
+                "(SELECT title_id FROM movie_themes WHERE list_contains(?, theme_id))"
+            )
+            params.append(self.themes)
         if self.distributors:
             conditions.append(
                 f"{alias}.title_id IN "

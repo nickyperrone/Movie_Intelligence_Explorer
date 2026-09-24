@@ -1,7 +1,11 @@
 """API figures compared with pandas computations over the raw CSVs (docs/04-metrics.md)."""
 
+import json
+
 import pandas as pd
 import pytest
+
+from app.config import settings
 
 API = "/api/v1"
 
@@ -15,6 +19,7 @@ FILTER_CASES = [
     {"genres": ["Comedy"]},
     {"genres": ["Action", "Horror"], "platforms": ["Disney+"]},
     {"distributors": ["Sony"]},
+    {"themes": ["t09"], "countries": ["Mexico"]},
     {"start": "2023-01", "end": "2026-06", "distributors": ["Netflix"], "countries": ["Brazil"]},
 ]
 
@@ -29,6 +34,10 @@ def filter_raw(consumption, movies, availability, case):
         rows = rows[rows["platform"].isin(case["platforms"])]
     if case.get("genres"):
         ids = movies.loc[movies["PRIMARY_GENRE"].isin(case["genres"]), "TITLE_ID"]
+        rows = rows[rows["imdb_id"].isin(ids)]
+    if case.get("themes"):
+        themes = json.loads((settings.curated_dir / "themes.json").read_text())["themes"]
+        ids = {tid for t in themes if t["theme_id"] in case["themes"] for tid in t["title_ids"]}
         rows = rows[rows["imdb_id"].isin(ids)]
     if case.get("distributors"):
         ids = availability.loc[

@@ -17,9 +17,10 @@ def dashboard_request(
     countries: Annotated[list[str], Query()] = [],
     platforms: Annotated[list[str], Query()] = [],
     genres: Annotated[list[str], Query()] = [],
+    themes: Annotated[list[str], Query()] = [],
     distributors: Annotated[list[str], Query()] = [],
 ) -> DashboardRequest:
-    return dashboard.resolve(start, end, countries, platforms, genres, distributors)
+    return dashboard.resolve(start, end, countries, platforms, genres, themes, distributors)
 
 
 Request = Annotated[DashboardRequest, Depends(dashboard_request)]

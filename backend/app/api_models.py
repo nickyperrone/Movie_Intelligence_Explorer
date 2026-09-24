@@ -281,6 +281,7 @@ class DashboardFilters(BaseModel):
     countries: list[str]
     platforms: list[str]
     genres: list[str]
+    themes: list[str]
     distributors: list[str]
 
 

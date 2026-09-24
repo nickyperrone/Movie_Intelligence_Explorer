@@ -62,6 +62,7 @@ def resolve(
     countries: list[str],
     platforms: list[str],
     genres: list[str],
+    themes: list[str],
     distributors: list[str],
 ) -> DashboardRequest:
     first_month, last_month = data_months()
@@ -81,6 +82,7 @@ def resolve(
         countries=countries,
         platforms=platforms,
         genres=genres,
+        themes=themes,
         distributors=distributors,
     )
     length = months_between(start_month, end_month)
@@ -96,6 +98,7 @@ def resolve(
         countries=countries,
         platforms=platforms,
         genres=genres,
+        themes=themes,
         distributors=distributors,
     )
     return DashboardRequest(scope=scope, filters=filters, previous=previous)

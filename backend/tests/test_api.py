@@ -11,7 +11,7 @@ API = "/api/v1"
 def test_health_reports_llm_disabled_without_key(client):
     assert client.get(f"{API}/health").json() == {
         "status": "ok",
-        "api_version": "1.2.0",
+        "api_version": "1.3.0",
         "llm_enabled": settings.llm_enabled,
     }
 

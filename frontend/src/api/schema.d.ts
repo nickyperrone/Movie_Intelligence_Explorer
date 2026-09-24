@@ -627,6 +627,7 @@ export interface components {
             countries: string[];
             platforms: string[];
             genres: string[];
+            themes: string[];
             distributors: string[];
         };
         Kpi: {
@@ -924,6 +925,8 @@ export interface components {
         ConsumptionPlatforms: string[];
         /** @description Primary genres. Any listed value matches. */
         PrimaryGenres: string[];
+        /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+        Themes: string[];
         /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
         Distributors: string[];
     };
@@ -1198,6 +1201,8 @@ export interface operations {
                 genres?: components["parameters"]["PrimaryGenres"];
                 /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
                 distributors?: components["parameters"]["Distributors"];
+                /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+                themes?: components["parameters"]["Themes"];
             };
             header?: never;
             path?: never;
@@ -1232,6 +1237,8 @@ export interface operations {
                 genres?: components["parameters"]["PrimaryGenres"];
                 /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
                 distributors?: components["parameters"]["Distributors"];
+                /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+                themes?: components["parameters"]["Themes"];
                 group_by?: "platform" | "country";
             };
             header?: never;
@@ -1268,6 +1275,8 @@ export interface operations {
                 genres?: components["parameters"]["PrimaryGenres"];
                 /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
                 distributors?: components["parameters"]["Distributors"];
+                /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+                themes?: components["parameters"]["Themes"];
             };
             header?: never;
             path?: never;
@@ -1302,6 +1311,8 @@ export interface operations {
                 genres?: components["parameters"]["PrimaryGenres"];
                 /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
                 distributors?: components["parameters"]["Distributors"];
+                /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+                themes?: components["parameters"]["Themes"];
             };
             header?: never;
             path?: never;
@@ -1336,6 +1347,8 @@ export interface operations {
                 genres?: components["parameters"]["PrimaryGenres"];
                 /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
                 distributors?: components["parameters"]["Distributors"];
+                /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+                themes?: components["parameters"]["Themes"];
                 sort?: components["schemas"]["TitleSort"];
                 limit?: number;
                 offset?: number;
@@ -1373,6 +1386,8 @@ export interface operations {
                 genres?: components["parameters"]["PrimaryGenres"];
                 /** @description Parent distributors from dataset B. A movie matches if any of its distributors is listed. */
                 distributors?: components["parameters"]["Distributors"];
+                /** @description Theme ids (added in 1.3.0). A movie matches if its theme is listed. */
+                themes?: components["parameters"]["Themes"];
             };
             header?: never;
             path?: never;
