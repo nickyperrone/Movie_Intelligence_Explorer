@@ -185,8 +185,9 @@ Concepts:
   comparables, demand by country bars. `MemoPanel` with the summary and one sentence per concept.
 
 Ask the data:
-- The assistant is Reel: a pink clapperboard avatar and the name above each of its replies. The
-  chat opens with Reel's greeting, what it can answer, and the suggested questions.
+- The assistant has no name: its replies show a pink clapperboard avatar and no label above the
+  bubble. The chat opens with a greeting ("Hi! Ask me about ..."), what it can answer, and the
+  suggested questions.
 - A chat column: messages in bubbles (user right, assistant left), a multiline input with Enter to
   send and Shift+Enter for a new line, and suggested questions as pills before the first message.
 - Each assistant reply shows a status label: "Answered from data", "No data for this question",
