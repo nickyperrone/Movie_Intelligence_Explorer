@@ -1,0 +1,23 @@
+# Environment
+.env
+
+# Generated data (rebuilt from data/raw by the pipeline)
+data/processed/*
+!data/processed/.gitkeep
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.hypothesis/
+
+# Node
+node_modules/
+frontend/dist/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
