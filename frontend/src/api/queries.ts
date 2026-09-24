@@ -120,11 +120,17 @@ export function useDashboardSummary(query: DashboardQuery) {
   })
 }
 
-export function useDashboardTrend(query: DashboardQuery) {
+export function useDashboardTrend(
+  query: DashboardQuery,
+  groupBy?: 'platform' | 'country',
+  enabled = true,
+) {
   return useQuery({
-    queryKey: ['dashboard', 'trend', query],
-    queryFn: () => unwrap(api.GET('/dashboard/trend', { params: { query } })),
+    queryKey: ['dashboard', 'trend', query, groupBy],
+    queryFn: () =>
+      unwrap(api.GET('/dashboard/trend', { params: { query: { ...query, group_by: groupBy } } })),
     placeholderData: keepPreviousData,
+    enabled,
   })
 }
 

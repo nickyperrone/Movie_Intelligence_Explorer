@@ -33,7 +33,7 @@ themes:
 	$(BACKEND) uv run python -m pipeline.build_themes
 
 back:
-	$(BACKEND) uv run uvicorn app.main:app --reload --port $(API_PORT)
+	$(BACKEND) uv run uvicorn app.main:app --reload --reload-dir app --port $(API_PORT)
 
 front:
 	$(FRONTEND) npm run dev

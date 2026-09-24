@@ -76,10 +76,19 @@ export function PerformanceSection({ titleId }: { titleId: string }) {
               <TrendChart
                 metricLabel={metric === 'hours' ? 'Viewing hours' : 'Streams'}
                 format={format}
-                points={data.series.map((point) => ({
-                  month: point.month,
-                  value: metric === 'hours' ? point.viewing_hours : point.streams,
-                }))}
+                unit={metric === 'hours' ? ' h' : ''}
+                months={data.series.map((point) => point.month)}
+                series={[
+                  {
+                    key: 'value',
+                    name: metric === 'hours' ? 'Viewing hours' : 'Streams',
+                    label: metric === 'hours' ? 'Viewing hours' : 'Streams',
+                    color: '#ff6fcf',
+                    values: data.series.map((point) =>
+                      metric === 'hours' ? point.viewing_hours : point.streams,
+                    ),
+                  },
+                ]}
               />
             )}
           </Panel>

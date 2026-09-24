@@ -1,5 +1,5 @@
 import { CountryLabel, GenreLabel, PlatformLabel } from '@/components/common/Brand'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Schemas } from '@/api/client'
 import {
   useDashboardBreakdown,
@@ -7,21 +7,23 @@ import {
   useDashboardMatrix,
   useDashboardSummary,
   useDashboardTitles,
-  useDashboardTrend,
   useFilterOptions,
   type DashboardQuery,
 } from '@/api/queries'
 import { BarList } from '@/components/charts/BarList'
 import { MatrixGrid } from '@/components/charts/MatrixGrid'
-import { TrendChart } from '@/components/charts/TrendChart'
-import { Pill } from '@/components/common/Pill'
+import { SourceNote } from '@/components/common/SourceNote'
 import { EmptyState, ErrorState, Panel } from '@/components/common/States'
 import { ChangesPanel } from '@/components/dashboard/ChangesPanel'
 import { DashboardToolbar } from '@/components/dashboard/DashboardToolbar'
+import { KpiDetail } from '@/components/dashboard/KpiDetail'
 import { KpiRow } from '@/components/dashboard/KpiRow'
+import type { KpiKey } from '@/components/dashboard/kpis'
+import { SOURCES } from '@/components/dashboard/sources'
+import { TrendPanel, type Compare } from '@/components/dashboard/TrendPanel'
 import { TopTitlesTable } from '@/components/dashboard/TopTitlesTable'
 import { Skeleton } from '@/components/ui/skeleton'
-import { compact, hours, monthRange, percent } from '@/lib/format'
+import { compact, monthRange, percent } from '@/lib/format'
 import { useUrlState } from '@/lib/url-state'
 
 const FILTER_KEYS = ['start', 'end', 'countries', 'platforms', 'genres', 'distributors'] as const
@@ -37,7 +39,7 @@ function ShareCard({
 }) {
   const breakdown = useDashboardBreakdown(query, dimension)
   return (
-    <Panel title={title}>
+    <Panel title={title} aside={<SourceNote>{SOURCES.shares}</SourceNote>}>
       {breakdown.isError ? (
         <ErrorState error={breakdown.error} onRetry={() => breakdown.refetch()} />
       ) : !breakdown.data ? (
@@ -80,7 +82,15 @@ function EfficiencyCard({
     .sort((a, b) => (b.streams_per_title ?? 0) - (a.streams_per_title ?? 0))
     .slice(0, 10)
   return (
-    <Panel title={title} aside={<span className="text-xs text-subtle">Streams per title</span>}>
+    <Panel
+      title={title}
+      aside={
+        <span className="flex items-center gap-2 text-xs text-subtle">
+          Streams per title
+          <SourceNote>{dimension === 'theme' ? SOURCES.themes : SOURCES.genres}</SourceNote>
+        </span>
+      }
+    >
       {breakdown.isError ? (
         <ErrorState error={breakdown.error} onRetry={() => breakdown.refetch()} />
       ) : !breakdown.data ? (
@@ -124,14 +134,15 @@ export function DashboardPage() {
     [get, getList],
   )
   const metric = get('metric') === 'hours' ? 'hours' : 'streams'
+  const compare = (get('compare') ?? 'total') as Compare
+  const [openKpi, setOpenKpi] = useState<KpiKey | null>(null)
   const sort = (get('sort') ?? 'streams') as Schemas['TitleSort']
 
   const summary = useDashboardSummary(query)
-  const trend = useDashboardTrend(query)
   const matrix = useDashboardMatrix(query)
   const titles = useDashboardTitles(query, sort)
   const changes = useDashboardChanges(query)
-  const period = summary.data?.filters ?? { start: query.start ?? '', end: query.end ?? '' }
+  const period = summary.data?.filters
 
   return (
     <div className="space-y-6 pt-2">
@@ -141,8 +152,8 @@ export function DashboardPage() {
           Catalog <span className="text-brand">performance</span>
         </h1>
         <p className="mt-2 text-subtle">
-          {monthRange(period.start, period.end)} · streaming consumption in Argentina, Brazil,
-          Colombia and Mexico
+          {period ? monthRange(period.start, period.end) : '…'} · streaming consumption in
+          Argentina, Brazil, Colombia and Mexico
         </p>
       </header>
 
@@ -159,44 +170,27 @@ export function DashboardPage() {
       {summary.isError ? (
         <ErrorState error={summary.error} onRetry={() => summary.refetch()} />
       ) : (
-        <KpiRow summary={summary.data} />
+        <KpiRow summary={summary.data} onOpen={setOpenKpi} />
       )}
 
-      <Panel
-        title={metric === 'hours' ? 'Viewing hours per month' : 'Streams per month'}
-        aside={
-          <div className="flex gap-2">
-            <Pill active={metric === 'streams'} onClick={() => update({ metric: undefined })}>
-              Streams
-            </Pill>
-            <Pill active={metric === 'hours'} onClick={() => update({ metric: 'hours' })}>
-              Hours
-            </Pill>
-          </div>
-        }
-      >
-        {trend.isError ? (
-          <ErrorState error={trend.error} onRetry={() => trend.refetch()} />
-        ) : !trend.data ? (
-          <Skeleton className="h-[280px]" />
-        ) : (
-          <TrendChart
-            metricLabel={metric === 'hours' ? 'Viewing hours' : 'Streams'}
-            format={metric === 'hours' ? hours : compact}
-            points={trend.data.series.map((point) => ({
-              month: point.month,
-              value: metric === 'hours' ? point.viewing_hours : point.streams,
-            }))}
-          />
-        )}
-      </Panel>
+      <TrendPanel
+        query={query}
+        summary={summary.data}
+        metric={metric}
+        compare={compare}
+        onMetric={(next) => update({ metric: next === 'streams' ? undefined : next })}
+        onCompare={(next) => update({ compare: next === 'total' ? undefined : next })}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ShareCard title="Share of streams by platform" query={query} dimension="platform" />
         <ShareCard title="Share of streams by country" query={query} dimension="country" />
       </div>
 
-      <Panel title="Streams per title, platform × country">
+      <Panel
+        title="Streams per title, platform × country"
+        aside={<SourceNote>{SOURCES.matrix}</SourceNote>}
+      >
         {matrix.isError ? (
           <ErrorState error={matrix.error} onRetry={() => matrix.refetch()} />
         ) : !matrix.data ? (
@@ -216,9 +210,10 @@ export function DashboardPage() {
       <Panel
         title="Top titles"
         aside={
-          titles.data && (
-            <span className="text-xs text-subtle">{titles.data.pages[0].total} titles</span>
-          )
+          <span className="flex items-center gap-2 text-xs text-subtle">
+            {titles.data && `${titles.data.pages[0].total} titles`}
+            <SourceNote>{SOURCES.titles}</SourceNote>
+          </span>
         }
       >
         {titles.isError ? (
@@ -251,9 +246,17 @@ export function DashboardPage() {
       {changes.isError ? (
         <ErrorState error={changes.error} onRetry={() => changes.refetch()} />
       ) : changes.data ? (
-        <ChangesPanel changes={changes.data} />
+        <ChangesPanel changes={changes.data} source={<SourceNote>{SOURCES.changes}</SourceNote>} />
       ) : (
         <Skeleton className="h-48" />
+      )}
+      {summary.data && (
+        <KpiDetail
+          kpiKey={openKpi}
+          query={query}
+          summary={summary.data}
+          onClose={() => setOpenKpi(null)}
+        />
       )}
     </div>
   )

@@ -47,7 +47,13 @@ function MoverList({
   )
 }
 
-export function ChangesPanel({ changes }: { changes: Schemas['DashboardChanges'] }) {
+export function ChangesPanel({
+  changes,
+  source,
+}: {
+  changes: Schemas['DashboardChanges']
+  source: React.ReactNode
+}) {
   if (!changes.previous_period) {
     return (
       <Panel title="What changed">
@@ -62,8 +68,9 @@ export function ChangesPanel({ changes }: { changes: Schemas['DashboardChanges']
     <Panel
       title="What changed"
       aside={
-        <span className="text-xs text-subtle">
+        <span className="flex items-center gap-2 text-xs text-subtle">
           vs {monthRange(changes.previous_period.start, changes.previous_period.end)}
+          {source}
         </span>
       }
     >
