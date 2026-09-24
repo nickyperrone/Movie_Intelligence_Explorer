@@ -219,8 +219,8 @@ names are used.
 | `--text-muted` | `#b3b3b3` | Subtitles, secondary text, axis labels |
 | `--pink` | `#ff6fcf` | Accent: primary buttons (solid), active states, main chart series, bars |
 | `--brand-gradient` | `#ffd6f0 → #ff7ad6 → #e157f5` (left to right) | Only the logo and one highlighted word per page title. Never on buttons |
-| `--positive` | `#ff6fcf` | Positive changes (always with a + sign) |
-| `--negative` | `#a5a8ff` | Negative changes (always with a − sign), errors |
+| `--positive` | `#3ddc84` | Gains: positive changes and growth, always with a + sign |
+| `--negative` | `#ff5c5c` | Losses: negative changes, always with a − sign; errors |
 | `--warning` | `#ffa42b` | Engagement above 100%, "already available" warnings |
 
 - Dark only. The app does not switch to a light theme.
