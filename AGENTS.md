@@ -31,7 +31,7 @@ streaming availability and consumption in LATAM, with semantic search over the c
 | `make themes` | Rebuild `data/curated/themes.json` (needs `OPENAI_API_KEY`; review the output) |
 | `make back` | Run the API on :8000 with reload |
 | `make front` | Run the Vite dev server on :5173 (proxies `/api`) |
-| `make test` | ruff, pytest, tsc, eslint, vitest |
+| `make test` | ruff, pytest, tsc, oxlint, vitest |
 | `make eval` | Run the search evaluation set |
 | `make up` | Build and run the Docker image locally |
 
@@ -56,7 +56,7 @@ Full list in `docs/00-conventions.md`. The non-negotiable ones:
 - Domain names only. No `utils`, `helpers`, `data`, `info`, `manager`.
 - Routers handle HTTP only; services hold logic; only services run SQL.
 - Frontend components never call `fetch`; they use hooks from `frontend/src/api/queries.ts`.
-- LLM calls live only in `backend/app/services/llm.py`. The LLM never produces numbers: it writes
+- LLM calls live only in `backend/app/services/llm.py` and `backend/app/services/assistant.py`. The LLM never produces numbers: it writes
   text from facts computed in SQL. Every LLM feature must work in a degraded mode without a key.
 - Catch specific exceptions. The only broad catch is at the LLM boundary, which logs and returns a
   documented status.

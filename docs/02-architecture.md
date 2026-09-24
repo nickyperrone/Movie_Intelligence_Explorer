@@ -114,10 +114,12 @@ block the page.
 | API versioning | Path prefix `/api/v1` | Header versioning | Visible, testable from a browser, works with any proxy. |
 | Contract | Hand-written OpenAPI, types generated | Code-first OpenAPI | Spec-driven: the contract is reviewed before code; backend and frontend types cannot drift. |
 | Themes | Precomputed, reviewed, committed JSON | Clustering at build time | Cluster names come from an LLM; a person reviews them once. Builds stay deterministic and need no API key. |
+| Chat over data | LLM with two tools: validated read-only SQL and semantic search; answers show their SQL and rows | Free-form answers from the model; full text-to-SQL with write access | Every number is traceable to a query result, and the database cannot be modified or used to read files |
 | Data build | Inside the Docker build | Commit processed files | Every image is rebuilt from the raw CSVs, so the data is reproducible. |
 
 ## Acceptance criteria
 
 - `routers/` contains no SQL; `services/` does not import `fastapi`.
-- The only module importing `openai` is `services/llm.py` (and `pipeline/build_themes.py`).
+- The only modules importing `openai` are `services/llm.py`, `services/assistant.py` and
+  `pipeline/build_themes.py`.
 - The container serves `/`, `/discover`, `/movies/tt12042730` (SPA) and `/api/v1/health` (JSON).

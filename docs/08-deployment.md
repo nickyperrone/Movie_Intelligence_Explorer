@@ -55,7 +55,7 @@ Runs on pushes and pull requests to `main`.
 | Job | Steps |
 |---|---|
 | `backend` | `uv sync`, `ruff check`, `ruff format --check`, `make data`, `pytest` (includes contract tests) |
-| `frontend` | `npm ci`, `tsc --noEmit`, `eslint`, `vitest run`, `vite build` |
+| `frontend` | `npm ci`, `tsc --noEmit`, `oxlint`, `vitest run`, `vite build` |
 | `codegen` | `make codegen`, then `git diff --exit-code` |
 
 The Hugging Face cache is cached between runs to avoid downloading the model every time.

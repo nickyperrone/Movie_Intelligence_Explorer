@@ -12,7 +12,7 @@ Recharts. All UI copy in English.
 | `/discover/:collectionId` | `CollectionPage` | — |
 | `/search` | `SearchPage` | `q`, `interpret`, `genres`, `year_min`, `year_max`, `countries`, `platforms`, `people` |
 | `/movies/:titleId` | `MoviePage` | `countries`, `platforms`, `metric` |
-| `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `concepts`), `title`, `platform`, `country` |
+| `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `concepts` \| `ask`), `title`, `platform`, `country` |
 | `*` | `NotFoundPage` | — |
 
 `src/lib/url-state.ts` reads and writes these parameters. Filters, tabs and search text change the
@@ -20,12 +20,16 @@ URL, so the back button and shared links restore the view. Loglines are not put 
 
 ## Layout
 
-`AppLayout`: a sticky header and a centered content column (max width 1280 px, 16 px side padding
-on small screens).
+The whole app follows the layout patterns of a music streaming desktop client:
 
-Header: app name "Movie Intelligence" (link to `/`), navigation (Dashboard, Discover, Search,
-Decision Studio), and a search input. `/` focuses the input unless the user is typing in a field.
-Enter navigates to `/search?q=...`.
+- `AppLayout`: a fixed left sidebar (240 px, collapses to icons below 1024 px, becomes a bottom bar
+  below 640 px) and a main panel with rounded corners on a black frame.
+- Sidebar: app name "Movie Intelligence" and navigation items with icons (Dashboard, Discover,
+  Search, Decision Studio). The active item is white; the others are grey and turn white on hover.
+- Top bar inside the main panel: back and forward buttons (history), and a pill-shaped search input
+  with a search icon. `/` focuses it unless the user is typing in a field. Enter navigates to
+  `/search?q=...`.
+- Main panel content: 24 px padding (16 px on small screens), max width 1440 px.
 
 ## Pages
 
@@ -52,7 +56,7 @@ Enter navigates to `/search?q=...`.
 
 Modeled on a music streaming home screen: dark surface, pill filters, titled rows of square covers.
 
-- The page always uses the dark palette, independent of the system theme, so posters stand out.
+- Same dark palette as the rest of the app; posters and cover bands carry the color.
 - Top: pill filters `All`, `Top by country`, `Right now`, `By platform`, `Themes`. The active pill is
   filled white with dark text; the others are dark grey. The selection is kept in the URL
   (`/discover?section=country`). `All` shows every section; the others show one section.
@@ -100,7 +104,7 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 
 ### Decision Studio
 
-Tabs "Licensing" and "Concepts".
+Tabs "Licensing", "Concepts" and "Ask the data".
 
 Licensing:
 - Form: `TitlePicker` (combobox backed by `/movies/lookup`), platform select (C platforms), country
@@ -116,6 +120,17 @@ Concepts:
 - Up to three `LoglineInput`s (textarea, 20–600 characters, counter), "Add concept", "Evaluate".
 - Results: one column per concept, ordered by rank: rank, demand index, saturation, top 5
   comparables, demand by country bars. `MemoPanel` with the summary and one sentence per concept.
+
+Ask the data:
+- A chat column: messages in bubbles (user right, assistant left), a multiline input with Enter to
+  send and Shift+Enter for a new line, and suggested questions as pills before the first message.
+- Each assistant reply shows a status label: "Answered from data", "No data for this question",
+  "Outside the dataset", "Unavailable" (disabled), "Could not verify" (failed).
+- Under each reply, a collapsed "How this was answered" section lists the evidence: purpose, SQL in
+  a code block, and the first 20 rows in a table with the total row count.
+- A permanent note above the input: "Answers use only the datasets: consumption for AR, BR, CO, MX on
+  4 platforms (Jan 2023–Jun 2026) and one availability snapshot."
+- The conversation lives in component state only; reloading clears it.
 
 ## States
 
@@ -143,8 +158,8 @@ Every data view handles all of these:
 | How do two dimensions interact? | Table grid with color intensity |
 | Where does a value fall in a range? | Range band with median line and dots |
 
-Axis ticks and tooltips use `src/lib/format.ts` (`04-metrics.md`, "Display"). Colors come from CSS
-variables so light and dark themes both work. Every chart has an `aria-label` that states what it
+Axis ticks and tooltips use `src/lib/format.ts` (`04-metrics.md`, "Display"). Colors come from the CSS
+variables above. Every chart has an `aria-label` that states what it
 shows.
 
 ## Data access
@@ -158,11 +173,35 @@ shows.
 
 ## Visual direction
 
-- Neutral base (shadcn "zinc"), one accent color for data highlights, system light/dark theme.
-- Discover and collection pages use a dark surface; posters and cover bands carry the color. The
-  rest of the UI stays quiet and follows the system theme.
-- Inter font via `@fontsource-variable/inter` (bundled, no external requests).
-- Numbers use tabular figures in tables and KPI cards.
+Design patterns of a music streaming app, applied to every page. No third-party logos or brand
+names are used.
+
+| Token | Value | Use |
+|---|---|---|
+| `--frame` | `#000000` | Background around the sidebar and main panel |
+| `--surface` | `#121212` | Main panel and sidebar |
+| `--surface-raised` | `#181818` | Cards, tables, chart panels |
+| `--surface-hover` | `#282828` | Card and row hover |
+| `--pill` | `#2a2a2a` | Inactive pills, inputs |
+| `--text` | `#ffffff` | Headings, primary text, active pill background |
+| `--text-muted` | `#b3b3b3` | Subtitles, secondary text, axis labels |
+| `--accent` | `#1ed760` | Primary buttons, active toggles, positive changes, main chart series |
+| `--negative` | `#f3727f` | Negative changes, errors |
+| `--warning` | `#ffa42b` | Engagement above 100%, "already available" warnings |
+
+- Dark only. The app does not switch to a light theme.
+- Typography: Inter. Section headings 24 px bold with tight letter spacing; page titles 32–48 px
+  bold; card titles 16 px medium; subtitles 14 px muted. Numbers use tabular figures.
+- Shapes: pills (fully rounded) for filters, chips, search input and primary buttons; 8 px radius for
+  cards and covers; 4 px for poster thumbnails in lists.
+- Filters on every page are pills: the active pill is white with black text, inactive pills are
+  `--pill` with white text. Multi-select filters open a dark popover list.
+- Cards: `--surface-raised` background, lighten to `--surface-hover` on hover, no borders.
+- Rows of cards: a heading on the left and "Show all" on the right, as on Discover.
+- Charts: `--accent` for the main series, greys for secondary series, no gridlines except faint
+  horizontal ones, tooltips on `--surface-hover`.
+- Primary action buttons: `--accent` background, black bold text, pill shape, slight scale on hover.
+- Motion: 150–200 ms transitions on hover and focus only.
 
 ## Accessibility
 
@@ -172,7 +211,7 @@ badges have text, changes have a sign).
 
 ## Acceptance criteria
 
-- `tsc --noEmit`, `eslint` and `vitest` pass.
+- `tsc --noEmit`, `oxlint` and `vitest` pass.
 - Opening any URL from the table above directly (hard reload) renders the same view.
 - With the API returning an error for a section, only that section shows `ErrorState`.
 - The movie page for a title without consumption shows the "No consumption" text and no chart.

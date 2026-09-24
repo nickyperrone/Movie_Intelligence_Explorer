@@ -47,7 +47,7 @@ English for code, identifiers, comments, docs, UI copy and commit messages.
 - Page state that a user may want to share (search text, filters, selected tabs) lives in the URL.
 - One component per file, named after what it renders (`PerformanceChart`, not `Chart2`).
 - Tailwind utility classes; shadcn/ui components only where they are used.
-- Formatting and lint: Prettier defaults, ESLint from the Vite template, `tsc --noEmit` strict.
+- Formatting and lint: Prettier defaults, oxlint from the Vite template, `tsc --noEmit` strict.
 
 ## Generated files
 
@@ -68,7 +68,7 @@ Generated files start with a header naming the generator and are never edited by
 
 ## Acceptance criteria
 
-- `ruff check`, `ruff format --check`, `tsc --noEmit` and `eslint` pass in CI.
+- `ruff check`, `ruff format --check`, `tsc --noEmit` and `oxlint` pass in CI.
 - `grep -rniE "seamless|leverage|robust|cutting-edge|delve" docs frontend/src backend/app README.md`
   returns nothing.
 - `grep -rn "TODO" backend/app frontend/src` returns nothing.

@@ -9,7 +9,7 @@ The LLM does two kinds of work:
 
 It never computes, estimates or invents numbers, and it never makes a decision: demand signals and
 rankings are computed in code (`04-metrics.md`). All calls live in `backend/app/services/llm.py`
-(runtime) and `backend/pipeline/build_themes.py` (offline).
+and `backend/app/services/assistant.py` (runtime) and `backend/pipeline/build_themes.py` (offline).
 
 ## Provider and configuration
 
@@ -132,6 +132,79 @@ concept, same order"]}`. The ranking itself comes from code. The API adds the fi
 Used by `pipeline/build_themes.py`. Input: 10 movies closest to a cluster centroid (title, genres,
 first 300 plot characters). Output `{"name": "at most 4 words", "description": "at most 20
 words"}`. A person reviews all names before committing.
+
+## Ask the data (`services/assistant.py`)
+
+A chat that answers questions about the datasets. The model can only reach the data through two
+tools, and every answer carries the evidence it came from.
+
+### Request flow
+
+1. The client sends the conversation (`POST /api/v1/assistant/answer`): at most 12 messages, the last
+   one from the user, each at most 1,000 characters. The server keeps no conversation state.
+2. The model receives the system prompt below and the conversation, with tool calling enabled.
+3. Up to 4 tool calls are executed. Each result is returned to the model and recorded as evidence.
+4. The model ends with a JSON object: `{"status": "answered" | "no_data" | "out_of_scope",
+   "answer": "..."}`.
+5. The server validates the answer (below) and returns it with the evidence. Timeout for the whole
+   exchange: 45 s.
+
+### Tools
+
+| Tool | Arguments | Behavior |
+|---|---|---|
+| `run_sql` | `sql`, `purpose` | Runs one read-only query. Returns columns, up to 200 rows and the total row count |
+| `search_movies` | `text`, `limit` (≤ 10) | Semantic search (`05-search.md`). Returns title_id, title, year, score |
+
+`run_sql` safety, enforced in code, not in the prompt:
+
+- Exactly one statement, and DuckDB must classify it as `SELECT` (`extract_statements`).
+- A dedicated read-only connection with `enable_external_access = false` and
+  `lock_configuration = true`, so the query cannot read files, URLs or change settings.
+- Only the tables `movies`, `availability`, `consumption`, `title_distributors`, `themes`,
+  `movie_themes` exist in that database.
+- The query runs as `SELECT * FROM (<sql>) LIMIT 200`.
+- A 5-second limit; the connection is interrupted when it is exceeded.
+- Errors are returned to the model as tool results so it can correct the query (they count toward the
+  4 calls).
+
+### System prompt (summary; full text in code)
+
+- The schema of each table with its grain (`03-data.md`) and the metric definitions
+  (`04-metrics.md`): viewing hours = minutes / 60, engagement as a ratio of sums.
+- Integration rule: never join `availability` and `consumption` row by row.
+- Coverage: consumption only for Argentina, Brazil, Colombia, Mexico on Amazon, Disney+, HBO Max,
+  Netflix, from 2023-01 to 2026-06; availability is a single snapshot (2026-06); no revenue, box
+  office, audience demographics or data for other countries.
+- Rules: every number in the answer must come from a tool result in this conversation. Never
+  estimate, extrapolate or use outside knowledge for figures. If a query returns no rows, answer with
+  `no_data` and say which filter had no data. If the question needs data the datasets do not have,
+  answer with `out_of_scope` and name the missing data. Answer in the language of the question.
+
+### Answer validation
+
+- `answered` without any successful tool call → rejected (`failed`).
+- Number guard: each number in the answer must match a value in the tool results, allowing display
+  rounding (within 1% relative), compact suffixes (K, M) and percentages of ratios. Years 1900–2100
+  and integers up to 12 are exempt when they appear in the question or the SQL. A mismatch →
+  `failed` with the message "The answer could not be checked against the data, so it is not shown."
+- `no_data` and `out_of_scope` answers are always shown, with the evidence that led to them.
+
+### Status values
+
+`answered`, `no_data`, `out_of_scope`, `disabled` (no API key), `failed`. The UI shows a label for
+each (`07-frontend.md`).
+
+### Acceptance criteria
+
+- A scripted fake client that calls `run_sql` and answers with a number from the result → `answered`
+  with one evidence item containing the SQL, columns and rows.
+- `DROP TABLE movies`, `INSERT ...`, two statements, and `SELECT * FROM read_csv('/etc/passwd')` are
+  rejected with a tool error; the database is unchanged.
+- A query that returns no rows followed by a `no_data` answer → `no_data`, answer shown.
+- An `answered` reply with a number not in any tool result → `failed`.
+- An `answered` reply with no tool call → `failed`.
+- No API key → `disabled` with no network access.
 
 ## Prompt injection
 

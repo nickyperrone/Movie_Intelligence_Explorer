@@ -68,6 +68,10 @@ Question: should we do this deal / pursue this project?
   current availability and consumption, its comparables, the comparables' streams in their first
   6 months on the target platform and country (expected range), platform fit, whitespace, and a
   generated decision memo that can be copied as Markdown.
+- Ask the data (`/decide?tab=ask`): a chat where users ask questions about the datasets in plain
+  language ("Which Netflix titles grew most in Mexico in 2025?"). Every answer shows the query and
+  rows it came from. When the data cannot answer the question, the reply says so and explains what
+  is missing; it never estimates.
 - Concept evaluator (`/decide?tab=concepts`): 1 to 3 loglines of shelved or pitched projects. For
   each: comparables, demand by country and platform, recent saturation, and a side-by-side
   comparison with a generated memo that ranks them.
@@ -86,6 +90,8 @@ Question: should we do this deal / pursue this project?
 | 8 | analyst | browse shelves like "Top in Argentina" | I spot titles without a query |
 | 9 | sales | assess licensing a title to Netflix in Brazil | I have evidence for the negotiation |
 | 10 | development | compare the demand signal of 3 loglines | I choose which project to revive |
+| 13 | analyst | ask a question in plain language and see the query behind the answer | I can trust or check the number |
+| 14 | analyst | be told clearly when the data cannot answer | I do not act on an invented number |
 | 11 | any user | share the URL of what I am looking at | a colleague sees the same view |
 | 12 | any user | use the app when the LLM is unavailable | the core features still work |
 
@@ -101,3 +107,5 @@ dataset C, mobile-first layouts beyond a usable single-column view.
 - The four example queries from the brief return relevant titles in the top 5 (`05-search.md`).
 - Every page renders without an OpenAI key; LLM sections show that the summary is unavailable.
 - Every view with filters can be reproduced by opening its URL.
+- Asking for data outside the datasets (box office revenue, Chile consumption, 2022) returns a
+  `no_data` or `out_of_scope` reply that names what is missing.
