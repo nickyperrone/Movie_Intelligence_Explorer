@@ -164,9 +164,12 @@ selected card is outlined in pink and its tool renders below; the choice is kept
 A split screen of up to 3 titles. It uses the existing movie endpoints (metadata, availability,
 performance) once per title; no new endpoint.
 
-1. Shared filters above the columns: metric toggle (streams, viewing hours), country
-   and platform multi-selects (dataset C values), and an alignment toggle: "Calendar" or "From
-   launch" (month 1 is each title's first month with consumption).
+0. With no title yet, the tool shows only a start panel: "Compare up to 3 titles", one line on how
+   it works, the title picker, and up to 3 ready-made comparisons ("Top of 2025", "Top in Brazil",
+   "Rising now"), each loading the first 3 titles of that Discover shelf in one click.
+1. Shared filters above the columns, in three labeled groups: "Measure" (streams, viewing hours),
+   "Filter" (country and platform multi-selects, dataset C values) and "Timeline" ("Calendar" or
+   "From launch": month 1 is each title's first month with consumption).
 2. Columns: one per title, equal width. With fewer than 3 titles, the next column is an "Add a
    title" slot: the title picker on top, as wide as a poster, and under it a dashed box of the same
    size as a poster. The picker's results open over the box. A title already on screen cannot be
@@ -176,7 +179,8 @@ performance) once per title; no new endpoint.
    rating and votes; runtime; directors; total streams and viewing hours for the filtered scope;
    months with consumption; peak month; top country and top platform with their share;
    availability (number of countries, platform logos). In each numeric row the highest value
-   carries a small "Top" mark when 2 or more titles are shown.
+   carries a small "Top" mark when 2 or more titles are shown; hovering it reads "Highest of the
+   titles shown".
 4. Chart: right under the posters and above the rows, across all columns. One line per title in
    the column's color (pink, white, sky blue), a legend with the titles, and a tooltip with every
    title's value for the month.
