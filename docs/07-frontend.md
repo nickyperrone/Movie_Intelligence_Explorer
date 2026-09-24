@@ -241,7 +241,8 @@ names are used.
 - Buttons always use solid colors. Primary actions: `--pink` background, black bold text, pill
   shape, slight scale on hover. Secondary actions: white or `--pill`.
 - Page titles may highlight their key word with the gradient as text fill.
-- Motion: 150–200 ms transitions on hover and focus only.
+- Motion: 150–200 ms transitions on hover and focus; a 300 ms fade with a small upward slide when
+  the page changes. No motion when the system asks for reduced motion.
 
 ## Accessibility
 
