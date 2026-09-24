@@ -3,6 +3,7 @@ import type { Schemas } from '@/api/client'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
 import { signedPercent, signedPoints } from '@/lib/format'
+import { CountUp } from './CountUp'
 import { KPIS, type KpiKey } from './kpis'
 
 export function KpiChange({ kpi, ratio }: { kpi: Schemas['Kpi']; ratio: boolean }) {
@@ -28,7 +29,7 @@ export function KpiRow({
   onOpen: (key: KpiKey) => void
 }) {
   return (
-    <div className="grid grid-cols-4 gap-3 max-lg:grid-cols-2">
+    <div className="stagger-children grid grid-cols-4 gap-3 max-lg:grid-cols-2">
       {KPIS.map((definition) => {
         const kpi = summary?.[definition.key]
         return (
@@ -49,7 +50,7 @@ export function KpiRow({
             {kpi ? (
               <>
                 <p className="mt-2 text-3xl font-bold tracking-tight tabular max-sm:text-2xl">
-                  {definition.format(kpi.value)}
+                  <CountUp value={kpi.value} format={definition.format} />
                 </p>
                 <div className="mt-1">
                   <KpiChange kpi={kpi} ratio={definition.ratio} />

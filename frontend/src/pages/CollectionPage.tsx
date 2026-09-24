@@ -102,7 +102,7 @@ export function CollectionPage() {
           <tr>
             <SortHeader
               label="#"
-              className="w-10 pl-3"
+              className="w-16 pl-3"
               active={sort === 'rank'}
               direction={dir}
               onSort={() => sortBy('rank')}

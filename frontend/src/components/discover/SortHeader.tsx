@@ -12,7 +12,8 @@ type SortHeaderProps = {
   className?: string
 }
 
-// A column header that sorts on click; its arrow shows on hover and stays while it is active.
+// A column header that sorts on click. Only the active column shows its arrow, to the right of
+// the label; clicking the active column reverses the direction.
 export function SortHeader({
   label,
   active,
@@ -32,19 +33,12 @@ export function SortHeader({
         type="button"
         onClick={onSort}
         className={cn(
-          'group inline-flex items-center gap-1 rounded-sm hover:text-white',
-          align === 'right' && 'flex-row-reverse',
+          'pressable inline-flex items-center gap-1 rounded-sm hover:text-white',
           active && 'font-bold text-white',
         )}
       >
         {label}
-        <Arrow
-          aria-hidden
-          className={cn(
-            'size-3.5 transition-opacity',
-            active ? 'opacity-100' : 'opacity-0 group-hover:opacity-60',
-          )}
-        />
+        {active && <Arrow aria-hidden className="size-3.5" />}
       </button>
     </th>
   )

@@ -166,7 +166,7 @@ export function DashboardPage() {
   const period = summary.data?.filters
 
   return (
-    <div className="space-y-6 pt-2">
+    <div className="stagger-children space-y-6 pt-2">
       <header>
         <p className="text-sm font-bold text-subtle">Dashboard</p>
         <h1 className="mt-1 text-4xl font-black tracking-tight max-sm:text-3xl">

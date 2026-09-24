@@ -157,3 +157,39 @@
     }
   }
 }
+
+/* Children fade in one after another, 60 ms apart (dashboard first load). */
+@utility stagger-children {
+  & > * {
+    animation: appear 400ms ease-out both;
+  }
+  & > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+  & > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+  & > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+  & > :nth-child(5) {
+    animation-delay: 240ms;
+  }
+  & > :nth-child(6) {
+    animation-delay: 300ms;
+  }
+  & > :nth-child(7) {
+    animation-delay: 360ms;
+  }
+  & > :nth-child(8) {
+    animation-delay: 420ms;
+  }
+  & > :nth-child(n + 9) {
+    animation-delay: 480ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    & > * {
+      animation: none;
+    }
+  }
+}
