@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
@@ -21,7 +21,9 @@ export function AppLayout() {
             key={pathname}
             className="mx-auto max-w-[1440px] px-6 pb-16 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 max-sm:px-4"
           >
-            <Outlet />
+            <Suspense fallback={<div className="h-screen" aria-busy />}>
+              <Outlet />
+            </Suspense>
           </div>
         </div>
       </main>

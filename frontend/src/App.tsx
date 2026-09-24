@@ -1,12 +1,23 @@
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { CollectionPage } from '@/pages/CollectionPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { DecisionStudioPage } from '@/pages/DecisionStudioPage'
-import { DiscoverPage } from '@/pages/DiscoverPage'
-import { MoviePage } from '@/pages/MoviePage'
-import { SearchPage } from '@/pages/SearchPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+
+// Each page is its own bundle, so the first load only downloads the page being opened.
+const DashboardPage = lazy(() =>
+  import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+)
+const DiscoverPage = lazy(() =>
+  import('@/pages/DiscoverPage').then((m) => ({ default: m.DiscoverPage })),
+)
+const CollectionPage = lazy(() =>
+  import('@/pages/CollectionPage').then((m) => ({ default: m.CollectionPage })),
+)
+const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })))
+const MoviePage = lazy(() => import('@/pages/MoviePage').then((m) => ({ default: m.MoviePage })))
+const DecisionStudioPage = lazy(() =>
+  import('@/pages/DecisionStudioPage').then((m) => ({ default: m.DecisionStudioPage })),
+)
 
 export default function App() {
   return (
