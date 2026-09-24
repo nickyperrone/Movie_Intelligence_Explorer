@@ -172,8 +172,12 @@ def summary(request: DashboardRequest) -> m.DashboardSummary:
     )
 
 
-def trend(request: DashboardRequest) -> m.DashboardTrend:
-    where, params = request.scope.where()
+def monthly_points(scope: ConsumptionScope, group_column: str | None) -> dict[str, list]:
+    """Gap-filled monthly sums over the whole period, per value of `group_column` (or one total)."""
+    where, params = scope.where()
+    key = f"c.{group_column}" if group_column else "'total'"
+    # The total always exists, even when no row matches, so the chart can show zeros.
+    total_key = "" if group_column else "UNION SELECT 'total'"
     rows = fetch_all(
         f"""
         WITH months AS (
@@ -181,25 +185,41 @@ def trend(request: DashboardRequest) -> m.DashboardTrend:
                    AS month
         ),
         monthly AS (
-            SELECT month, sum(streams) AS streams, sum(total_minutes) AS minutes
+            SELECT {key} AS key, month, sum(streams) AS streams, sum(total_minutes) AS minutes
             FROM consumption c
             WHERE {where}
-            GROUP BY month
-        )
-        SELECT strftime(months.month, '%Y-%m') AS month,
-               coalesce(streams, 0) AS streams,
-               coalesce(minutes, 0) AS minutes
-        FROM months
-        LEFT JOIN monthly USING (month)
-        ORDER BY months.month
+            GROUP BY ALL
+        ),
+        keys AS (SELECT DISTINCT key FROM monthly {total_key})
+        SELECT keys.key, strftime(months.month, '%Y-%m') AS month,
+               coalesce(streams, 0) AS streams, coalesce(minutes, 0) AS minutes
+        FROM keys
+        CROSS JOIN months
+        LEFT JOIN monthly ON monthly.key = keys.key AND monthly.month = months.month
+        ORDER BY keys.key, months.month
         """,
-        [request.scope.start, request.scope.end, *params],
+        [scope.start, scope.end, *params],
     )
+    points: dict[str, list] = {}
+    for row in rows:
+        points.setdefault(row["key"], []).append(
+            m.MonthlyPoint(
+                month=row["month"], streams=row["streams"], viewing_hours=row["minutes"] / 60
+            )
+        )
+    return points
+
+
+def trend(request: DashboardRequest, group_by: str | None = None) -> m.DashboardTrend:
+    groups = monthly_points(request.scope, group_by) if group_by else {}
     return m.DashboardTrend(
         filters=request.filters,
-        series=[
-            m.MonthlyPoint(month=r["month"], streams=r["streams"], viewing_hours=r["minutes"] / 60)
-            for r in rows
+        series=monthly_points(request.scope, None)["total"],
+        groups=[
+            m.TrendGroup(key=key, series=series)
+            for key, series in sorted(
+                groups.items(), key=lambda item: -sum(p.streams for p in item[1])
+            )
         ],
     )
 

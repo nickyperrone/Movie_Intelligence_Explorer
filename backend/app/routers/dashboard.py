@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
 
@@ -34,8 +34,10 @@ def get_dashboard_summary(request: Request) -> m.DashboardSummary:
 
 
 @router.get("/trend")
-def get_dashboard_trend(request: Request) -> m.DashboardTrend:
-    return dashboard.trend(request)
+def get_dashboard_trend(
+    request: Request, group_by: Literal["platform", "country"] | None = None
+) -> m.DashboardTrend:
+    return dashboard.trend(request, group_by)
 
 
 @router.get("/breakdown")

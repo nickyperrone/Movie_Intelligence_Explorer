@@ -145,3 +145,14 @@ def test_collections_respect_size_and_rules(client):
         assert 0 < len(collection["items"]) <= 30
     gems = client.get(f"{API}/collections/hidden-gems").json()["items"]
     assert all(item["movie"]["rating"] >= 8 for item in gems)
+
+
+def test_grouped_trend_adds_up_to_the_total(client):
+    params = {"start": "2025-01", "end": "2025-12", "group_by": "platform"}
+    body = client.get(f"{API}/dashboard/trend", params=params).json()
+    assert {group["key"] for group in body["groups"]} == {"Amazon", "Disney+", "HBO Max", "Netflix"}
+    for index, point in enumerate(body["series"]):
+        assert (
+            sum(group["series"][index]["streams"] for group in body["groups"]) == point["streams"]
+        )
+    assert all(len(group["series"]) == 12 for group in body["groups"])
