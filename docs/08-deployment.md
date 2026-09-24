@@ -28,6 +28,10 @@ paths in `app/config.py` work the same locally and in the container.
 |---|---|---|---|
 | `OPENAI_API_KEY` | no | — | Enables LLM features |
 | `OPENAI_MODEL` | no | `gpt-4o-mini` | Chat model for LLM features |
+| `API_REQUESTS_PER_CLIENT_MINUTE` | no | `300` | Requests per client per minute to `/api/v1` |
+| `LLM_CALLS_PER_CLIENT_MINUTE` | no | `20` | Model calls per client per minute (`06-llm.md`) |
+| `LLM_CALLS_PER_CLIENT_DAY` | no | `200` | Model calls per client per day |
+| `LLM_CALLS_PER_DAY` | no | `2000` | Model calls per day for the whole app |
 | `LOG_LEVEL` | no | `INFO` | Python logging level |
 | `PORT` | no | `4040` | Port the container serves the app and the API on |
 
@@ -68,6 +72,22 @@ port 4040.
 Server resources: at least 4 GB RAM (the container uses about 1 GB idle, more under load while the
 model runs) and about 6 GB of disk for the image. The first build takes 15 to 30 minutes because it
 embeds the catalog on CPU; later builds reuse the cached layers unless dependencies or data change.
+
+## Rate limits
+
+Two layers, both in memory in the single uvicorn worker (counters reset on restart):
+
+- **Requests:** each client may make `API_REQUESTS_PER_CLIENT_MINUTE` requests to `/api/v1` per
+  minute (`/health` is exempt). Above that the API answers `429` with the error code
+  `rate_limited` and a `Retry-After` header. A page load makes about 10 requests, so normal use
+  never reaches the limit; it stops scripts from tying up the CPU with embedding queries.
+- **Model calls:** the per-client and daily caps in `06-llm.md` ("Usage limits"). They protect the
+  API key's spend; the features degrade to `rate_limited` instead of failing.
+
+The client is the last address in `X-Forwarded-For` (the one Traefik adds), or the socket address
+when the header is missing. If port 4040 is also reachable without Traefik, a client can forge the
+header and escape the per-client limits, but not the daily cap. Also set a monthly budget on the
+OpenAI project.
 
 ## Analytics
 

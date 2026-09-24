@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.4.0
+  version: 1.5.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -12,6 +12,9 @@ info:
     - "No results" is 200 with an empty list. 404 is only for an unknown title_id or collection_id.
     - Errors always use the Error envelope.
     - LLM problems never cause a 5xx; they are reported in a `status` field (docs/06-llm.md).
+    - Each client may make a limited number of requests per minute; above it the API answers 429
+      (added in 1.5.0, docs/08-deployment.md). Model calls have their own limits and report
+      `rate_limited` in the `status` field instead.
     - Metric definitions: docs/04-metrics.md. Filter semantics: docs/05-search.md.
 servers:
   - url: /api/v1
@@ -44,6 +47,7 @@ paths:
       operationId: getFilterOptions
       summary: Vocabularies for every filter control
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Filter options
           content:
@@ -104,6 +108,7 @@ paths:
           in: query
           schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Ranked results, possibly empty
           content:
@@ -126,6 +131,7 @@ paths:
           in: query
           schema: { type: integer, minimum: 1, maximum: 20, default: 10 }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Matching movies
           content:
@@ -147,6 +153,7 @@ paths:
           in: query
           schema: { type: integer, minimum: 1, maximum: 20, default: 5 }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Matching people, names starting with q first, then by number of movies
           content:
@@ -162,6 +169,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/TitleId"
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Movie detail
           content:
@@ -179,6 +187,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/TitleId"
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Offers grouped by platform and platform type
           content:
@@ -203,6 +212,7 @@ paths:
         - $ref: "#/components/parameters/ConsumptionCountries"
         - $ref: "#/components/parameters/ConsumptionPlatforms"
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Consumption series and breakdowns
           content:
@@ -222,6 +232,7 @@ paths:
           in: query
           schema: { type: integer, minimum: 1, maximum: 20, default: 8 }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Similar movies
           content:
@@ -238,6 +249,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/TitleId"
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Insight
           content:
@@ -260,6 +272,7 @@ paths:
         - $ref: "#/components/parameters/Distributors"
         - $ref: "#/components/parameters/Themes"
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: KPIs
           content:
@@ -288,6 +301,7 @@ paths:
           in: query
           schema: { type: string, enum: [platform, country] }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Gap-filled monthly series covering the whole period
           content:
@@ -313,6 +327,7 @@ paths:
         - $ref: "#/components/parameters/Distributors"
         - $ref: "#/components/parameters/Themes"
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: One item per value of the dimension, sorted by streams descending
           content:
@@ -327,6 +342,7 @@ paths:
       summary: Platform × country streams per title
       parameters: *dashboardFilters
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: One cell per platform and country with consumption
           content:
@@ -357,6 +373,7 @@ paths:
           in: query
           schema: { type: integer, minimum: 0, default: 0 }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Page of ranked titles; nulls sort last
           content:
@@ -371,6 +388,7 @@ paths:
       summary: Movers and share shifts vs the previous period, with a generated summary
       parameters: *dashboardFilters
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Changes
           content:
@@ -384,6 +402,7 @@ paths:
       operationId: listCollections
       summary: All shelves with a four-poster preview
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Collections in display order; empty collections are omitted
           content:
@@ -401,6 +420,7 @@ paths:
           required: true
           schema: { type: string, pattern: "^[a-z0-9-]+$", maxLength: 64 }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Collection
           content:
@@ -430,6 +450,7 @@ paths:
           description: A consumption country (dataset C).
           schema: { type: string }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Assessment facts
           content:
@@ -449,6 +470,7 @@ paths:
           required: true
           schema: { type: string, pattern: "^tt\\d+$" }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Targets sorted by ratio of comparables' median to the typical title
           content:
@@ -464,6 +486,7 @@ paths:
       summary: Generated memo for a licensing assessment
       parameters: *licensingParams
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Memo
           content:
@@ -484,6 +507,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ConceptsRequest" }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: One result per concept, in input order, with its rank
           content:
@@ -502,6 +526,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ConceptsRequest" }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Memo
           content:
@@ -524,6 +549,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/AssistantRequest" }
       responses:
+        "429": { $ref: "#/components/responses/TooManyRequests" }
         "200":
           description: Answer with status and evidence
           content:
@@ -585,6 +611,15 @@ components:
       schema: { type: array, items: { type: string } }
 
   responses:
+    TooManyRequests:
+      description: Too many requests from this client; retry after the number of seconds in Retry-After
+      headers:
+        Retry-After:
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example: { error: { code: rate_limited, message: "Too many requests. Try again in a minute." } }
     NotFound:
       description: Unknown resource
       content:
@@ -611,7 +646,7 @@ components:
       additionalProperties: false
       required: [code, message]
       properties:
-        code: { type: string, enum: [not_found, validation_error, method_not_allowed, internal_error] }
+        code: { type: string, enum: [not_found, validation_error, method_not_allowed, rate_limited, internal_error] }
         message: { type: string }
 
     Month:
@@ -629,7 +664,7 @@ components:
 
     LlmStatus:
       type: string
-      enum: [ok, skipped, disabled, failed, insufficient_evidence]
+      enum: [ok, skipped, disabled, failed, insufficient_evidence, rate_limited]
 
     Health:
       type: object
@@ -1247,8 +1282,8 @@ components:
 
     AssistantStatus:
       type: string
-      enum: [answered, no_data, out_of_scope, conversation, disabled, failed]
-      description: "conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed."
+      enum: [answered, no_data, out_of_scope, conversation, disabled, failed, rate_limited]
+      description: "conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed. rate_limited (added in 1.5.0): a usage limit on model calls was reached."
 
     Evidence:
       type: object

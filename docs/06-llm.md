@@ -31,10 +31,30 @@ Every response that includes LLM output carries a `status`:
 | `skipped` | The caller asked not to use the LLM (`interpret=false`) | Nothing |
 | `disabled` | No API key configured | "Summary unavailable: no language model configured." |
 | `failed` | Timeout, API error, invalid JSON, or output rejected by validation | "Summary unavailable right now." |
+| `rate_limited` | A usage limit was reached, so the model was not called (added in 1.5.0) | "AI summaries are paused: the usage limit was reached. Try again later." |
 | `insufficient_evidence` | Not enough facts to write about (decision memos only) | Explain which data is missing |
 
 LLM problems never produce a 5xx response. Errors are logged with the function name, status and
 latency. Prompts, keys and user text are not logged.
+
+## Usage limits
+
+The app is public and the API key is paid, so model calls are capped. Every call to the model
+(each step of a chat exchange included) first takes one unit from three counters:
+
+| Counter | Default | Env var |
+|---|---|---|
+| Per client, per minute | 20 calls | `LLM_CALLS_PER_CLIENT_MINUTE` |
+| Per client, per day | 200 calls | `LLM_CALLS_PER_CLIENT_DAY` |
+| Whole app, per day | 2,000 calls | `LLM_CALLS_PER_DAY` |
+
+- Answers served from the cache do not call the model and are not counted.
+- When any counter is full, the model is not called and the feature returns `rate_limited`; the
+  rest of the response is unchanged (search still runs on embeddings only).
+- The client is identified as described in `08-deployment.md` ("Rate limits"). Counters live in
+  memory in the single worker and reset on restart.
+- At the defaults, the daily cap bounds spend to a few dollars a day with `gpt-4o-mini`. A monthly
+  budget set on the OpenAI project is the last line of defense.
 
 ## Number guard
 
@@ -207,7 +227,8 @@ tools, and every answer carries the evidence it came from.
 
 ### Status values
 
-`answered`, `no_data`, `out_of_scope`, `conversation`, `disabled` (no API key), `failed`.
+`answered`, `no_data`, `out_of_scope`, `conversation`, `disabled` (no API key), `failed`,
+`rate_limited` (a usage limit was reached before or during the exchange; added in 1.5.0).
 
 A `conversation` reply may not contain figures: any number other than a year or an integer up to 12
 turns it into `failed`, so data can only enter through tool results. The UI shows a label for
@@ -223,6 +244,7 @@ each (`07-frontend.md`).
 - An `answered` reply with a number not in any tool result → `failed`.
 - An `answered` reply with no tool call → `failed`.
 - No API key → `disabled` with no network access.
+- A full usage counter → `rate_limited`, and the fake client receives no call.
 
 ## Prompt injection
 
