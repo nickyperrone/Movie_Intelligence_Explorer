@@ -7,6 +7,8 @@ import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
+from starlette.types import Scope
 
 from app.config import API_VERSION, settings
 from app.errors import register_error_handlers
@@ -55,8 +57,17 @@ def hand_written_spec() -> dict:
 app.openapi = hand_written_spec
 
 
+class HashedAssets(StaticFiles):
+    # File names change with every build, so a cached copy can never be stale.
+    async def get_response(self, path: str, scope: Scope) -> Response:
+        response = await super().get_response(path, scope)
+        if response.status_code == 200:
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+
 if settings.frontend_dist.exists():
-    app.mount("/assets", StaticFiles(directory=settings.frontend_dist / "assets"), name="assets")
+    app.mount("/assets", HashedAssets(directory=settings.frontend_dist / "assets"), name="assets")
 
     @app.get("/{path:path}", include_in_schema=False)
     def single_page_app(path: str) -> FileResponse:
@@ -65,4 +76,7 @@ if settings.frontend_dist.exists():
         file = (settings.frontend_dist / path).resolve()
         if path and file.is_file() and file.is_relative_to(settings.frontend_dist.resolve()):
             return FileResponse(file)
-        return FileResponse(Path(settings.frontend_dist) / "index.html")
+        # Never cached: it names the current build's files (docs/08-deployment.md).
+        return FileResponse(
+            Path(settings.frontend_dist) / "index.html", headers={"Cache-Control": "no-cache"}
+        )

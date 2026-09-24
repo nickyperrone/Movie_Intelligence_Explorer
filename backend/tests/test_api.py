@@ -1,3 +1,4 @@
+import pytest
 import schemathesis
 from schemathesis.specs.openapi.checks import positive_data_acceptance
 
@@ -172,6 +173,15 @@ def test_licensing_rejects_countries_without_consumption(client):
 
 def test_spa_routes_do_not_shadow_the_api(client):
     assert client.get("/api/v2/nothing").status_code == 404
+
+
+@pytest.mark.skipif(not settings.frontend_dist.exists(), reason="frontend not built")
+def test_the_page_is_never_cached_and_hashed_files_always_are(client):
+    page = client.get("/movies/tt30017619")
+    assert page.headers["Cache-Control"] == "no-cache"
+    asset = next((settings.frontend_dist / "assets").glob("*.js")).name
+    cached = client.get(f"/assets/{asset}")
+    assert cached.headers["Cache-Control"] == "public, max-age=31536000, immutable"
 
 
 schema = schemathesis.openapi.from_asgi("/api/v1/openapi.json", app)
