@@ -38,7 +38,7 @@ const FALLBACK: Partial<Record<Schemas['AssistantStatus'], string>> = {
     "I couldn't check my answer against the data, so I'm not showing it. Could you try asking it another way?",
 }
 
-const GREETING = `Hi, I'm **Reel**, the Movie Intelligence assistant. Ask me about streams, viewing hours, platforms, countries, genres or specific titles, in English or Spanish.
+const GREETING = `Hi! Ask me about streams, viewing hours, platforms, countries, genres or specific titles.
 
 I answer only from the data and show you where each number comes from. If the data can't answer something, I'll tell you. What would you like to know?`
 
@@ -147,7 +147,7 @@ function Evidence({ evidence }: { evidence: Schemas['Evidence'][] }) {
   )
 }
 
-function ReelBubble({ children }: { children: ReactNode }) {
+function AssistantBubble({ children }: { children: ReactNode }) {
   return (
     <div className="appear flex gap-3">
       <span
@@ -157,7 +157,6 @@ function ReelBubble({ children }: { children: ReactNode }) {
         <Clapperboard className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="mb-1 text-xs font-bold text-subtle">Reel</p>
         <div className="w-fit max-w-full rounded-2xl rounded-tl-sm bg-raised px-4 py-3">
           {children}
         </div>
@@ -242,9 +241,9 @@ export function AskTab() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col">
       <div className="space-y-4" aria-live="polite">
-        <ReelBubble>
+        <AssistantBubble>
           <ChatText text={GREETING} />
-        </ReelBubble>
+        </AssistantBubble>
         {turns.length === 0 && (
           <div className="flex flex-wrap gap-2 pl-11">
             {SUGGESTIONS.map((suggestion) => (
@@ -268,13 +267,13 @@ export function AskTab() {
               {turn.content}
             </div>
           ) : (
-            <ReelBubble key={index}>
+            <AssistantBubble key={index}>
               <AssistantMessage turn={turn} />
-            </ReelBubble>
+            </AssistantBubble>
           ),
         )}
         {assistant.isPending && (
-          <ReelBubble>
+          <AssistantBubble>
             <span className="flex items-center gap-2 text-sm text-subtle">
               Looking at the data
               <span className="flex gap-1" aria-hidden>
@@ -287,19 +286,19 @@ export function AskTab() {
                 ))}
               </span>
             </span>
-          </ReelBubble>
+          </AssistantBubble>
         )}
         <div ref={endRef} />
       </div>
 
       <form onSubmit={onSubmit} className="sticky bottom-0 mt-6 bg-surface pb-2 pt-3">
         <p className="mb-2 text-xs text-subtle">
-          Reel uses only the datasets: consumption for AR, BR, CO, MX on 4 platforms (Jan 2023–Jun
+          Answers use only the datasets: consumption for AR, BR, CO, MX on 4 platforms (Jan 2023–Jun
           2026) and one availability snapshot.
         </p>
         <div className="flex items-end gap-2 rounded-3xl bg-pill p-2 focus-within:ring-2 focus-within:ring-white">
           <label htmlFor="ask-input" className="sr-only">
-            Question for Reel
+            Question for the assistant
           </label>
           <textarea
             id="ask-input"
@@ -308,7 +307,7 @@ export function AskTab() {
             maxLength={1000}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Ask Reel about streams, platforms, countries or titles"
+            placeholder="Ask about streams, platforms, countries or titles"
             className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-subtle"
           />
           <button

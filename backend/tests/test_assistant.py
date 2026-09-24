@@ -99,7 +99,7 @@ def test_no_data_answer_is_shown(monkeypatch):
 def test_conversation_needs_no_query(monkeypatch):
     result, _ = ask(
         monkeypatch,
-        final("conversation", "Hi, I'm Reel. Ask me about streams by title, country or platform."),
+        final("conversation", "Hi! Ask me about streams by title, country or platform."),
         question="hola",
     )
     assert result.status.root == "conversation"
