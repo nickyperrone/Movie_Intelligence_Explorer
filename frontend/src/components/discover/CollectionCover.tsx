@@ -14,7 +14,7 @@ export function CollectionCover({ collection, cover, className }: CollectionCove
   return (
     <div
       className={cn(
-        'relative aspect-square overflow-hidden rounded-lg shadow-xl shadow-black/50',
+        'relative aspect-[2/3] overflow-hidden rounded-lg shadow-xl shadow-black/50',
         className,
       )}
     >
@@ -23,7 +23,7 @@ export function CollectionCover({ collection, cover, className }: CollectionCove
         title={cover?.title ?? collection.title}
         className="size-full object-top"
       />
-      <div className="absolute inset-x-0 bottom-[14%] flex items-stretch">
+      <div className="absolute inset-x-0 bottom-[10%] flex items-stretch">
         <span className="w-1.5 shrink-0" style={{ background: color }} />
         <span
           className="ml-1.5 flex-1 truncate px-2 py-1 text-base font-bold"

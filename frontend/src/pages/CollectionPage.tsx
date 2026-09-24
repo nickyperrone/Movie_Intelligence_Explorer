@@ -50,7 +50,7 @@ export function CollectionPage() {
             assignCovers(collections.data?.collections ?? []).get(data.collection_id) ??
             data.items[0]?.movie
           }
-          className="w-52 shrink-0 max-sm:w-40"
+          className="w-44 shrink-0 max-sm:w-32"
         />
         <div className="min-w-0">
           <p className="text-sm font-bold">Collection</p>
@@ -86,7 +86,7 @@ export function CollectionPage() {
                   <Poster
                     src={item.movie.image_url}
                     title={item.movie.title}
-                    className="size-10 shrink-0 rounded-sm object-top text-[10px]"
+                    className="h-12 w-8 shrink-0 rounded-sm text-[10px]"
                   />
                   <span className="min-w-0">
                     <span className="block truncate font-medium group-hover:underline">

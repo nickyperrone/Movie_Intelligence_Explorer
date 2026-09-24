@@ -16,8 +16,8 @@ export function TitlePicker({ selected, onSelect }: TitlePickerProps) {
   const results = lookup.data?.results ?? []
 
   return (
-    <div className="relative w-full max-w-md">
-      <label htmlFor="title-picker" className="mb-1 block text-xs text-subtle">
+    <div className="relative w-72 max-w-full">
+      <label htmlFor="title-picker" className="sr-only">
         Title
       </label>
       <div className="relative">
@@ -36,7 +36,7 @@ export function TitlePicker({ selected, onSelect }: TitlePickerProps) {
             setOpen(true)
           }}
           placeholder="Search a movie by title"
-          className="h-11 w-full rounded-full bg-pill pl-9 pr-4 text-sm outline-none placeholder:text-subtle focus:ring-2 focus:ring-white"
+          className="h-11 w-full rounded-full bg-pill pl-9 pr-4 text-base font-medium outline-none placeholder:text-subtle focus:ring-2 focus:ring-white"
         />
       </div>
       {open && results.length > 0 && (

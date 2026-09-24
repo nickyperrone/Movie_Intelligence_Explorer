@@ -1,9 +1,11 @@
-import { CountryFlag, PlatformLabel } from '@/components/common/Brand'
 import { AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router'
+import { ApiError, type Schemas } from '@/api/client'
 import { useFilterOptions, useLicensing, useLicensingMemo, useMovie } from '@/api/queries'
 import { BarList } from '@/components/charts/BarList'
+import { CountryFlag, CountryLabel, PlatformLabel } from '@/components/common/Brand'
 import { Poster } from '@/components/common/Poster'
+import { SelectPill } from '@/components/common/SelectPill'
 import { EmptyState, ErrorState, Panel } from '@/components/common/States'
 import { Skeleton } from '@/components/ui/skeleton'
 import { compact, hours } from '@/lib/format'
@@ -13,34 +15,21 @@ import { MemoPanel } from './MemoPanel'
 import { SignalBadge } from './SignalBadge'
 import { TitlePicker } from './TitlePicker'
 
-function TargetSelect({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  value: string
-  options: string[]
-  onChange: (value: string) => void
-}) {
-  return (
-    <label className="text-xs text-subtle">
-      {label}
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="mt-1 block h-11 rounded-full bg-pill px-4 text-sm text-white outline-none focus:ring-2 focus:ring-white"
-      >
-        <option value="">Choose</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </label>
-  )
+const VERDICT_TITLE: Record<Schemas['DemandSignal'], string> = {
+  strong: 'Similar titles did well here',
+  moderate: 'Similar titles performed like a typical title here',
+  weak: 'Similar titles underperformed here',
+  insufficient_evidence: 'Not enough evidence to judge',
+}
+
+// The verdict sentence is built from the facts, not written by the LLM.
+function verdictSentence(data: Schemas['LicensingAssessment']): string {
+  const { expected_range: range, target } = data
+  if (range.status !== 'ok' || range.median === null || !range.benchmark) {
+    return `Fewer than 3 comparable titles streamed on ${target.platform} in ${target.country} for a full 6 months, so there is no reliable reference.`
+  }
+  const ratio = range.median / range.benchmark
+  return `Comparable titles reached a median of ${compact(range.median)} streams in their first 6 months on ${target.platform} in ${target.country}, ${ratio.toFixed(1)}× the typical title there (${compact(range.benchmark)}).`
 }
 
 export function LicensingTab() {
@@ -57,76 +46,106 @@ export function LicensingTab() {
 
   return (
     <div className="space-y-6">
-      <p className="max-w-3xl text-subtle">
-        Should we license this title to this platform in this country? The evidence comes from
-        comparable titles: same primary genre, released within two years, closest by plot.
-      </p>
-      <div className="flex flex-wrap items-end gap-3">
-        <TitlePicker
-          selected={titleId ? movie.data : undefined}
-          onSelect={(picked) => update({ title: picked.title_id })}
-        />
-        <TargetSelect
-          label="Platform"
-          value={platform}
-          options={options.data?.consumption.platforms ?? []}
-          onChange={(value) => update({ platform: value })}
-        />
-        <TargetSelect
-          label="Country"
-          value={country}
-          options={options.data?.consumption.countries ?? []}
-          onChange={(value) => update({ country: value })}
-        />
+      <div className="rounded-lg bg-raised p-5">
+        <p className="mb-3 text-sm text-subtle">
+          Should we license a title to a platform in a country? Build the question:
+        </p>
+        <div className="flex flex-wrap items-center gap-3 text-2xl font-bold max-sm:text-lg">
+          <span>License</span>
+          <TitlePicker
+            selected={titleId ? movie.data : undefined}
+            onSelect={(picked) => update({ title: picked.title_id })}
+          />
+          <span>to</span>
+          <SelectPill
+            size="lg"
+            label="Platform"
+            placeholder="platform"
+            value={platform || undefined}
+            options={options.data?.consumption.platforms ?? []}
+            renderOption={(value) => <PlatformLabel platform={value} />}
+            onChange={(value) => update({ platform: value })}
+          />
+          <span>in</span>
+          <SelectPill
+            size="lg"
+            label="Country"
+            placeholder="country"
+            value={country || undefined}
+            options={options.data?.consumption.countries ?? []}
+            renderOption={(value) => <CountryLabel country={value} />}
+            onChange={(value) => update({ country: value })}
+          />
+          <span>?</span>
+        </div>
+        <p className="mt-3 text-xs text-subtle">
+          The evidence comes from comparable titles: same primary genre, released within two years,
+          closest by plot.
+        </p>
       </div>
 
       {!query ? (
-        <EmptyState message="Choose a title, a platform and a country to see the evidence." />
+        <EmptyState message="Pick a title, a platform and a country to see the evidence." />
+      ) : assessment.error instanceof ApiError && assessment.error.status === 404 ? (
+        <EmptyState message="This title is not in the catalog. Pick another one above." />
       ) : assessment.isError ? (
         <ErrorState error={assessment.error} onRetry={() => assessment.refetch()} />
       ) : !data ? (
         <Skeleton className="h-96" />
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-4 rounded-lg bg-raised p-5">
-            <Poster
-              src={data.movie.image_url}
-              title={data.movie.title}
-              className="h-24 w-16 rounded-md"
-            />
-            <div className="min-w-0 flex-1">
-              <Link
-                to={`/movies/${data.movie.title_id}`}
-                className="text-2xl font-black tracking-tight hover:underline"
-              >
-                {data.movie.title}
-              </Link>
-              <p className="text-sm text-subtle">
-                {data.movie.year} · {data.movie.primary_genre} · to {data.target.platform} in{' '}
-                {data.target.country}
-              </p>
-              <p className="mt-1 text-sm text-subtle">
-                Its own consumption, all markets: {compact(data.title_totals.streams)} streams,{' '}
-                {hours(data.title_totals.viewing_hours)}. Available in:{' '}
-                {data.availability_countries.join(', ') || 'no tracked country'}.
-              </p>
+          <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
+            <div className="rounded-lg bg-gradient-to-br from-pink/20 to-raised p-6">
+              <SignalBadge signal={data.signal} />
+              <h2 className="mt-4 text-3xl font-black tracking-tight">
+                {VERDICT_TITLE[data.signal]}
+              </h2>
+              <p className="mt-2 max-w-2xl text-lg leading-relaxed">{verdictSentence(data)}</p>
+              {data.already_on_target && (
+                <p className="mt-4 flex items-center gap-2 rounded-md bg-warning/15 px-3 py-2 text-sm text-warning">
+                  <AlertTriangle className="size-4 shrink-0" />
+                  This title is already available on {data.target.platform} in {data.target.country}{' '}
+                  (Jun 2026 snapshot).
+                </p>
+              )}
             </div>
-            <SignalBadge signal={data.signal} />
-          </div>
-
-          {data.already_on_target && (
-            <p className="flex items-center gap-2 rounded-lg bg-warning/15 px-4 py-3 text-sm text-warning">
-              <AlertTriangle className="size-4 shrink-0" />
-              This title is already available on {data.target.platform} in {data.target.country}{' '}
-              (Jun 2026 snapshot).
-            </p>
-          )}
+            <aside className="flex gap-4 rounded-lg bg-raised p-5">
+              <Poster
+                src={data.movie.image_url}
+                title={data.movie.title}
+                className="aspect-[2/3] w-20 shrink-0 rounded-md"
+              />
+              <div className="min-w-0 text-sm">
+                <Link
+                  to={`/movies/${data.movie.title_id}`}
+                  className="text-lg font-bold hover:underline"
+                >
+                  {data.movie.title}
+                </Link>
+                <p className="text-subtle">
+                  {data.movie.year} · {data.movie.primary_genre}
+                </p>
+                <p className="mt-3 text-subtle">Its own consumption, all markets</p>
+                <p className="font-bold tabular">
+                  {compact(data.title_totals.streams)} streams ·{' '}
+                  {hours(data.title_totals.viewing_hours)}
+                </p>
+                <p className="mt-3 text-subtle">Available today in</p>
+                <p className="flex flex-wrap gap-1.5">
+                  {data.availability_countries.length
+                    ? data.availability_countries.map((c) => <CountryFlag key={c} country={c} />)
+                    : 'No tracked country'}
+                </p>
+              </div>
+            </aside>
+          </section>
 
           <Panel
-            title="Expected first 6 months on the target"
+            title="How similar titles did in their first 6 months"
             aside={
               <span className="text-xs text-subtle">
-                {data.expected_range.eligible_count} comparables with a full window
+                on {data.target.platform} in {data.target.country} ·{' '}
+                {data.expected_range.eligible_count} titles with 6 full months
               </span>
             }
           >
@@ -134,19 +153,21 @@ export function LicensingTab() {
               <ExpectedRangeChart range={data.expected_range} comparables={data.comparables} />
             ) : (
               <p className="text-sm text-subtle">
-                Fewer than 3 comparable titles streamed on {data.target.platform} in{' '}
-                {data.target.country} with a full 6-month window, so no range is shown.
+                Fewer than 3 comparable titles streamed there for a full 6 months, so no range is
+                shown.
               </p>
             )}
           </Panel>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <Panel
-              title={`Platform fit in ${data.target.country}`}
+              title={`Where similar titles perform in ${data.target.country}`}
               aside={<span className="text-xs text-subtle">Streams per title</span>}
             >
               {data.platform_fit.length === 0 ? (
-                <p className="text-sm text-subtle">No comparable has streams in this country.</p>
+                <p className="text-sm text-subtle">
+                  No comparable title has streams in this country.
+                </p>
               ) : (
                 <BarList
                   label="Platform fit"
@@ -161,20 +182,21 @@ export function LicensingTab() {
                 />
               )}
             </Panel>
-            <Panel title="Whitespace">
+            <Panel title="Where it is missing">
+              <p className="mb-3 text-sm text-subtle">
+                Countries where similar titles are watched but this title is not available.
+              </p>
               {data.whitespace.length === 0 ? (
-                <p className="text-sm text-subtle">
-                  No country where comparables stream and this title is missing.
+                <p className="text-sm">
+                  None: it is already available wherever similar titles are watched.
                 </p>
               ) : (
                 <ul className="space-y-2 text-sm">
                   {data.whitespace.map((item) => (
                     <li key={item.country} className="flex justify-between">
-                      <span className="inline-flex items-center gap-2">
-                        <CountryFlag country={item.country} /> Not available in {item.country}
-                      </span>
+                      <CountryLabel country={item.country} />
                       <span className="text-subtle">
-                        {item.comparables_with_streams} comparables stream there
+                        {item.comparables_with_streams} similar titles watched there
                       </span>
                     </li>
                   ))}
@@ -208,11 +230,20 @@ export function LicensingTab() {
                       <td className="py-2">
                         <Link
                           to={`/movies/${comparable.movie.title_id}`}
-                          className="hover:underline"
+                          className="flex items-center gap-3 hover:underline"
                         >
-                          {comparable.movie.title}
+                          <Poster
+                            src={comparable.movie.image_url}
+                            title={comparable.movie.title}
+                            className="h-12 w-8 shrink-0 rounded-sm text-[9px]"
+                          />
+                          <span>
+                            {comparable.movie.title}
+                            <span className="ml-2 text-xs text-subtle">
+                              {comparable.movie.year}
+                            </span>
+                          </span>
                         </Link>
-                        <span className="ml-2 text-xs text-subtle">{comparable.movie.year}</span>
                       </td>
                       <td className="py-2 text-right tabular">
                         {Math.round(comparable.similarity * 100)}%

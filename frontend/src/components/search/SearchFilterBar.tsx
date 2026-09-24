@@ -3,6 +3,7 @@ import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Schemas } from '@/api/client'
 import { MultiSelectPill } from '@/components/common/MultiSelectPill'
+import { SelectPill } from '@/components/common/SelectPill'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 type Filters = Schemas['SearchFilters']
@@ -106,28 +107,19 @@ export function SearchFilterBar({ filters, options, onChange }: SearchFilterBarP
           <Plus className="size-3.5" /> Year or person
         </PopoverTrigger>
         <PopoverContent align="start" className="w-72 space-y-4 border-none bg-hover">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {(['year_min', 'year_max'] as const).map((key) => (
-              <label key={key} className="flex-1 text-xs text-subtle">
-                {key === 'year_min' ? 'From year' : 'To year'}
-                <select
-                  value={filters[key] ?? ''}
-                  onChange={(event) =>
-                    onChange({
-                      ...filters,
-                      [key]: event.target.value ? Number(event.target.value) : null,
-                    })
-                  }
-                  className="mt-1 block w-full rounded-md bg-pill px-2 py-1.5 text-sm text-white"
-                >
-                  <option value="">Any</option>
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <SelectPill
+                key={key}
+                label={key === 'year_min' ? 'From year' : 'To year'}
+                prefix={key === 'year_min' ? 'From' : 'To'}
+                placeholder="Any"
+                value={filters[key] === null ? 'Any' : String(filters[key])}
+                options={['Any', ...years.map(String)]}
+                onChange={(value) =>
+                  onChange({ ...filters, [key]: value === 'Any' ? null : Number(value) })
+                }
+              />
             ))}
           </div>
           <form
