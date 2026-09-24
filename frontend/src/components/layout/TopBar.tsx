@@ -6,11 +6,37 @@ export function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [params] = useSearchParams()
-  const inputRef = useRef<HTMLInputElement>(null)
   const urlQuery = location.pathname === '/search' ? (params.get('q') ?? '') : ''
-  const [text, setText] = useState(urlQuery)
+  return (
+    <header className="sticky top-0 z-20 flex items-center gap-3 bg-surface/95 px-6 py-3 backdrop-blur max-sm:px-4">
+      <div className="flex gap-2 max-sm:hidden">
+        <button
+          type="button"
+          aria-label="Go back"
+          onClick={() => navigate(-1)}
+          className="grid size-8 place-items-center rounded-full bg-black/60 text-white hover:bg-black"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Go forward"
+          onClick={() => navigate(1)}
+          className="grid size-8 place-items-center rounded-full bg-black/60 text-white hover:bg-black"
+        >
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
+      {/* Remounting on a new URL query resets the input without syncing state in an effect. */}
+      <GlobalSearch key={urlQuery} initial={urlQuery} />
+    </header>
+  )
+}
 
-  useEffect(() => setText(urlQuery), [urlQuery])
+function GlobalSearch({ initial }: { initial: string }) {
+  const navigate = useNavigate()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [text, setText] = useState(initial)
 
   useEffect(() => {
     // "/" focuses the search box unless the user is already typing somewhere.
@@ -34,39 +60,19 @@ export function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 bg-surface/95 px-6 py-3 backdrop-blur max-sm:px-4">
-      <div className="flex gap-2 max-sm:hidden">
-        <button
-          type="button"
-          aria-label="Go back"
-          onClick={() => navigate(-1)}
-          className="grid size-8 place-items-center rounded-full bg-black/60 text-white hover:bg-black"
-        >
-          <ChevronLeft className="size-5" />
-        </button>
-        <button
-          type="button"
-          aria-label="Go forward"
-          onClick={() => navigate(1)}
-          className="grid size-8 place-items-center rounded-full bg-black/60 text-white hover:bg-black"
-        >
-          <ChevronRight className="size-5" />
-        </button>
-      </div>
-      <form role="search" onSubmit={submit} className="relative w-full max-w-md">
-        <label htmlFor="global-search" className="sr-only">
-          Search movies
-        </label>
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-subtle" />
-        <input
-          id="global-search"
-          ref={inputRef}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="What do you want to watch? Try “movies about artificial intelligence”"
-          className="h-12 w-full rounded-full bg-pill pl-11 pr-4 text-sm text-white placeholder:text-subtle outline-none transition-shadow hover:bg-hover focus:ring-2 focus:ring-white"
-        />
-      </form>
-    </header>
+    <form role="search" onSubmit={submit} className="relative w-full max-w-md">
+      <label htmlFor="global-search" className="sr-only">
+        Search movies
+      </label>
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-subtle" />
+      <input
+        id="global-search"
+        ref={inputRef}
+        value={text}
+        onChange={(event) => setText(event.target.value)}
+        placeholder="What do you want to watch? Try “movies about artificial intelligence”"
+        className="h-12 w-full rounded-full bg-pill pl-11 pr-4 text-sm text-white placeholder:text-subtle outline-none transition-shadow hover:bg-hover focus:ring-2 focus:ring-white"
+      />
+    </form>
   )
 }
