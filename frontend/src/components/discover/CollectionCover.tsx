@@ -23,11 +23,17 @@ export function CollectionCover({ collection, cover, className }: CollectionCove
         title={cover?.title ?? collection.title}
         className="size-full object-top"
       />
-      <div className="absolute inset-x-0 bottom-[10%] flex items-stretch">
+      {/* Every band has the same height and one line. The text keeps the standard size unless the
+          name would not fit, then it shrinks just enough (cqi = 1% of the band's width). */}
+      <div className="absolute inset-x-0 bottom-[10%] flex h-8 items-stretch [container-type:inline-size]">
         <span className="w-1.5 shrink-0" style={{ background: color }} />
         <span
-          className="ml-1.5 line-clamp-2 flex-1 px-2 py-1 text-sm leading-tight font-bold sm:text-base"
-          style={{ background: color, color: textOn(color) }}
+          className="ml-1.5 flex flex-1 items-center overflow-hidden whitespace-nowrap px-2 font-bold"
+          style={{
+            background: color,
+            color: textOn(color),
+            fontSize: `min(15px, calc((100cqi - 32px) / ${Math.max(collection.title.length, 1) * 0.6}))`,
+          }}
         >
           {collection.title}
         </span>

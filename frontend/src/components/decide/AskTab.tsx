@@ -125,10 +125,11 @@ export function AskTab() {
   const assistant = useAssistant()
   const endRef = useRef<HTMLDivElement>(null)
 
-  useEffect(
-    () => endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }),
-    [turns, assistant.isPending],
-  )
+  useEffect(() => {
+    // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect may only
+    // return a cleanup function.
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [turns, assistant.isPending])
 
   function send(question: string) {
     const text = question.trim()
