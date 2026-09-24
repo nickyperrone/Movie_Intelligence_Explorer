@@ -19,7 +19,7 @@ function SimilarMovies({ titleId }: { titleId: string }) {
       <section>
         <SectionHeader title="More like this" description="Closest movies by plot and genres." />
         <CardRow label="Similar movies loading">
-          {Array.from({ length: 5 }, (_, index) => (
+          {Array.from({ length: 7 }, (_, index) => (
             <MovieCardSkeleton key={index} />
           ))}
         </CardRow>

@@ -1,7 +1,6 @@
-import type { CSSProperties } from 'react'
 import type { Schemas } from '@/api/client'
 import { useCollections } from '@/api/queries'
-import { CardRow } from '@/components/common/CardRow'
+import { CardRow, PER_VIEW } from '@/components/common/CardRow'
 import { MovieCardSkeleton } from '@/components/common/MovieCard'
 import { Pill } from '@/components/common/Pill'
 import { SectionHeader } from '@/components/common/SectionHeader'
@@ -9,6 +8,7 @@ import { EmptyState, ErrorState } from '@/components/common/States'
 import { CollectionCard } from '@/components/discover/CollectionCard'
 import { assignCovers } from '@/components/discover/covers'
 import { GenreTiles } from '@/components/discover/GenreTiles'
+import { cn } from '@/lib/cn'
 import { useUrlState } from '@/lib/url-state'
 
 type Section = Schemas['CollectionSection']
@@ -27,14 +27,6 @@ export function DiscoverPage() {
   const visible = selected ? SECTIONS.filter((section) => section.id === selected) : SECTIONS
   const covers = assignCovers(collections.data?.collections ?? [])
   // Every cover has the same size: rows show as many cards as the shortest visible row has.
-  const rowLengths = visible
-    .map(
-      (section) =>
-        collections.data?.collections.filter((c) => c.section === section.id).length ?? 0,
-    )
-    .filter((length) => length > 0)
-  const perView = rowLengths.length ? Math.min(...rowLengths) : undefined
-
   return (
     <div className="pt-2">
       <div className="sticky top-0 z-10 -mx-6 flex gap-2 overflow-x-auto bg-surface px-6 py-3 scrollbar-none max-sm:-mx-4 max-sm:px-4">
@@ -70,7 +62,7 @@ export function DiscoverPage() {
             ) : null
           }
           return (
-            <section key={`${section.id}-${selected ?? 'all'}`} className="appear mt-8">
+            <section key={`${section.id}-${selected ?? 'all'}`} className="appear mt-8 @container">
               <SectionHeader
                 title={section.title}
                 action={
@@ -83,7 +75,7 @@ export function DiscoverPage() {
               />
               {!collections.data ? (
                 <CardRow label={`${section.title} loading`}>
-                  {Array.from({ length: 5 }, (_, index) => (
+                  {Array.from({ length: 7 }, (_, index) => (
                     <div key={index}>
                       <MovieCardSkeleton />
                     </div>
@@ -91,8 +83,10 @@ export function DiscoverPage() {
                 </CardRow>
               ) : selected ? (
                 <div
-                  style={{ '--max': perView } as CSSProperties}
-                  className="-mx-3 grid [--per-view:2] [grid-template-columns:repeat(min(var(--per-view),var(--max)),minmax(0,1fr))] sm:[--per-view:3] lg:[--per-view:5]"
+                  className={cn(
+                    '-mx-3 grid [grid-template-columns:repeat(var(--per-view),minmax(0,1fr))]',
+                    PER_VIEW,
+                  )}
                 >
                   {items.map((collection) => (
                     <CollectionCard
@@ -103,7 +97,7 @@ export function DiscoverPage() {
                   ))}
                 </div>
               ) : (
-                <CardRow label={section.title} maxPerView={perView}>
+                <CardRow label={section.title}>
                   {items.map((collection) => (
                     <CollectionCard
                       key={collection.collection_id}

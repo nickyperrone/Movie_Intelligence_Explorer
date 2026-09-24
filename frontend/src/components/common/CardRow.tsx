@@ -1,30 +1,19 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import {
-  Children,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from 'react'
+import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 const EDGE_SPEED_PX_PER_FRAME = 7
 
-// A row of cards that always fills the width: 2, 3 or 5 cards per view by screen size, capped by
-// `maxPerView` (a page passes its shortest row's length so every card has the same size) or by
-// the row's own length. Resting the pointer on an edge scrolls the row by itself; clicking an
-// edge moves one page; touch screens swipe.
-export function CardRow({
-  children,
-  label,
-  maxPerView,
-}: {
-  children: ReactNode
-  label: string
-  maxPerView?: number
-}) {
+// Cards per view from the width of the nearest `@container` (the content area, not the window,
+// because the sidebar takes part of it), so a cover stays under about 230 px wide. Shared with
+// grids that must match the rows.
+export const PER_VIEW =
+  '[--per-view:2] @md:[--per-view:3] @2xl:[--per-view:4] @4xl:[--per-view:5] @6xl:[--per-view:6] @7xl:[--per-view:7]'
+
+// A row of same-size cards. A row shorter than the cards per view leaves blank space rather than
+// enlarging its cards. Resting the pointer on an edge scrolls the row by itself; clicking an edge
+// moves one page; touch screens swipe.
+export function CardRow({ children, label }: { children: ReactNode; label: string }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<number | null>(null)
   const [canScroll, setCanScroll] = useState({ back: false, forward: false })
@@ -80,16 +69,15 @@ export function CardRow({
     'absolute inset-y-0 z-10 flex w-16 cursor-pointer items-center text-white/70 transition-opacity duration-200 max-sm:hidden'
 
   return (
-    <div className="group/row relative">
+    <div className="group/row relative @container">
       <div
         ref={trackRef}
         onScroll={measure}
         aria-label={label}
-        style={{ '--max': maxPerView ?? count } as CSSProperties}
         className={cn(
           '-mx-3 grid snap-x snap-mandatory grid-flow-col overflow-x-auto scrollbar-none',
-          '[--per-view:2] sm:[--per-view:3] lg:[--per-view:5]',
-          '[grid-auto-columns:calc(100%/min(var(--per-view),var(--max)))]',
+          PER_VIEW,
+          '[grid-auto-columns:calc(100%/var(--per-view))]',
         )}
       >
         {children}
