@@ -133,19 +133,21 @@ function ColumnHeader({ column, onRemove }: { column: Column; onRemove: () => vo
 function AddSlot({ exclude, onAdd }: { exclude: string[]; onAdd: (titleId: string) => void }) {
   return (
     <div className="px-3 pb-3">
-      <div className="grid aspect-[2/3] max-w-56 place-items-center rounded-lg border border-dashed border-white/20 p-4 text-center">
-        <div>
-          <Plus className="mx-auto size-6 text-subtle" />
-          <p className="mt-2 text-sm font-bold">Add a title</p>
-          <p className="mt-1 text-xs text-subtle">Compare up to {MAX_TITLES} side by side.</p>
-        </div>
-      </div>
-      <div className="mt-3">
+      <div className="max-w-56">
+        {/* Above the box, so its results open over the empty space instead of off screen. */}
         <TitlePicker
           selected={undefined}
           exclude={exclude}
           onSelect={(movie) => onAdd(movie.title_id)}
+          className="w-full"
         />
+        <div className="mt-3 grid aspect-[2/3] place-items-center rounded-lg border border-dashed border-white/20 p-4 text-center">
+          <div>
+            <Plus className="mx-auto size-6 text-subtle" />
+            <p className="mt-2 text-sm font-bold">Add a title</p>
+            <p className="mt-1 text-xs text-subtle">Compare up to {MAX_TITLES} side by side.</p>
+          </div>
+        </div>
       </div>
     </div>
   )

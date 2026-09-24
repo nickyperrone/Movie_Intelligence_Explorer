@@ -3,21 +3,23 @@ import { useState } from 'react'
 import type { Schemas } from '@/api/client'
 import { useMovieLookup } from '@/api/queries'
 import { Poster } from '@/components/common/Poster'
+import { cn } from '@/lib/cn'
 
 type TitlePickerProps = {
   selected: Schemas['MovieSummary'] | undefined
   onSelect: (movie: Schemas['MovieSummary']) => void
   exclude?: string[]
+  className?: string
 }
 
-export function TitlePicker({ selected, onSelect, exclude = [] }: TitlePickerProps) {
+export function TitlePicker({ selected, onSelect, exclude = [], className }: TitlePickerProps) {
   const [text, setText] = useState('')
   const [open, setOpen] = useState(false)
   const lookup = useMovieLookup(text)
   const results = (lookup.data?.results ?? []).filter((movie) => !exclude.includes(movie.title_id))
 
   return (
-    <div className="relative w-72 max-w-full">
+    <div className={cn('relative w-72 max-w-full', className)}>
       <label htmlFor="title-picker" className="sr-only">
         Title
       </label>
