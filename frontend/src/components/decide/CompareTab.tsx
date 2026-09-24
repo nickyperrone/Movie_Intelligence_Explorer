@@ -1,8 +1,8 @@
-import { Plus, X } from 'lucide-react'
+import { Columns3, Plus, X } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ApiError, type Schemas } from '@/api/client'
-import { useComparedTitles, useFilterOptions } from '@/api/queries'
+import { useCollections, useComparedTitles, useFilterOptions } from '@/api/queries'
 import { TrendChart } from '@/components/charts/TrendChart'
 import { CountryLabel, PlatformIcon, PlatformLabel } from '@/components/common/Brand'
 import { GenreLink } from '@/components/common/CategoryLink'
@@ -19,6 +19,8 @@ import { useUrlState } from '@/lib/url-state'
 const MAX_TITLES = 3
 const COLORS = ['#ff6fcf', '#ffffff', '#7dd3fc']
 const TITLE_ID = /^tt\d{7,9}$/
+// Discover shelves offered as one-click comparisons when nothing is picked yet.
+const STARTER_SHELVES = ['top-2025', 'top-brazil', 'rising-now']
 
 type Column = {
   titleId: string
@@ -51,7 +53,10 @@ function Row({
           <p className="flex items-center gap-2 text-xs text-subtle">
             {label}
             {top === index && (
-              <span className="rounded-full bg-pink px-1.5 py-px text-[10px] font-bold text-black">
+              <span
+                title="Highest of the titles shown"
+                className="rounded-full bg-pink px-1.5 py-px text-[10px] font-bold text-black"
+              >
                 Top
               </span>
             )}
@@ -153,6 +158,77 @@ function AddSlot({ exclude, onAdd }: { exclude: string[]; onAdd: (titleId: strin
   )
 }
 
+function StartPanel({ onPick }: { onPick: (titleIds: string[]) => void }) {
+  const collections = useCollections()
+  const shelves = STARTER_SHELVES.flatMap((id) => {
+    const shelf = collections.data?.collections.find((c) => c.collection_id === id)
+    return shelf && shelf.preview.length >= 2 ? [shelf] : []
+  })
+  return (
+    <Panel className="mx-auto max-w-2xl p-8 text-center max-sm:p-5">
+      <span className="mx-auto grid size-12 place-items-center rounded-full bg-pink text-black">
+        <Columns3 className="size-5" />
+      </span>
+      <h2 className="mt-4 text-2xl font-bold">Compare up to {MAX_TITLES} titles</h2>
+      <p className="mx-auto mt-2 max-w-md text-subtle">
+        Pick a title to start, then add up to two more. Every figure uses the same filters, so the
+        columns compare directly.
+      </p>
+      <div className="mt-6 flex justify-center">
+        <TitlePicker
+          selected={undefined}
+          onSelect={(movie) => onPick([movie.title_id])}
+          className="w-full max-w-sm"
+        />
+      </div>
+      <p className="mt-8 text-xs font-bold uppercase tracking-wide text-subtle">
+        Or start from a shelf
+      </p>
+      <div className="mt-3 flex flex-wrap justify-center gap-3">
+        {collections.isLoading &&
+          Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={index} className="h-14 w-48 rounded-full" />
+          ))}
+        {shelves.map((shelf) => {
+          const picks = shelf.preview.slice(0, MAX_TITLES)
+          return (
+            <button
+              key={shelf.collection_id}
+              type="button"
+              onClick={() => onPick(picks.map((movie) => movie.title_id))}
+              className="pressable flex items-center gap-3 rounded-full bg-pill py-2 pl-2 pr-4 text-left hover:bg-hover"
+            >
+              <span className="flex -space-x-3">
+                {picks.map((movie) => (
+                  <Poster
+                    key={movie.title_id}
+                    src={movie.image_url}
+                    title={movie.title}
+                    className="h-10 w-7 rounded-sm ring-2 ring-pill text-[8px]"
+                  />
+                ))}
+              </span>
+              <span>
+                <span className="block text-sm font-bold">{shelf.title}</span>
+                <span className="block text-xs text-subtle">{picks.length} titles</span>
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </Panel>
+  )
+}
+
+function ControlGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="mr-1 text-xs font-bold uppercase tracking-wide text-subtle">{label}</span>
+      {children}
+    </div>
+  )
+}
+
 export function CompareTab() {
   const { get, getList, update } = useUrlState()
   const titleIds = [
@@ -208,85 +284,57 @@ export function CompareTab() {
     (column) => column.performance?.series.filter((point) => point.streams > 0).length ?? null,
   )
 
+  if (columns.length === 0) {
+    return (
+      <div className="pt-2">
+        <StartPanel onPick={setTitles} />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 pt-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Pill active={metric === 'streams'} onClick={() => update({ metric: undefined })}>
-          Streams
-        </Pill>
-        <Pill active={metric === 'hours'} onClick={() => update({ metric: 'hours' })}>
-          Viewing hours
-        </Pill>
-        <span className="mx-1 h-5 w-px bg-white/15" aria-hidden />
-        <MultiSelectPill
-          label="Countries"
-          renderOption={(country) => <CountryLabel country={country} />}
-          options={options.data?.consumption.countries ?? []}
-          selected={countries}
-          onChange={(next) => update({ countries: next })}
-        />
-        <MultiSelectPill
-          label="Platforms"
-          renderOption={(platform) => <PlatformLabel platform={platform} />}
-          options={options.data?.consumption.platforms ?? []}
-          selected={platforms}
-          onChange={(next) => update({ platforms: next })}
-        />
-        <span className="mx-1 h-5 w-px bg-white/15" aria-hidden />
-        <Pill active={align === 'calendar'} onClick={() => update({ align: undefined })}>
-          Calendar
-        </Pill>
-        <Pill active={align === 'launch'} onClick={() => update({ align: 'launch' })}>
-          From launch
-        </Pill>
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+        <ControlGroup label="Measure">
+          <Pill active={metric === 'streams'} onClick={() => update({ metric: undefined })}>
+            Streams
+          </Pill>
+          <Pill active={metric === 'hours'} onClick={() => update({ metric: 'hours' })}>
+            Viewing hours
+          </Pill>
+        </ControlGroup>
+        <ControlGroup label="Filter">
+          <MultiSelectPill
+            label="Countries"
+            renderOption={(country) => <CountryLabel country={country} />}
+            options={options.data?.consumption.countries ?? []}
+            selected={countries}
+            onChange={(next) => update({ countries: next })}
+          />
+          <MultiSelectPill
+            label="Platforms"
+            renderOption={(platform) => <PlatformLabel platform={platform} />}
+            options={options.data?.consumption.platforms ?? []}
+            selected={platforms}
+            onChange={(next) => update({ platforms: next })}
+          />
+        </ControlGroup>
+        <ControlGroup label="Timeline">
+          <Pill active={align === 'calendar'} onClick={() => update({ align: undefined })}>
+            Calendar
+          </Pill>
+          <Pill active={align === 'launch'} onClick={() => update({ align: 'launch' })}>
+            From launch
+          </Pill>
+        </ControlGroup>
       </div>
-
-      {columns.length > 0 && (
-        <Panel>
-          {!chartReady ? (
-            <Skeleton className="h-72" />
-          ) : aligned.keys.length === 0 ? (
-            <EmptyState message="No consumption in these filters for any of these titles." />
-          ) : (
-            <TrendChart
-              metricLabel={metric === 'hours' ? 'Viewing hours' : 'Streams'}
-              format={format}
-              unit={metric === 'hours' ? ' h' : ''}
-              months={aligned.keys}
-              xLabel={
-                align === 'launch'
-                  ? { short: (key) => `M${key}`, long: (key) => `Month ${key} from launch` }
-                  : undefined
-              }
-              series={columns.flatMap((column, index) =>
-                column.movie
-                  ? [
-                      {
-                        key: column.titleId,
-                        name: column.movie.title,
-                        label: column.movie.title,
-                        color: column.color,
-                        values: aligned.values[index],
-                      },
-                    ]
-                  : [],
-              )}
-            />
-          )}
-          {align === 'launch' && chartReady && (
-            <p className="mt-3 text-xs text-subtle">
-              Month 1 is each title's first month with consumption in these filters.
-            </p>
-          )}
-        </Panel>
-      )}
 
       {/* Columns share one grid, so each row lines up across titles; on phones the grid swipes
           sideways with the next column peeking in. */}
       <div className="-mx-3 overflow-x-auto scrollbar-none max-sm:snap-x max-sm:snap-mandatory">
         <div
           style={{ '--slots': slots } as CSSProperties}
-          className="grid [grid-template-columns:repeat(var(--slots),minmax(0,1fr))] max-sm:[grid-template-columns:repeat(var(--slots),80%)] max-sm:[&>*]:snap-start"
+          className="grid [grid-template-columns:repeat(var(--slots),minmax(0,1fr))] max-sm:w-max max-sm:[grid-template-columns:repeat(var(--slots),78vw)] max-sm:[&>*]:snap-start"
         >
           {columns.map((column) => (
             <ColumnHeader
@@ -299,17 +347,57 @@ export function CompareTab() {
             <AddSlot exclude={titleIds} onAdd={(titleId) => setTitles([...titleIds, titleId])} />
           )}
 
-          {columns.length > 0 && (
-            <CompareRows
-              columns={columns}
-              padSlot={slots > columns.length}
-              totals={totals}
-              monthsWithData={monthsWithData}
-              metric={metric}
-              value={value}
-              format={format}
-            />
-          )}
+          {/* Spans every column; on phones it keeps the screen's width and stays put while the
+              columns swipe under it. */}
+          <div className="col-span-full px-3 pb-3 max-sm:sticky max-sm:left-0 max-sm:w-[calc(100vw-0.5rem)]">
+            <Panel>
+              {!chartReady ? (
+                <Skeleton className="h-72" />
+              ) : aligned.keys.length === 0 ? (
+                <EmptyState message="No consumption in these filters for any of these titles." />
+              ) : (
+                <TrendChart
+                  metricLabel={metric === 'hours' ? 'Viewing hours' : 'Streams'}
+                  format={format}
+                  unit={metric === 'hours' ? ' h' : ''}
+                  months={aligned.keys}
+                  xLabel={
+                    align === 'launch'
+                      ? { short: (key) => `M${key}`, long: (key) => `Month ${key} from launch` }
+                      : undefined
+                  }
+                  series={columns.flatMap((column, index) =>
+                    column.movie
+                      ? [
+                          {
+                            key: column.titleId,
+                            name: column.movie.title,
+                            label: column.movie.title,
+                            color: column.color,
+                            values: aligned.values[index],
+                          },
+                        ]
+                      : [],
+                  )}
+                />
+              )}
+              {align === 'launch' && chartReady && (
+                <p className="mt-3 text-xs text-subtle">
+                  Month 1 is each title's first month with consumption in these filters.
+                </p>
+              )}
+            </Panel>
+          </div>
+
+          <CompareRows
+            columns={columns}
+            padSlot={slots > columns.length}
+            totals={totals}
+            monthsWithData={monthsWithData}
+            metric={metric}
+            value={value}
+            format={format}
+          />
         </div>
       </div>
     </div>
