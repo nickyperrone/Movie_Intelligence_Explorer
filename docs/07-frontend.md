@@ -187,7 +187,8 @@ Concepts:
 Ask the data:
 - The assistant has no name: its replies show a pink clapperboard avatar and no label above the
   bubble. The chat opens with a greeting ("Hi! Ask me about ..."), what it can answer, and the
-  suggested questions.
+  suggested questions. Every suggestion is a question the data answers (checked against the live
+  assistant before it is added).
 - A chat column: messages in bubbles (user right, assistant left), a multiline input with Enter to
   send and Shift+Enter for a new line, and suggested questions as pills before the first message.
 - Each assistant reply shows a status label: "Answered from data", "No data for this question",
