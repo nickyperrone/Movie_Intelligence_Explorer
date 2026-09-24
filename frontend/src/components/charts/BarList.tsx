@@ -28,7 +28,7 @@ export function BarList({ items, format, label, highlight = [] }: BarListProps) 
               className={cn(
                 'h-full rounded-full',
                 highlight.length === 0 || highlight.includes(item.key)
-                  ? 'bg-green'
+                  ? 'bg-brand'
                   : 'bg-subtle/50',
               )}
               style={{ width: max ? `${(item.value / max) * 100}%` : '0%' }}

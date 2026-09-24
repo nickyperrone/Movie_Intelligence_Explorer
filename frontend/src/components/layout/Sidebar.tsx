@@ -19,7 +19,7 @@ export function Sidebar() {
         to="/"
         className="mb-4 flex items-center gap-2 px-3 py-2 max-lg:justify-center max-sm:hidden"
       >
-        <span className="grid size-7 place-items-center rounded-md bg-green text-sm font-black text-black">
+        <span className="grid size-7 place-items-center rounded-md bg-brand text-sm font-black text-black">
           M
         </span>
         <span className="font-bold tracking-tight max-lg:hidden">Movie Intelligence</span>

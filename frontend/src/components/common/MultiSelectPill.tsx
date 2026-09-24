@@ -47,8 +47,8 @@ export function MultiSelectPill({ label, options, selected, onChange }: MultiSel
                   onClick={() => onChange(toggle(selected, option))}
                   className="flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm hover:bg-white/10"
                 >
-                  <span className={checked ? 'text-green' : undefined}>{option}</span>
-                  {checked && <Check className="size-4 text-green" />}
+                  <span className={checked ? 'text-pink' : undefined}>{option}</span>
+                  {checked && <Check className="size-4 text-pink" />}
                 </button>
               </li>
             )

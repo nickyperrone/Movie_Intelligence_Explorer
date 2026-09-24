@@ -1,7 +1,7 @@
 import type { Schemas } from '@/api/client'
 import { compact } from '@/lib/format'
 
-// Platform x country grid; the green intensity is scaled to the largest cell in the table.
+// Platform x country grid; the pink intensity is scaled to the largest cell in the table.
 export function MatrixGrid({ matrix }: { matrix: Schemas['DashboardMatrix'] }) {
   const cells = new Map(matrix.cells.map((cell) => [`${cell.platform}|${cell.country}`, cell]))
   const max = Math.max(...matrix.cells.map((cell) => cell.streams_per_title ?? 0), 0)
@@ -35,7 +35,7 @@ export function MatrixGrid({ matrix }: { matrix: Schemas['DashboardMatrix'] }) {
                   <td
                     key={country}
                     className="h-12 rounded-md text-center tabular"
-                    style={{ background: `rgb(30 215 96 / ${0.08 + intensity * 0.72})` }}
+                    style={{ background: `rgb(255 111 207 / ${0.08 + intensity * 0.72})` }}
                     title={
                       cell
                         ? `${cell.titles} titles, ${compact(cell.streams)} streams`

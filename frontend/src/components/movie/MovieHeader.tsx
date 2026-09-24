@@ -28,7 +28,7 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
             <span>{movie.genres.join(', ') || '—'}</span>
             <span className="text-subtle">·</span>
             <span className="inline-flex items-center gap-1">
-              <Star className="size-3.5 fill-green text-green" />
+              <Star className="size-3.5 fill-pink text-pink" />
               {rating(movie.rating)}
               <span className="text-subtle">({compact(movie.vote_count)} votes)</span>
             </span>
@@ -67,7 +67,7 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link
               to={`/decide?tab=licensing&title=${movie.title_id}`}
-              className="rounded-full bg-green px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105"
+              className="rounded-full bg-brand px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105"
             >
               Assess a deal
             </Link>

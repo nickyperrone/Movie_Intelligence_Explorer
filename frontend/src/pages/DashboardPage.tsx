@@ -132,7 +132,7 @@ export function DashboardPage() {
       <header>
         <p className="text-sm font-bold text-subtle">Dashboard</p>
         <h1 className="mt-1 text-4xl font-black tracking-tight max-sm:text-3xl">
-          Catalog performance
+          Catalog <span className="text-brand">performance</span>
         </h1>
         <p className="mt-2 text-subtle">
           {monthRange(period.start, period.end)} · streaming consumption in Argentina, Brazil,

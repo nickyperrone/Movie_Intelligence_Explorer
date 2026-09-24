@@ -57,7 +57,9 @@ export function SearchPage() {
   if (!query) {
     return (
       <div className="pt-8">
-        <h1 className="text-4xl font-black tracking-tight">Search by idea, not by title</h1>
+        <h1 className="text-4xl font-black tracking-tight">
+          Search by <span className="text-brand">idea</span>, not by title
+        </h1>
         <p className="mt-2 max-w-2xl text-subtle">
           Describe a theme, a mood or a plot in English or Spanish. Results are ranked by meaning,
           using embeddings of each movie’s genres and plot.

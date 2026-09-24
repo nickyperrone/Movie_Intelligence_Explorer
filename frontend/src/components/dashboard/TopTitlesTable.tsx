@@ -83,7 +83,7 @@ export function TopTitlesTable({ items, sort, onSort }: TopTitlesTableProps) {
                 className={cn(
                   'rounded-r-md py-2 pr-2 text-right tabular',
                   item.growth_pct !== null &&
-                    (item.growth_pct >= 0 ? 'text-green' : 'text-negative'),
+                    (item.growth_pct >= 0 ? 'text-positive' : 'text-negative'),
                 )}
               >
                 {signedPercent(item.growth_pct)}

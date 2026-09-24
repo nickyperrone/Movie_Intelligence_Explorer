@@ -32,7 +32,7 @@ function MoverList({
               <span
                 className={cn(
                   'shrink-0 font-bold tabular',
-                  positive ? 'text-green' : 'text-negative',
+                  positive ? 'text-positive' : 'text-negative',
                 )}
               >
                 {mover.change > 0 ? '+' : '−'}
@@ -81,7 +81,7 @@ export function ChangesPanel({ changes }: { changes: Schemas['DashboardChanges']
                 <span
                   className={cn(
                     'font-bold tabular',
-                    shift.change_pp >= 0 ? 'text-green' : 'text-negative',
+                    shift.change_pp >= 0 ? 'text-positive' : 'text-negative',
                   )}
                 >
                   {signedPoints(shift.change_pp)}

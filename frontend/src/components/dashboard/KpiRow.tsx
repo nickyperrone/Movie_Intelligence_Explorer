@@ -55,7 +55,9 @@ function Change({ kpi, ratio }: { kpi: Schemas['Kpi']; ratio: boolean }) {
     )
   }
   return (
-    <span className={cn('text-sm font-bold tabular', change >= 0 ? 'text-green' : 'text-negative')}>
+    <span
+      className={cn('text-sm font-bold tabular', change >= 0 ? 'text-positive' : 'text-negative')}
+    >
       {ratio ? signedPoints(change) : signedPercent(change)}
       <span className="ml-1 font-normal text-subtle">vs previous</span>
     </span>

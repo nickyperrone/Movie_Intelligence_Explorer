@@ -22,7 +22,7 @@ export function Narrative({
   return (
     <div>
       <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-subtle">
-        <Sparkles className="size-3.5 text-green" /> Generated summary
+        <Sparkles className="size-3.5 text-pink" /> Generated summary
       </p>
       <p className="leading-relaxed">{text}</p>
     </div>
