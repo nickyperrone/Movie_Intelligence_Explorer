@@ -72,7 +72,7 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
               Assess a deal
             </Link>
             <Link
-              to={`/compare?titles=${movie.title_id}`}
+              to={`/decide?tab=compare&titles=${movie.title_id}`}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/30 px-4 py-2.5 text-sm font-bold hover:border-white"
             >
               <Columns3 className="size-4" />

@@ -10,7 +10,7 @@ import { MultiSelectPill } from '@/components/common/MultiSelectPill'
 import { Pill } from '@/components/common/Pill'
 import { Poster } from '@/components/common/Poster'
 import { EmptyState, Panel } from '@/components/common/States'
-import { TitlePicker } from '@/components/decide/TitlePicker'
+import { TitlePicker } from './TitlePicker'
 import { Skeleton } from '@/components/ui/skeleton'
 import { alignSeries, peak, topIndex, type Align } from '@/lib/compare'
 import { compact, hours, monthLabel, percent, rating, runtime } from '@/lib/format'
@@ -151,7 +151,7 @@ function AddSlot({ exclude, onAdd }: { exclude: string[]; onAdd: (titleId: strin
   )
 }
 
-export function ComparePage() {
+export function CompareTab() {
   const { get, getList, update } = useUrlState()
   const titleIds = [
     ...new Set(
@@ -208,14 +208,6 @@ export function ComparePage() {
 
   return (
     <div className="space-y-6 pt-2">
-      <header>
-        <p className="text-sm font-bold text-subtle">Compare</p>
-        <h1 className="mt-1 text-4xl font-black tracking-tight max-sm:text-3xl">Compare titles</h1>
-        <p className="mt-2 max-w-2xl text-subtle">
-          Up to {MAX_TITLES} titles side by side. Filters apply to every title.
-        </p>
-      </header>
-
       <div className="flex flex-wrap items-center gap-2">
         <Pill active={metric === 'streams'} onClick={() => update({ metric: undefined })}>
           Streams

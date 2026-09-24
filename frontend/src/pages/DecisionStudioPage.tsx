@@ -1,4 +1,5 @@
 import {
+  Columns3,
   Lightbulb,
   MapPinned,
   MessageSquareText,
@@ -7,6 +8,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { AskTab } from '@/components/decide/AskTab'
+import { CompareTab } from '@/components/decide/CompareTab'
 import { ConceptsTab } from '@/components/decide/ConceptsTab'
 import { GenresTab } from '@/components/decide/GenresTab'
 import { LicensingTab } from '@/components/decide/LicensingTab'
@@ -28,6 +30,12 @@ const TOOLS: Tool[] = [
     question: 'Where should this title go next?',
     description: 'Every platform and country ranked for one title.',
     icon: MapPinned,
+  },
+  {
+    id: 'compare',
+    question: 'How do these titles compare?',
+    description: 'Up to three titles side by side, on the same filters.',
+    icon: Columns3,
   },
   {
     id: 'genres',
@@ -65,7 +73,7 @@ export function DecisionStudioPage() {
       <div
         role="tablist"
         aria-label="Decision tools"
-        className="-mx-1 grid grid-cols-5 gap-3 px-1 pb-1 max-xl:grid-cols-3 max-md:flex max-md:snap-x max-md:overflow-x-auto max-md:scrollbar-none"
+        className="-mx-1 grid grid-cols-6 gap-3 px-1 pb-1 max-2xl:grid-cols-3 max-md:flex max-md:snap-x max-md:overflow-x-auto max-md:scrollbar-none"
       >
         {TOOLS.map((tool) => {
           const selected = tab === tool.id
@@ -77,7 +85,17 @@ export function DecisionStudioPage() {
               aria-selected={selected}
               // Switching tools keeps only the tool, so each one starts clean.
               onClick={() =>
-                update({ tab: tool.id, title: undefined, platform: undefined, country: undefined })
+                update({
+                  tab: tool.id,
+                  title: undefined,
+                  platform: undefined,
+                  country: undefined,
+                  titles: undefined,
+                  countries: undefined,
+                  platforms: undefined,
+                  metric: undefined,
+                  align: undefined,
+                })
               }
               className={cn(
                 'pressable flex flex-col items-start gap-3 rounded-lg p-4 text-left ring-2 ring-inset transition-colors duration-200 max-md:w-44 max-md:shrink-0 max-md:snap-start max-md:gap-2 max-md:p-3',
@@ -104,6 +122,7 @@ export function DecisionStudioPage() {
       <div role="tabpanel" key={tab} className="appear">
         {tab === 'licensing' && <LicensingTab />}
         {tab === 'markets' && <MarketsTab />}
+        {tab === 'compare' && <CompareTab />}
         {tab === 'genres' && <GenresTab />}
         {tab === 'concepts' && <ConceptsTab />}
         {tab === 'ask' && <AskTab />}

@@ -222,7 +222,7 @@ environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
 | Discover | What stands out without a query: top by country and platform, rising, evergreen, binge-worthy, hidden gems, AI themes |
 | Search | Which titles match an idea, in English or Spanish |
 | Movie | What a title is, where it is available and how it performed, by country and platform |
-| Decision Studio | Should we license this title to this platform in this country (comparable titles, expected range, verdict, memo); where a title should go next (every platform and country ranked); which genres are gaining; which project to pursue (demand behind up to 3 loglines); and a chat that answers from the data |
+| Decision Studio | Should we license this title to this platform in this country (comparable titles, expected range, verdict, memo); where a title should go next (every platform and country ranked); how up to 3 titles compare side by side (by calendar month or from launch); which genres are gaining; which project to pursue (demand behind up to 3 loglines); and a chat that answers from the data |
 
 ## Tests
 
