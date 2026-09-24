@@ -1,4 +1,4 @@
-import { ExternalLink, Star } from 'lucide-react'
+import { Columns3, ExternalLink, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import type { Schemas } from '@/api/client'
@@ -70,6 +70,13 @@ export function MovieHeader({ movie }: { movie: Schemas['MovieDetail'] }) {
               className="rounded-full bg-pink px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105"
             >
               Assess a deal
+            </Link>
+            <Link
+              to={`/compare?titles=${movie.title_id}`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/30 px-4 py-2.5 text-sm font-bold hover:border-white"
+            >
+              <Columns3 className="size-4" />
+              Compare
             </Link>
             {movie.title_url && (
               <a

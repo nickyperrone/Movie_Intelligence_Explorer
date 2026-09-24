@@ -7,13 +7,14 @@ import { Poster } from '@/components/common/Poster'
 type TitlePickerProps = {
   selected: Schemas['MovieSummary'] | undefined
   onSelect: (movie: Schemas['MovieSummary']) => void
+  exclude?: string[]
 }
 
-export function TitlePicker({ selected, onSelect }: TitlePickerProps) {
+export function TitlePicker({ selected, onSelect, exclude = [] }: TitlePickerProps) {
   const [text, setText] = useState('')
   const [open, setOpen] = useState(false)
   const lookup = useMovieLookup(text)
-  const results = lookup.data?.results ?? []
+  const results = (lookup.data?.results ?? []).filter((movie) => !exclude.includes(movie.title_id))
 
   return (
     <div className="relative w-72 max-w-full">

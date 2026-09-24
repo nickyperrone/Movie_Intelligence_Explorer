@@ -15,6 +15,9 @@ const CollectionPage = lazy(() =>
 )
 const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })))
 const MoviePage = lazy(() => import('@/pages/MoviePage').then((m) => ({ default: m.MoviePage })))
+const ComparePage = lazy(() =>
+  import('@/pages/ComparePage').then((m) => ({ default: m.ComparePage })),
+)
 const DecisionStudioPage = lazy(() =>
   import('@/pages/DecisionStudioPage').then((m) => ({ default: m.DecisionStudioPage })),
 )
@@ -28,6 +31,7 @@ export default function App() {
         <Route path="discover/:collectionId" element={<CollectionPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="movies/:titleId" element={<MoviePage />} />
+        <Route path="compare" element={<ComparePage />} />
         <Route path="decide" element={<DecisionStudioPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

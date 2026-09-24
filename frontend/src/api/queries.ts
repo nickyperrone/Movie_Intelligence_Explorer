@@ -1,4 +1,10 @@
-import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQueries,
+  useQuery,
+} from '@tanstack/react-query'
 import { api, unwrap, type Schemas } from './client'
 
 export type DashboardQuery = {
@@ -253,4 +259,37 @@ export function useAssistant() {
     mutationFn: (messages: Schemas['ChatMessage'][]) =>
       unwrap(api.POST('/assistant/answer', { body: { messages } })),
   })
+}
+
+// The comparison loads the same data as the movie page, once per title, and shares its cache.
+export function useComparedTitles(titleIds: string[], countries: string[], platforms: string[]) {
+  const movies = useQueries({
+    queries: titleIds.map((titleId) => ({
+      queryKey: ['movie', titleId],
+      queryFn: () =>
+        unwrap(api.GET('/movies/{title_id}', { params: { path: { title_id: titleId } } })),
+    })),
+  })
+  const availability = useQueries({
+    queries: titleIds.map((titleId) => ({
+      queryKey: ['availability', titleId],
+      queryFn: () =>
+        unwrap(
+          api.GET('/movies/{title_id}/availability', { params: { path: { title_id: titleId } } }),
+        ),
+    })),
+  })
+  const performance = useQueries({
+    queries: titleIds.map((titleId) => ({
+      queryKey: ['performance', titleId, countries, platforms],
+      queryFn: () =>
+        unwrap(
+          api.GET('/movies/{title_id}/performance', {
+            params: { path: { title_id: titleId }, query: { countries, platforms } },
+          }),
+        ),
+      placeholderData: keepPreviousData,
+    })),
+  })
+  return { movies, availability, performance }
 }

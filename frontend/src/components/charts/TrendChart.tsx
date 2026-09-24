@@ -17,7 +17,7 @@ export type TrendSeries = {
   label: ReactNode
   name: string
   color: string
-  values: number[]
+  values: (number | null)[]
   dashed?: boolean
 }
 
@@ -28,6 +28,8 @@ type TrendChartProps = {
   format: (value: number) => string
   unit?: string
   height?: number
+  // Keys are months unless a caller passes its own labels (for example "Month 3").
+  xLabel?: { short: (key: string) => string; long: (key: string) => string }
 }
 
 const axisNumber = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
@@ -42,6 +44,7 @@ export function TrendChart({
   format,
   unit = '',
   height = 300,
+  xLabel = { short: monthShort, long: monthLabel },
 }: TrendChartProps) {
   const rows = months.map((month, index) =>
     Object.fromEntries([['month', month], ...series.map((s) => [s.key, s.values[index] ?? null])]),
@@ -50,7 +53,7 @@ export function TrendChart({
     x: (
       <XAxis
         dataKey="month"
-        tickFormatter={monthShort}
+        tickFormatter={(key) => xLabel.short(String(key))}
         tick={AXIS_TICK}
         axisLine={false}
         tickLine={false}
@@ -72,7 +75,7 @@ export function TrendChart({
       <Tooltip
         cursor={{ stroke: 'rgb(255 255 255 / 0.2)' }}
         contentStyle={TOOLTIP_STYLE}
-        labelFormatter={(month) => monthLabel(String(month))}
+        labelFormatter={(key) => xLabel.long(String(key))}
         formatter={(value, name) => [
           format(Number(value)),
           series.length > 1 ? String(name) : metricLabel,
@@ -80,7 +83,7 @@ export function TrendChart({
       />
     ),
   }
-  const label = `${metricLabel} per month from ${monthLabel(months[0])} to ${monthLabel(months.at(-1))}`
+  const label = `${metricLabel} per month from ${xLabel.long(months[0])} to ${xLabel.long(months.at(-1) ?? months[0])}`
 
   return (
     <div>
