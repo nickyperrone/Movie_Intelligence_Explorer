@@ -14,7 +14,7 @@
    - Copy `frontend/dist` from stage 1.
    - Run as a non-root user.
    - `HEALTHCHECK` calls `GET /api/v1/health`.
-   - `CMD uvicorn app.main:app --host 0.0.0.0 --port 5001 --workers 1`.
+   - Serves the React app and the API on one port, `PORT` (default 4040).
 
 One worker: each worker would load its own copy of the model (about 2.2 GB). Requests are short and
 FastAPI runs sync endpoints in a thread pool, which is enough for this traffic.
@@ -29,6 +29,7 @@ paths in `app/config.py` work the same locally and in the container.
 | `OPENAI_API_KEY` | no | — | Enables LLM features |
 | `OPENAI_MODEL` | no | `gpt-4o-mini` | Chat model for LLM features |
 | `LOG_LEVEL` | no | `INFO` | Python logging level |
+| `PORT` | no | `4040` | Port the container serves the app and the API on |
 
 No secrets are baked into the image. `.env` is gitignored and excluded by `.dockerignore`.
 
@@ -47,14 +48,14 @@ Port 5000 is avoided because recent macOS versions use it for the AirPlay receiv
 - Every day: `make dev` starts the API and the web app; open `http://localhost:5173`. Vite proxies
   `/api` to the API port.
 - `docker compose up --build` builds the production image and serves everything on
-  `http://localhost:5001`, reading `.env` if present.
+  `http://localhost:4040`, reading `.env` if present.
 
 ## Dokploy
 
 1. Create an Application from the GitHub repository, branch `main`.
 2. Build type: Dockerfile, path `./Dockerfile`, context `.`.
 3. Environment: `OPENAI_API_KEY`, `OPENAI_MODEL`.
-4. Container port 5001. Add a domain; Dokploy's Traefik issues the HTTPS certificate.
+4. Container port 4040 (the only exposed port: app and API). Add a domain; Dokploy's Traefik issues the HTTPS certificate.
 5. Enable auto-deploy so every push to `main` rebuilds and redeploys.
 6. Server resources: at least 4 GB RAM (model plus Python process), about 5 GB disk for the image.
 

@@ -42,15 +42,16 @@ The whole app follows the layout patterns of a music streaming desktop client:
 
 ### Dashboard
 
-1. `DashboardToolbar`, sticky under the top bar:
-   - Period presets as pills: `Last 3 months`, `Last 6 months`, `Last 12 months` (default), `2026`,
-     `2025`, `2024`, `2023`, `All time`, `Custom`. Presets are computed from the latest month of
-     data (Jun 2026), not from today. `Custom` reveals From/To month selects.
-   - Multi-select pills for countries, platforms, genres and distributors, and a `Sony titles`
-     shortcut.
-   - An active-filters line: the period, the comparison period ("vs Jul 2024–Jun 2025", or "no
-     comparison: the previous period starts before Jan 2023"), and one removable chip per active
-     filter, plus "Clear all".
+1. `DashboardToolbar`, sticky under the top bar on a solid background, one row of pills that
+   scrolls sideways on small screens:
+   - `Period` pill showing the active period ("Last 12 months", "2025", "Mar–Aug 2025"). It opens a
+     popover with the presets (`Last 3 months`, `Last 6 months`, `Last 12 months` (default), each
+     year, `All time`), computed from the latest month of data, and a custom From/To range.
+   - Multi-select pills for countries, platforms, primary genres, themes and distributors, and a
+     `Sony titles` toggle.
+   - A second line: the period, the comparison period ("vs Jul 2024–Jun 2025", or "no comparison:
+     the previous period starts before Jan 2023"), one removable chip per active filter, and
+     "Clear all".
 2. `KpiRow`: four `KpiCard`s (streams, viewing hours, titles with consumption, engagement), each with
    its change vs the previous period. A card is a button: it opens `KpiDetail`.
 3. `KpiDetail`, a side panel that answers "where does this number come from":
@@ -189,13 +190,31 @@ Ask the data:
   4 platforms (Jan 2023–Jun 2026) and one availability snapshot."
 - The conversation lives in component state only; reloading clears it.
 
+## Categories are links
+
+A genre or theme shown anywhere (movie header, cards, tables, charts, search results) is a link to
+the dashboard filtered by it: `/?genres=Comedy` (primary genre) or `/?themes=t05`. The dashboard
+shows that category's charts and keeps every other filter available.
+
+## Discover: browse by genre
+
+After the shelves, a "Browse by genre" section shows one colored tile per primary genre (icon and
+name, same size, grid of 2 to 6 columns). A tile opens the dashboard filtered by that genre.
+
+## Search examples
+
+The example queries on the empty Search page and the example in the search box placeholder rotate
+every 4 seconds with a fade, through a fixed list of 12 examples (English and Spanish). Rotation
+pauses while the user hovers or types, and does not run with reduced motion.
+
 ## States
 
 Every data view handles all of these:
 
 | State | Rendering |
 |---|---|
-| Loading | Skeletons with the final layout's shape; no spinners for whole pages |
+| Loading | Skeletons with the final layout's shape everywhere: pages loaded on demand, panels, card rows, suggestion lists, tables. No spinners |
+| Refreshing | While new data for changed filters loads, the previous content stays and dims to 60% opacity |
 | Error | `ErrorState` with the error message from the envelope and a "Retry" button |
 | Empty | `EmptyState` with a sentence saying what is missing and a next action |
 | Missing poster / broken image | `PosterFallback`: neutral block with the title's initials |
@@ -267,7 +286,10 @@ names are used.
   shape, slight scale on hover. Secondary actions: white or `--pill`.
 - Page titles may highlight their key word with the gradient as text fill.
 - Motion: 150–200 ms transitions on hover and focus; a 300 ms fade with a small upward slide when
-  the page changes. No motion when the system asks for reduced motion.
+  the page changes, when a panel's content appears after loading, and when a tab, tool or section
+  is switched. Pressable elements scale to 97% while pressed. No motion when the system asks for
+  reduced motion.
+- Focus: a white ring with a dark gap, drawn with box-shadow so it follows rounded shapes.
 
 ## Accessibility
 
@@ -281,4 +303,5 @@ badges have text, changes have a sign).
 - Opening any URL from the table above directly (hard reload) renders the same view.
 - With the API returning an error for a section, only that section shows `ErrorState`.
 - The movie page for a title without consumption shows the "No consumption" text and no chart.
-- The pages work at 375 px width without horizontal scrolling of the page.
+- Every page works at 375 px width without horizontal scrolling of the page: filter rows and tables
+  scroll inside their own container, sentence-style headers wrap, grids drop to one or two columns.

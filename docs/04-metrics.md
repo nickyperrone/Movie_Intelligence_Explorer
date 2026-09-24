@@ -11,6 +11,7 @@ A metric is computed over the consumption rows that match the active filters:
 - `countries`, `platforms`: C vocabularies. Empty means all.
 - `genres`: movies whose `primary_genre` is in the list.
 - `distributors`: movies with at least one matching row in `title_distributors`.
+- `themes`: movies whose theme (`movie_themes`) is in the list.
 
 Movie-level filters are applied as `title_id IN (subquery)`, never as joins that could repeat
 consumption rows (`03-data.md`).

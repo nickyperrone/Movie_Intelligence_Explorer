@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.2.0
+  version: 1.3.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -258,6 +258,7 @@ paths:
         - $ref: "#/components/parameters/ConsumptionPlatforms"
         - $ref: "#/components/parameters/PrimaryGenres"
         - $ref: "#/components/parameters/Distributors"
+        - $ref: "#/components/parameters/Themes"
       responses:
         "200":
           description: KPIs
@@ -282,6 +283,7 @@ paths:
         - $ref: "#/components/parameters/ConsumptionPlatforms"
         - $ref: "#/components/parameters/PrimaryGenres"
         - $ref: "#/components/parameters/Distributors"
+        - $ref: "#/components/parameters/Themes"
         - name: group_by
           in: query
           schema: { type: string, enum: [platform, country] }
@@ -309,6 +311,7 @@ paths:
         - $ref: "#/components/parameters/ConsumptionPlatforms"
         - $ref: "#/components/parameters/PrimaryGenres"
         - $ref: "#/components/parameters/Distributors"
+        - $ref: "#/components/parameters/Themes"
       responses:
         "200":
           description: One item per value of the dimension, sorted by streams descending
@@ -343,6 +346,7 @@ paths:
         - $ref: "#/components/parameters/ConsumptionPlatforms"
         - $ref: "#/components/parameters/PrimaryGenres"
         - $ref: "#/components/parameters/Distributors"
+        - $ref: "#/components/parameters/Themes"
         - name: sort
           in: query
           schema: { $ref: "#/components/schemas/TitleSort" }
@@ -562,6 +566,13 @@ components:
       name: genres
       in: query
       description: Primary genres. Any listed value matches.
+      style: form
+      explode: true
+      schema: { type: array, items: { type: string } }
+    Themes:
+      name: themes
+      in: query
+      description: Theme ids (added in 1.3.0). A movie matches if its theme is listed.
       style: form
       explode: true
       schema: { type: array, items: { type: string } }
@@ -886,13 +897,14 @@ components:
     DashboardFilters:
       type: object
       additionalProperties: false
-      required: [start, end, countries, platforms, genres, distributors]
+      required: [start, end, countries, platforms, genres, themes, distributors]
       properties:
         start: { $ref: "#/components/schemas/Month" }
         end: { $ref: "#/components/schemas/Month" }
         countries: { type: array, items: { type: string } }
         platforms: { type: array, items: { type: string } }
         genres: { type: array, items: { type: string } }
+        themes: { type: array, items: { type: string } }
         distributors: { type: array, items: { type: string } }
 
     Kpi:
