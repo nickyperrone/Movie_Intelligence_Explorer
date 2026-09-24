@@ -85,7 +85,7 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 - Each section is one horizontal row of `CollectionCard`s with scroll snap (with `All`), or a
   wrapping grid (with a single section selected).
 - `CollectionCard`:
-  - Square cover = poster of the collection's number 1 movie, rounded corners, `object-fit: cover`.
+  - Cover = poster of the collection's number 1 movie at the poster ratio (2:3), rounded corners.
     If an earlier collection in the page order already uses that poster, the next movie in the
     ranking is used (number 2, then 3). The collection page uses the same cover.
   - A colored band across the lower part of the cover with the collection name in bold
@@ -133,12 +133,18 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 Tabs "Licensing", "Concepts" and "Ask the data".
 
 Licensing:
-- Form: `TitlePicker` (combobox backed by `/movies/lookup`), platform select (C platforms), country
-  select (C countries), "Assess" button. Submitting writes the URL.
-- Results: `SignalBadge` (strong, moderate, weak, insufficient evidence), "Already available on
-  this platform in this country" warning when applicable, `ExpectedRangeChart` (p25–p75 band,
-  median line, benchmark line, one dot per comparable), `ComparablesTable` (title, year, similarity,
-  first-6-month streams), `PlatformFitBars`, `WhitespaceList`, the title's own consumption totals.
+- The form reads as a sentence: "License [title] to [platform] in [country]", with the title as a
+  search combobox and the platform and country as `SelectPill`s. Submitting writes the URL.
+- `Verdict` at the top, in plain words and computed in the frontend from the facts (no LLM): the
+  demand signal, then one sentence such as "Comparable titles reached a median of 985 streams in
+  their first 6 months on Amazon in Colombia, 8.7× the typical title there (113)."
+- "Already available on this platform in this country" warning when applicable.
+- `ExpectedRangeChart` with an axis, a legend (dot = one comparable title, band = middle half of
+  comparables, solid line = their median, dashed line = median of all titles on the target) and a
+  caption with the range ("Most comparables: 450 to 1.9K streams").
+- `ComparablesTable`, `PlatformFitBars` ("Where similar titles perform in {country}") and
+  `WhitespaceList` ("Countries where similar titles are watched but this title is not available").
+- The title's own consumption and availability in a compact side card.
 - `MemoPanel`: headline, evidence, risks, caveats, "Copy as Markdown" button. Loads after the
   facts.
 
@@ -224,6 +230,10 @@ names are used.
   cards and covers; 4 px for poster thumbnails in lists.
 - Filters on every page are pills: the active pill is white with black text, inactive pills are
   `--pill` with white text. Multi-select filters open a dark popover list.
+- No native `<select>` elements: single choices use `SelectPill` and multiple choices use
+  `MultiSelectPill`, both built on the same popover, with flags, platform logos and genre icons in
+  the options.
+- Every movie image keeps the poster ratio (2:3), including collection covers. Nothing is square.
 - Cards: `--surface-raised` background, lighten to `--surface-hover` on hover, no borders.
 - Rows of cards: a heading on the left and "Show all" on the right, as on Discover.
 - Charts: `--pink` for the main series with a pink-to-transparent area fill, greys for secondary series, no gridlines except faint
