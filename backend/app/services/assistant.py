@@ -18,9 +18,10 @@ import duckdb
 import openai
 
 from app import api_models as m
+from app import rate_limits
 from app.config import settings
 from app.db import connection
-from app.rate_limits import LlmRateLimited, spend_llm_call
+from app.rate_limits import LlmRateLimited, record_usage, spend_llm_call
 from app.services import llm
 from app.services.search import search_index
 
@@ -293,10 +294,6 @@ def ungrounded_numbers(answer: str, evidence: list[m.Evidence], context: str) ->
     return missing
 
 
-def reply(status: str, answer: str | None, evidence: list[m.Evidence]) -> m.AssistantReply:
-    return m.AssistantReply(status=m.AssistantStatus(status), answer=answer, evidence=evidence)
-
-
 def run_exchange(
     client: Any, conversation: list[dict[str, Any]], evidence: list[m.Evidence], deadline: float
 ) -> Any:
@@ -312,7 +309,9 @@ def run_exchange(
             response_format={"type": "json_object"},
             temperature=0,
             timeout=max(deadline - time.monotonic(), 1),
+            max_completion_tokens=settings.llm_max_output_tokens,
         )
+        record_usage(getattr(response, "usage", None))
         message = response.choices[0].message
         if not message.tool_calls:
             conversation.append({"role": "assistant", "content": message.content})
@@ -342,10 +341,20 @@ def run_exchange(
             raise TimeoutError
 
 
-def answer(messages: list[m.ChatMessage]) -> m.AssistantReply:
+def answer(messages: list[m.ChatMessage], device_id: str | None = None) -> m.AssistantReply:
+    left = rate_limits.questions_left(device_id)
+
+    def reply(status: str, text: str | None, evidence: list[m.Evidence]) -> m.AssistantReply:
+        return m.AssistantReply(
+            status=m.AssistantStatus(status), answer=text, evidence=evidence, questions_left=left
+        )
+
     client = llm.openai_client()
     if client is None:
         return reply("disabled", None, [])
+    allowed, left = rate_limits.take_chat_question(device_id)
+    if not allowed:
+        return reply("rate_limited", None, [])
 
     conversation: list[dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}]
     conversation += [{"role": msg.role, "content": msg.content} for msg in messages]

@@ -4,6 +4,7 @@
 # Generated data (rebuilt from data/raw by the pipeline)
 data/processed/*
 !data/processed/.gitkeep
+data/state/
 
 # Python
 __pycache__/

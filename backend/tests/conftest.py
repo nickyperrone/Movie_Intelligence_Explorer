@@ -21,7 +21,7 @@ def no_real_llm(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def fresh_rate_limits(monkeypatch):
+def fresh_rate_limits(monkeypatch, tmp_path):
     # The contract test sends hundreds of requests from one client; limit tests lower this again.
     monkeypatch.setattr(rate_limits.api_requests, "limit", 1_000_000)
     for window in (
@@ -29,8 +29,13 @@ def fresh_rate_limits(monkeypatch):
         rate_limits.llm_per_client_minute,
         rate_limits.llm_per_client_day,
         rate_limits.llm_per_day,
+        rate_limits.chat_per_device,
+        rate_limits.chat_per_ip,
     ):
         window.reset()
+    # Tests never touch the spend saved by a running app.
+    monkeypatch.setattr(rate_limits.daily_spend, "path", tmp_path / "llm_spend.json")
+    rate_limits.daily_spend.reset()
 
 
 @pytest.fixture(scope="session")

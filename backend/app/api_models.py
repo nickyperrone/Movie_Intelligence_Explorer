@@ -646,6 +646,9 @@ class AssistantReply(BaseModel):
     status: AssistantStatus
     answer: str | None
     evidence: list[Evidence]
+    questions_left: int = Field(
+        ..., description="Questions this device can still ask today (added in 1.7.0)", ge=0
+    )
 
 
 class Person(BaseModel):

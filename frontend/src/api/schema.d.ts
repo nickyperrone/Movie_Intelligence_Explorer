@@ -438,6 +438,7 @@ export interface paths {
          * @description Stateless: the client sends the conversation. The model can only use read-only SQL over the
          *     datasets and semantic search. Answers that cannot be checked against tool results are not
          *     returned (status `failed`). See docs/06-llm.md.
+         *     Each device may ask a limited number of questions a day (added in 1.7.0).
          */
         post: operations["askAssistant"];
         delete?: never;
@@ -880,6 +881,8 @@ export interface components {
             status: components["schemas"]["AssistantStatus"];
             answer: string | null;
             evidence: components["schemas"]["Evidence"][];
+            /** @description Questions this device can still ask today (added in 1.7.0) */
+            questions_left: number;
         };
         Person: {
             name: string;
@@ -1652,7 +1655,10 @@ export interface operations {
     askAssistant: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Random id the browser keeps for itself; counts the device's daily questions. Without a valid one, the IP address is used. */
+                "X-Device-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };

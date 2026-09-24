@@ -21,7 +21,14 @@ import { ApiError, type Schemas } from '@/api/client'
 import { useAssistant } from '@/api/queries'
 import { cn } from '@/lib/cn'
 import { ChatText } from './ChatText'
-import { loadHistory, saveHistory, type AssistantTurn, type Turn } from './chatHistory'
+import {
+  loadHistory,
+  loadQuestionsLeft,
+  saveHistory,
+  saveQuestionsLeft,
+  type AssistantTurn,
+  type Turn,
+} from './chatHistory'
 
 const REVEAL_MAX_MS = 1500
 const REVEAL_WORD_MS = 30
@@ -258,6 +265,8 @@ function AssistantMessage({
 export function AskTab() {
   const [turns, setTurns] = useState<Turn[]>(loadHistory)
   const [draft, setDraft] = useState('')
+  const [questionsLeft, setQuestionsLeft] = useState(loadQuestionsLeft)
+  const outOfQuestions = questionsLeft === 0
   const [following, setFollowingState] = useState(false)
   // Mirrors `following` for callbacks that run between renders (scroll and reveal steps).
   const followingRef = useRef(false)
@@ -311,7 +320,7 @@ export function AskTab() {
 
   function send(question: string, history: Turn[] = turns) {
     const text = question.trim()
-    if (!text || assistant.isPending) return
+    if (!text || assistant.isPending || outOfQuestions) return
     const next = [...history, { role: 'user' as const, content: text }]
     setTurns(next)
     setDraft('')
@@ -327,15 +336,18 @@ export function AskTab() {
       })
       .slice(-12)
     assistant.mutate(messages, {
-      onSuccess: (reply) =>
-        setTurns((current) => [...current, { role: 'assistant', reply, fresh: true }]),
+      onSuccess: (reply) => {
+        setTurns((current) => [...current, { role: 'assistant', reply, fresh: true }])
+        setQuestionsLeft(reply.questions_left)
+        saveQuestionsLeft(reply.questions_left)
+      },
       onError: (error) =>
         setTurns((current) => [
           ...current,
           error instanceof ApiError && error.status === 429
             ? {
                 role: 'assistant',
-                reply: { status: 'rate_limited', answer: null, evidence: [] },
+                reply: { status: 'rate_limited', answer: null, evidence: [], questions_left: 0 },
                 fresh: true,
               }
             : {
@@ -448,10 +460,19 @@ export function AskTab() {
             Jump to latest
           </button>
         )}
-        <p className="mb-2 text-xs text-subtle">
-          Answers use only the datasets: consumption for AR, BR, CO, MX on 4 platforms (Jan 2023–Jun
-          2026) and one availability snapshot.
-        </p>
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-subtle">
+          <p>
+            Answers use only the datasets: consumption for AR, BR, CO, MX on 4 platforms (Jan
+            2023–Jun 2026) and one availability snapshot.
+          </p>
+          <p className={cn('shrink-0 font-bold tabular', outOfQuestions && 'text-white')}>
+            {questionsLeft === null
+              ? 'Up to 10 questions a day'
+              : outOfQuestions
+                ? "You've used today's questions. Come back tomorrow."
+                : `${questionsLeft} ${questionsLeft === 1 ? 'question' : 'questions'} left today`}
+          </p>
+        </div>
         <div className="flex items-end gap-2 rounded-3xl bg-pill p-2 transition-shadow focus-within:ring-1 focus-within:ring-white/40">
           <label htmlFor="ask-input" className="sr-only">
             Question for the assistant
@@ -464,13 +485,16 @@ export function AskTab() {
             maxLength={1000}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Ask a question about the data"
+            disabled={outOfQuestions}
+            placeholder={
+              outOfQuestions ? 'No questions left today' : 'Ask a question about the data'
+            }
             className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-subtle focus-visible:[box-shadow:none]"
           />
           <button
             type="submit"
             aria-label="Send"
-            disabled={!draft.trim() || assistant.isPending}
+            disabled={!draft.trim() || assistant.isPending || outOfQuestions}
             className="pressable grid size-9 shrink-0 place-items-center rounded-full bg-pink text-black transition-opacity disabled:opacity-40"
           >
             <ArrowUp className="size-4" />

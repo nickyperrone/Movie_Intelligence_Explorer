@@ -49,3 +49,30 @@ export function saveHistory(turns: Turn[]) {
     // Not saved; the conversation stays on screen.
   }
 }
+
+const QUESTIONS_KEY = 'ask-questions-left'
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+// The last count the server reported, kept for the rest of the same UTC day.
+export function loadQuestionsLeft(): number | null {
+  try {
+    const saved = JSON.parse(localStorage.getItem(QUESTIONS_KEY) ?? 'null') as {
+      day?: string
+      left?: number
+    } | null
+    return saved?.day === today() && typeof saved.left === 'number' ? saved.left : null
+  } catch {
+    return null
+  }
+}
+
+export function saveQuestionsLeft(left: number) {
+  try {
+    localStorage.setItem(QUESTIONS_KEY, JSON.stringify({ day: today(), left }))
+  } catch {
+    // Not saved; the count comes back with the next reply.
+  }
+}

@@ -253,10 +253,19 @@ The LLM never computes numbers and never makes a decision.
 Without an API key the whole app works: search falls back to embeddings only, and each LLM section
 says it is unavailable.
 
-The app is public, so the paid key is protected by limits: 20 model calls per client per minute, 200
-per client per day, and 2,000 per day for the whole app, plus 300 API requests per client per
-minute. Above a limit, the LLM parts say so and everything else keeps working. All limits are
-environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
+The app is public, so the paid key is protected by limits:
+
+- **At most 1 US dollar a day.** Every OpenAI response reports its tokens; their cost is added to the
+  day's spend, and once it reaches 1 dollar no more calls are made until the next UTC day. Each
+  answer is capped at 700 output tokens, and the spend is saved to a file on a volume, so a restart
+  or redeploy does not reset it.
+- **10 chat questions per device per day** (30 per IP address, since an office shares one). The
+  chat shows how many are left.
+- Call counters (20 per client per minute, 200 per client per day, 2,000 per day in total) and 300
+  API requests per client per minute stop bursts earlier.
+
+Above a limit, the LLM parts say so and everything else keeps working. All limits are environment
+variables ([06-llm](docs/06-llm.md#usage-limits), [08-deployment](docs/08-deployment.md#rate-limits)).
 
 ## Why it is shown this way
 
@@ -335,7 +344,8 @@ phone (375 px), tablet (768 px) and desktop (1280 to 1920 px) widths:
   (`data/curated/theme_names.json`); `make themes` can regenerate them with the LLM.
 - Platform logos load from Google's favicon service; a monogram is shown if they cannot load.
 - Rate limit counters live in memory in one worker: they reset on restart and would not be shared
-  across several instances (Redis would be the next step).
+  across several instances (Redis would be the next step). The daily spend is the exception: it is
+  saved to a file.
 - The chat history is kept only in the browser that wrote it.
 
 ## Next steps

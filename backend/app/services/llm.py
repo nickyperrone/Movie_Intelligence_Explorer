@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from app import api_models as m
 from app.config import settings
-from app.rate_limits import LlmRateLimited, spend_llm_call
+from app.rate_limits import LlmRateLimited, record_usage, spend_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,9 @@ def complete_json(system: str, user: str, timeout: float) -> str:
         response_format={"type": "json_object"},
         temperature=0,
         timeout=timeout,
+        max_completion_tokens=settings.llm_max_output_tokens,
     )
+    record_usage(getattr(response, "usage", None))
     return response.choices[0].message.content or ""
 
 

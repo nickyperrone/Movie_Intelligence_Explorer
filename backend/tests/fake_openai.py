@@ -21,7 +21,9 @@ class FakeOpenAI:
             message = SimpleNamespace(
                 content=reply.get("content"), tool_calls=reply.get("tool_calls")
             )
-        return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+        # Every scripted reply costs 1,000 input and 100 output tokens.
+        usage = SimpleNamespace(prompt_tokens=1000, completion_tokens=100)
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=usage)
 
 
 def tool_call(call_id: str, name: str, arguments: str) -> SimpleNamespace:

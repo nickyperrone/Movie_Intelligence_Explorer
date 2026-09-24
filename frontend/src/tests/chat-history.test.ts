@@ -17,6 +17,7 @@ function reply(rows: number): Schemas['AssistantReply'] {
         error: null,
       },
     ],
+    questions_left: 9,
   }
 }
 

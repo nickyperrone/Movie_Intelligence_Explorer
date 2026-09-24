@@ -1,4 +1,5 @@
 import json
+import uuid
 
 import pytest
 
@@ -9,10 +10,14 @@ from tests.fake_openai import FakeOpenAI, tool_call
 COUNT_SQL = "SELECT count(*) AS movies FROM movies"
 
 
-def ask(monkeypatch, *replies, question="How many movies are there?"):
+DEVICE = "0b6f0a3e-6a53-4c43-9d8f-3d2a1c9f2b10"
+
+
+def ask(monkeypatch, *replies, question="How many movies are there?", device=DEVICE):
     fake = FakeOpenAI(*replies)
     monkeypatch.setattr(llm, "openai_client", lambda: fake)
-    return assistant.answer([assistant.m.ChatMessage(role="user", content=question)]), fake
+    message = assistant.m.ChatMessage(role="user", content=question)
+    return assistant.answer([message], device), fake
 
 
 def sql_call(sql: str, call_id: str = "call_1") -> dict:
@@ -155,3 +160,45 @@ def test_tool_budget_is_enforced(monkeypatch):
     result, fake = ask(monkeypatch, *replies, final("answered", "1,590 movies."))
     assert result.status.root == "answered"
     assert fake.calls[-1]["tool_choice"] == "none"
+
+
+def test_each_device_gets_ten_questions_a_day(monkeypatch):
+    lefts = [ask(monkeypatch, final("conversation", "Hi!"))[0].questions_left for _ in range(10)]
+    assert lefts == list(range(9, -1, -1))
+    refused, fake = ask(monkeypatch, final("conversation", "Hi!"))
+    assert refused.status.root == "rate_limited"
+    assert refused.questions_left == 0
+    assert fake.calls == []
+    # Another device on the same address still has its own questions.
+    other, _ = ask(monkeypatch, final("conversation", "Hi!"), device=str(uuid.uuid4()))
+    assert other.status.root == "conversation"
+    assert other.questions_left == 9
+
+
+def test_an_address_is_capped_across_devices(monkeypatch):
+    monkeypatch.setattr(rate_limits.chat_per_ip, "limit", 2)
+    for _ in range(2):
+        ask(monkeypatch, final("conversation", "Hi!"), device=str(uuid.uuid4()))
+    refused, fake = ask(monkeypatch, final("conversation", "Hi!"), device=str(uuid.uuid4()))
+    assert refused.status.root == "rate_limited"
+    assert fake.calls == []
+
+
+def test_an_invalid_device_id_counts_against_the_address(monkeypatch):
+    monkeypatch.setattr(rate_limits.chat_per_device, "limit", 1)
+    ask(monkeypatch, final("conversation", "Hi!"), device="not-a-uuid")
+    refused, _ = ask(monkeypatch, final("conversation", "Hi!"), device=None)
+    assert refused.status.root == "rate_limited"
+
+
+def test_the_daily_budget_stops_the_chat(monkeypatch):
+    monkeypatch.setattr(assistant.settings, "llm_daily_budget_usd", 0.0005)
+    first, _ = ask(monkeypatch, final("conversation", "Hi!"))
+    assert first.status.root == "conversation"
+    # 1,000 input and 100 output tokens cost 0.00021 USD; three calls pass the budget.
+    ask(monkeypatch, final("conversation", "Hi!"))
+    ask(monkeypatch, final("conversation", "Hi!"))
+    refused, fake = ask(monkeypatch, final("conversation", "Hi!"))
+    assert refused.status.root == "rate_limited"
+    assert fake.calls == []
+    assert refused.questions_left == 7

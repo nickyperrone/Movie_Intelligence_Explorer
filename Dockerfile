@@ -34,6 +34,8 @@ RUN uv run --no-sync python -m pipeline.build_db && \
     uv run --no-sync python -m pipeline.build_embeddings
 
 COPY --chown=app:app --from=frontend /app/frontend/dist /app/frontend/dist
+# Owned by the app user, so a volume mounted here starts writable (docs/08-deployment.md).
+RUN mkdir -p /app/data/state
 
 ENV HF_HUB_OFFLINE=1 \
     PORT=4040

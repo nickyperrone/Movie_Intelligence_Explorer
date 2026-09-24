@@ -55,6 +55,24 @@ def test_per_client_limit_counts_only_model_calls(monkeypatch):
     assert llm.interpret_query("thrillers", filter_options()).status.root == "rate_limited"
 
 
+def test_spend_is_counted_saved_and_reset_each_day(monkeypatch):
+    use_fake(monkeypatch, interpretation())
+    llm.interpret_query("comedies", filter_options())
+    spend = rate_limits.daily_spend
+    assert spend.spent() == pytest.approx((1000 * 0.15 + 100 * 0.60) / 1_000_000)
+    saved = rate_limits.DailySpend(spend.path)
+    assert saved.spent() == pytest.approx(spend.spent())
+    monkeypatch.setattr(rate_limits.DailySpend, "today", staticmethod(lambda: "2999-01-01"))
+    assert saved.spent() == 0
+
+
+def test_the_daily_budget_skips_the_model(monkeypatch):
+    fake = use_fake(monkeypatch)
+    rate_limits.daily_spend.add(5.0)
+    assert llm.interpret_query("comedies", filter_options()).status.root == "rate_limited"
+    assert fake.calls == []
+
+
 def test_disabled_without_key(monkeypatch):
     monkeypatch.setattr(llm, "openai_client", lambda: None)
     result = llm.interpret_query("comedies", filter_options())

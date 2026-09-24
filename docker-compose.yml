@@ -7,3 +7,9 @@ services:
     env_file:
       - path: .env
         required: false
+    # Keeps the day's OpenAI spend across rebuilds, so the daily budget holds.
+    volumes:
+      - state:/app/data/state
+
+volumes:
+  state:

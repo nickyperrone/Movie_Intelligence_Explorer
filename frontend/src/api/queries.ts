@@ -5,6 +5,7 @@ import {
   useQueries,
   useQuery,
 } from '@tanstack/react-query'
+import { deviceId } from '@/lib/device'
 import { api, unwrap, type Schemas } from './client'
 
 export type DashboardQuery = {
@@ -254,10 +255,20 @@ export function useConceptsMemo() {
   })
 }
 
+function deviceHeader(): { 'X-Device-Id'?: string } {
+  const id = deviceId()
+  return id ? { 'X-Device-Id': id } : {}
+}
+
 export function useAssistant() {
   return useMutation({
     mutationFn: (messages: Schemas['ChatMessage'][]) =>
-      unwrap(api.POST('/assistant/answer', { body: { messages } })),
+      unwrap(
+        api.POST('/assistant/answer', {
+          body: { messages },
+          params: { header: deviceHeader() },
+        }),
+      ),
   })
 }
 

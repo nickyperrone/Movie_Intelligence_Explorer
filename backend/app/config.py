@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
-API_VERSION = "1.6.0"
+API_VERSION = "1.7.0"
 
 
 class Settings(BaseSettings):
@@ -28,6 +28,15 @@ class Settings(BaseSettings):
     llm_calls_per_client_minute: int = 20
     llm_calls_per_client_day: int = 200
     llm_calls_per_day: int = 2000
+    # Spend cap (docs/06-llm.md, "Usage limits"). Prices are gpt-4o-mini's; change them with the
+    # model.
+    llm_daily_budget_usd: float = 1.0
+    llm_usd_per_million_input: float = 0.15
+    llm_usd_per_million_output: float = 0.60
+    llm_max_output_tokens: int = 700
+    chat_questions_per_device_day: int = 10
+    chat_questions_per_ip_day: int = 30
+    state_dir: Path = ROOT_DIR / "data" / "state"
     log_level: str = "INFO"
 
     @property
