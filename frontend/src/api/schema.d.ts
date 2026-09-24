@@ -416,7 +416,7 @@ export interface components {
         };
         ErrorBody: {
             /** @enum {string} */
-            code: "not_found" | "validation_error" | "internal_error";
+            code: "not_found" | "validation_error" | "method_not_allowed" | "internal_error";
             message: string;
         };
         /** @example 2025-03 */

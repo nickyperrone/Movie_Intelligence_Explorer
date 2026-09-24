@@ -41,6 +41,7 @@ UI marks them.
 | `growth_pct` (title) | Streams in the last month of the scope vs the month before: `(last − prior) / prior`. Null unless `prior ≥ 100` |
 | Movers | Titles ranked by `streams(current) − streams(previous)`. Top 5 up and top 5 down |
 | Share shifts | `change_pp` of `share_of_streams` per platform and per country |
+| `engagement` (title ranking) | A title's engagement in the scope; null when it has fewer than 100 streams in scope |
 
 The 100-stream floor keeps tiny titles from topping growth rankings (a move from 1 to 30 streams is
 +2,900%). In the latest month the 75th percentile of streams per title is about 120.

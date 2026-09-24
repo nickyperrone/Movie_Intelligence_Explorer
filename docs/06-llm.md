@@ -159,8 +159,8 @@ tools, and every answer carries the evidence it came from.
 `run_sql` safety, enforced in code, not in the prompt:
 
 - Exactly one statement, and DuckDB must classify it as `SELECT` (`extract_statements`).
-- A dedicated read-only connection with `enable_external_access = false` and
-  `lock_configuration = true`, so the query cannot read files, URLs or change settings.
+- The app's only DuckDB connection is read-only with `enable_external_access = false` and
+  `lock_configuration = true`, so no query can read files, URLs or change settings.
 - Only the tables `movies`, `availability`, `consumption`, `title_distributors`, `themes`,
   `movie_themes` exist in that database.
 - The query runs as `SELECT * FROM (<sql>) LIMIT 200`.

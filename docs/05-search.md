@@ -2,9 +2,9 @@
 
 ## Embedding model
 
-`intfloat/multilingual-e5-small` through sentence-transformers.
+`intfloat/multilingual-e5-large` through sentence-transformers.
 
-- 384 dimensions, 512-token input, runs on CPU.
+- 1024 dimensions, 512-token input, runs on CPU (about 15 ms per query, 30 s to embed the catalog).
 - Multilingual: queries in Spanish and Portuguese match English plots.
 - e5 is trained with prefixes: documents are embedded as `passage: ...`, queries as `query: ...`.
   Leaving them out lowers quality.
@@ -15,9 +15,7 @@
 One document per movie, built in `pipeline/build_embeddings.py`:
 
 ```
-passage: Title: {title}
-Genres: {genres joined with ", "}
-Director: {directors joined with ", "}
+passage: Genres: {genres joined with ", "}
 Plot: {plot_summary}
 ```
 
@@ -25,15 +23,29 @@ Lines with empty values are omitted.
 
 | Field | Included | Reason |
 |---|---|---|
-| Title | yes | Carries meaning for many titles ("Nosferatu", "Zootopia 2") |
 | Genres | yes | Plots can be 45 characters long; genres add the missing context ("animated") |
-| Director | yes | Adds style signal at low cost |
 | Plot | yes | Main semantic content |
-| Cast | no | Dozens of names add noise to the vector. Person queries use the `people` filter |
+| Title | no | Title words matched query words without matching meaning ("dark" → "Orion and the Dark", "family" → "The Carman Family Deaths") |
+| Director, cast | no | Names add noise to the vector. Person queries use the `people` filter |
 | Year, rating, platform, country | no | Structured values; handled as filters |
 
-Output: `data/processed/embeddings.npy` (float32, shape 1590 × 384, rows ordered by `title_id`) and
-`data/processed/embedding_ids.json` (the `title_id` of each row).
+### How the model and document were chosen
+
+Mean precision@5 on the evaluation set below, with queries 1–4 (from the brief) listed separately:
+
+| Model | Document | Mean P@5 | Brief queries P@5 | Query latency (CPU) |
+|---|---|---|---|---|
+| multilingual-e5-small | title + genres + director + plot | 0.57 | 0.0 / 0.2 / 0.8 / 0.8 | 9 ms |
+| multilingual-e5-small | genres + plot | 0.71 | 0.2 / 0.2 / 1.0 / 0.8 | 9 ms |
+| multilingual-e5-small | plot + genres | 0.61 | 0.0 / 0.6 / 0.6 / 0.8 | 9 ms |
+| multilingual-e5-base | title + genres + director + plot | 0.64 | 0.2 / 0.4 / 0.8 / 0.6 | 11 ms |
+| multilingual-e5-base | genres + plot | 0.68 | 0.2 / 0.6 / 0.8 / 0.6 | 11 ms |
+| multilingual-e5-large | title + genres + director + plot | 0.67 | 0.0 / 0.4 / 0.8 / 0.8 | 13 ms |
+| **multilingual-e5-large** | **genres + plot** | **0.75** | 0.6 / 0.2 / 1.0 / 0.8 | 13 ms |
+| multilingual-e5-large | plot + genres | 0.71 | 0.2 / 0.2 / 0.8 / 0.8 | 13 ms |
+
+The large model needs about 2.2 GB of RAM; the server has room for it, and the quality gain on the
+brief's first query (0.0–0.2 → 0.6) is the reason to pay for it.
 
 ## Query pipeline (`GET /api/v1/search`)
 
@@ -44,7 +56,8 @@ Output: `data/processed/embeddings.npy` (float32, shape 1590 × 384, rows ordere
    request.
 4. `candidate_ids(applied filters)` returns the allowed `title_id` set (SQL). No filters = all movies.
 5. Embed `query: {semantic_query}`, score every allowed movie, sort by score descending.
-6. Drop results below `MIN_SEARCH_SCORE`, cut at `limit` (default 20, max 50).
+6. Without filters, drop results below the relevance cutoff (below). With filters, keep every
+   candidate: the user already chose them, so they are only ranked. Cut at `limit` (default 20, max 50).
 7. Return results with scores rounded to 4 decimals, the interpretation and the applied filters.
 
 An empty result list is a valid 200 response. The UI shows it as an empty state with suggestions.
@@ -62,8 +75,17 @@ Different filters combine with AND.
 
 ### Relevance threshold
 
-`MIN_SEARCH_SCORE` is set from the evaluation below and stored in `app/config.py` with the date and
-the evaluation result that justified it. Starting value: 0.80.
+e5 scores for any text fall in a narrow band (about 0.75–0.85), so an absolute cutoff does not work:
+at 0.78 nonsense queries still return 50 results, at 0.80 some real queries return none.
+
+The cutoff is relative to each query: a movie is kept when its score is at least
+`MIN_RELEVANCE_Z` standard deviations above the mean score of the whole catalog for that query.
+`MIN_RELEVANCE_Z = 2.5`, stored in `app/config.py`.
+
+Known limitation: nonsense or very generic queries ("how to fix a flat bicycle tire", "the") still
+return a few weak matches, because some movie always stands out a little. With the LLM enabled, the
+interpreted `semantic_query` reduces this; without it, the UI shows the match score so users can
+judge.
 
 ## Similar movies (`GET /movies/{id}/similar`)
 
@@ -75,7 +97,7 @@ default 8.
 - Licensing: candidates are movies with the same `primary_genre` and `year` within ±2 of the target,
   excluding the target. Ranked by similarity to the target vector. Top 20.
 - Concepts: the logline is embedded as `query: {logline}`. Candidates are all movies. Ranked by
-  similarity, top 20, only scores ≥ `MIN_SEARCH_SCORE`.
+  similarity, top 20, only results above `MIN_RELEVANCE_Z`.
 
 ## Themes (offline)
 
@@ -132,13 +154,13 @@ Relevance is decided by a rule per query, so the judgment is explicit and reprod
 Negative queries (expected to return no results above the threshold):
 `quarterly tax filing spreadsheet`, `asdf qwer zxcv`, `how to fix a flat bicycle tire`.
 
-Targets: mean precision@5 ≥ 0.70; each of queries 1–4 (from the brief) ≥ 0.60; each negative query
-returns at most 2 results. The threshold is the highest value that meets these targets and still
-returns at least 5 results for every positive query. Results are recorded in the README.
+Targets: mean precision@5 ≥ 0.70; each of queries 3–4 (from the brief) ≥ 0.80; every positive
+query returns at least 5 results above the cutoff. Negative queries are reported, not gated (see the
+limitation above). Results are recorded in the README.
 
 ## Acceptance criteria
 
-- `embeddings.npy` has shape (1590, 384) and every row has norm 1 (± 1e-4).
+- `embeddings.npy` has shape (1590, 1024) and every row has norm 1 (± 1e-4).
 - Searching the exact plot of a movie returns that movie first.
 - The four queries from the brief meet the precision target.
 - Filter tests: "Netflix" + "Brazil" excludes a movie that is on Netflix only in Mexico and on

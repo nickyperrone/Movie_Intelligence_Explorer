@@ -10,12 +10,12 @@ class ErrorBody(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    code: Literal["not_found", "validation_error", "internal_error"]
+    code: Literal["not_found", "validation_error", "method_not_allowed", "internal_error"]
     message: str
 
 
 class Month(RootModel[str]):
-    root: str = Field(..., examples=["2025-03"], pattern="^\\d{4}-(0[1-9]|1[0-2])$")
+    root: str = Field(..., examples=["2025-03"], pattern="^(19|20)\\d{2}-(0[1-9]|1[0-2])$")
 
 
 class MonthRange(BaseModel):

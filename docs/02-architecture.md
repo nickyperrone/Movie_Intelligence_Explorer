@@ -106,8 +106,8 @@ block the page.
 | Decision | Chosen | Rejected | Reason |
 |---|---|---|---|
 | Storage | DuckDB file, read-only | Postgres, Postgres + pgvector | 64K rows of analytics. Embedded, columnar, SQL, no extra service. pgvector becomes worth it with far more titles or writes. |
-| Vector search | NumPy dot product in memory | FAISS, vector database | 1,590 × 384 floats = 2.4 MB. Exact search takes under a millisecond. |
-| Embedding model | `intfloat/multilingual-e5-small`, local | OpenAI embeddings | Search, the core feature, keeps working without the external API. Multilingual for Spanish and Portuguese queries. |
+| Vector search | NumPy dot product in memory | FAISS, vector database | 1,590 × 1,024 floats = 6.5 MB. Exact search takes under a millisecond. |
+| Embedding model | `intfloat/multilingual-e5-large`, local | OpenAI embeddings | Search, the core feature, keeps working without the external API. Multilingual for Spanish and Portuguese queries. Chosen over small and base by evaluation (`05-search.md`). |
 | LLM | OpenAI API, model from `OPENAI_MODEL` | Local LLM | Server RAM is better spent on the embedding model; LLM use is optional per request. |
 | Frontend | Vite SPA | Next.js | The backend already exists in Python. A static build served by FastAPI avoids a second server and CORS. |
 | Deployment | One image, one container | Separate frontend and API services | One URL, one deploy, no CORS. |

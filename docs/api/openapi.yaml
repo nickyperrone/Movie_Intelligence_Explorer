@@ -484,7 +484,7 @@ components:
     Start:
       name: start
       in: query
-      description: "First month, inclusive. Default: 11 months before the latest month of data."
+      description: "First month, inclusive. Default: 11 months before end, but not before the first month of data. The period must overlap the data, otherwise 422."
       schema: { $ref: "#/components/schemas/Month" }
     End:
       name: end
@@ -547,12 +547,12 @@ components:
       additionalProperties: false
       required: [code, message]
       properties:
-        code: { type: string, enum: [not_found, validation_error, internal_error] }
+        code: { type: string, enum: [not_found, validation_error, method_not_allowed, internal_error] }
         message: { type: string }
 
     Month:
       type: string
-      pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+      pattern: "^(19|20)\\d{2}-(0[1-9]|1[0-2])$"
       examples: ["2025-03"]
 
     MonthRange:

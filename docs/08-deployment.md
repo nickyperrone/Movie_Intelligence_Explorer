@@ -16,7 +16,7 @@
    - `HEALTHCHECK` calls `GET /api/v1/health`.
    - `CMD uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1`.
 
-One worker: each worker would load its own copy of the model (about 500 MB). Requests are short and
+One worker: each worker would load its own copy of the model (about 2.2 GB). Requests are short and
 FastAPI runs sync endpoints in a thread pool, which is enough for this traffic.
 
 The image layout mirrors the repository (`/app/backend`, `/app/data`, `/app/frontend/dist`), so the
@@ -46,7 +46,7 @@ No secrets are baked into the image. `.env` is gitignored and excluded by `.dock
 3. Environment: `OPENAI_API_KEY`, `OPENAI_MODEL`.
 4. Port 8000. Add a domain; Dokploy's Traefik issues the HTTPS certificate.
 5. Enable auto-deploy so every push to `main` rebuilds and redeploys.
-6. Server resources: at least 2 GB RAM (model plus Python process), about 3 GB disk for the image.
+6. Server resources: at least 4 GB RAM (model plus Python process), about 5 GB disk for the image.
 
 ## CI (`.github/workflows/ci.yml`)
 
