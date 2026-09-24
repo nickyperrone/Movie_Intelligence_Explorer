@@ -1,0 +1,51 @@
+# Search evaluation set (docs/05-search.md). A result is relevant when it satisfies every rule:
+#   genres_all: the movie has all these genres
+#   genres_any: the movie has at least one of these genres
+#   plot: case-insensitive regex that must match the plot summary
+positive:
+  - query: dark psychological thrillers about obsession
+    from_brief: true
+    genres_any: [Thriller, Horror, Mystery]
+    plot: "obsess|stalk|fixat|infatuat"
+  - query: family movies about overcoming loss
+    from_brief: true
+    plot: "grie(f|v)|loss|death of|mourn|passed away|lost (his|her|their)"
+  - query: animated adventures
+    from_brief: true
+    genres_all: [Animation, Adventure]
+  - query: movies about artificial intelligence
+    from_brief: true
+    plot: "artificial intelligence|\\bAI\\b|robot|android|sentient|synthetic"
+  - query: películas de terror sobre casas embrujadas
+    genres_any: [Horror]
+    plot: "haunt|ghost|spirit|possess"
+  - query: documentales sobre música
+    genres_all: [Documentary, Music]
+  - query: heist movies with a crew of thieves
+    plot: "heist|robbery|\\brob\\b|thie(f|ves)|steal"
+  - query: space exploration and astronauts
+    plot: "space|astronaut|planet|galaxy"
+  - query: true crime documentaries about serial killers
+    genres_any: [Documentary]
+    plot: "serial killer|murder|killer"
+  - query: romantic comedies at Christmas
+    genres_any: [Comedy, Romance]
+    plot: "christmas|holiday|santa"
+  - query: sports underdog stories
+    genres_any: [Sport]
+  - query: zombie apocalypse
+    plot: "zombie|undead|infected"
+  - query: filmes de guerra
+    any_of:
+      - genres_any: [War]
+      - plot: "\\bwar\\b|soldier|world war"
+  - query: teenagers coming of age in high school
+    plot: "teen|high school|coming-of-age|adolescen"
+  - query: documentales sobre naturaleza y animales
+    genres_any: [Documentary]
+    plot: "nature|wildlife|animal|ocean|planet"
+
+negative:
+  - quarterly tax filing spreadsheet
+  - asdf qwer zxcv
+  - how to fix a flat bicycle tire
