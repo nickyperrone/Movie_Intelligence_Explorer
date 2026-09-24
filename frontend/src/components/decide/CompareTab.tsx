@@ -74,6 +74,7 @@ function Row({
       ))}
       {/* The add slot has no values; an empty cell keeps the grid's rows aligned. */}
       {pad && <div className="border-t border-white/5" />}
+      <div className="border-t border-white/5 max-sm:hidden" />
     </>
   )
 }
@@ -334,7 +335,7 @@ export function CompareTab() {
       <div className="-mx-3 overflow-x-auto scrollbar-none max-sm:snap-x max-sm:snap-mandatory">
         <div
           style={{ '--slots': slots } as CSSProperties}
-          className="grid [grid-template-columns:repeat(var(--slots),minmax(0,1fr))] max-sm:w-max max-sm:[grid-template-columns:repeat(var(--slots),78vw)] max-sm:[&>*]:snap-start"
+          className="grid [grid-template-columns:repeat(var(--slots),15rem)_minmax(0,1fr)] max-sm:w-max max-sm:[grid-template-columns:repeat(var(--slots),78vw)] max-sm:[&>*]:snap-start"
         >
           {columns.map((column) => (
             <ColumnHeader
@@ -346,6 +347,8 @@ export function CompareTab() {
           {slots > columns.length && (
             <AddSlot exclude={titleIds} onAdd={(titleId) => setTitles([...titleIds, titleId])} />
           )}
+          {/* Fills the rest of the width on wider screens so the columns stay together. */}
+          <div className="max-sm:hidden" />
 
           {/* Spans every column; on phones it keeps the screen's width and stays put while the
               columns swipe under it. */}
