@@ -188,7 +188,10 @@ says it is unavailable.
 - Nonsense or very generic queries still return a few weak matches without the LLM (see the relevance
   cutoff above).
 - Expected ranges come from comparable titles; they are evidence, not forecasts.
-- AI theme names require running `make themes` once with an OpenAI key.
+- Themes come from k-means on the plot embeddings (k = 22, chosen by silhouette). The silhouette is
+  close to zero: plots do not form sharply separated groups, so themes are useful groupings, not
+  strict categories. The current names were written by hand from each cluster's central movies
+  (`data/curated/theme_names.json`); `make themes` can regenerate them with the LLM.
 - Platform logos load from Google's favicon service; a monogram is shown if they cannot load.
 
 ## Next steps

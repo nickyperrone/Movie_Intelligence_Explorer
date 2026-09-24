@@ -106,14 +106,16 @@ default 8.
 1. k-means on the normalized vectors, `random_state = 42`, `n_init = 10`.
 2. k is chosen in 16..32 by the highest silhouette score (cosine).
 3. For each cluster, the 10 movies closest to the centroid (title, genres, first 300 characters of the
-   plot) are sent to the LLM, which returns a name (at most 4 words) and a description (at most 20
-   words) (`06-llm.md`).
+   plot) are named: either by the LLM (`make themes`, `06-llm.md`), or by a person with
+   `--names data/curated/theme_names.json` (a list of `{name, description}` in cluster order;
+   `--show` prints each cluster's movies to write it). Names: at most 4 words; descriptions: at most
+   20 words. `themes.json` records which one was used in `named_by`.
 4. Output `data/curated/themes.json`:
 
 ```json
 {
   "generator": "pipeline/build_themes.py",
-  "model": "<OPENAI_MODEL>",
+  "named_by": "<OPENAI_MODEL> | reviewer",
   "k": 24,
   "silhouette": 0.071,
   "themes": [
