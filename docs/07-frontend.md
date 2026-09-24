@@ -64,7 +64,8 @@ The whole app follows the layout patterns of a music streaming desktop client:
 5. Two `ShareBars` side by side: share of streams by platform and by country.
 6. `PlatformCountryMatrix`: platforms as rows, countries as columns, cell = streams per title.
 7. Two `EfficiencyBars`: streams per title by primary genre and by theme, with the title count.
-8. `TopTitlesTable`: sortable by streams, hours, engagement, growth; "Show more" pages by 20.
+8. `TopTitlesTable`: sortable by streams, hours, engagement, growth. Shows 10 titles; "Show more"
+   adds 10 more each time (or the remainder), until all titles are shown.
 9. `ChangesPanel`: movers, share shifts and the generated summary.
 
 Every panel has a `Source` button in its header that shows, in a popover, the dataset, the formula
@@ -83,7 +84,10 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 - Each section: a large bold heading on the left ("Top by country", "Right now", "By platform",
   "Themes") and a "Show all" link on the right that selects that section's pill.
 - Each section is one horizontal row of `CollectionCard`s with scroll snap (with `All`), or a
-  wrapping grid (with a single section selected).
+  grid (with a single section selected).
+- Every cover on the page has the same size. Cards per view are the smaller of 5 (desktop), 3
+  (tablet) or 2 (phone) and the number of cards in the shortest visible row, so no row ends in a
+  gap; longer rows scroll with small arrows. The grid view uses the same number of columns.
 - `CollectionCard`:
   - Cover = poster of the collection's number 1 movie at the poster ratio (2:3), rounded corners.
     If an earlier collection in the page order already uses that poster, the next movie in the
