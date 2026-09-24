@@ -83,6 +83,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/people/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Find directors and cast members by name (added in 1.2.0) */
+        get: operations["lookupPeople"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/movies/{title_id}": {
         parameters: {
             query?: never;
@@ -328,6 +345,23 @@ export interface paths {
         };
         /** Evidence for licensing a title to a platform in a country */
         get: operations["getLicensingAssessment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/markets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every consumption platform and country ranked for one title (added in 1.2.0) */
+        get: operations["getMarketOpportunities"];
         put?: never;
         post?: never;
         delete?: never;
@@ -818,6 +852,29 @@ export interface components {
             answer: string | null;
             evidence: components["schemas"]["Evidence"][];
         };
+        Person: {
+            name: string;
+            roles: ("director" | "cast")[];
+            movie_count: number;
+        };
+        PersonList: {
+            results: components["schemas"]["Person"][];
+        };
+        MarketOpportunity: {
+            platform: string;
+            country: string;
+            signal: components["schemas"]["DemandSignal"];
+            median: number | null;
+            benchmark: number | null;
+            ratio: number | null;
+            eligible_count: number;
+            already_available: boolean;
+        };
+        MarketOpportunities: {
+            movie: components["schemas"]["MovieSummary"];
+            comparable_count: number;
+            targets: components["schemas"]["MarketOpportunity"][];
+        };
     };
     responses: {
         /** @description Unknown resource */
@@ -970,6 +1027,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MovieList"];
+                };
+            };
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    lookupPeople: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching people, names starting with q first, then by number of movies */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonList"];
                 };
             };
             422: components["responses"]["ValidationError"];
@@ -1377,6 +1458,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LicensingAssessment"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+        };
+    };
+    getMarketOpportunities: {
+        parameters: {
+            query: {
+                title_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Targets sorted by ratio of comparables' median to the typical title */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketOpportunities"];
                 };
             };
             404: components["responses"]["NotFound"];

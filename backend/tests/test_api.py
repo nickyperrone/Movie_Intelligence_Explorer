@@ -11,7 +11,7 @@ API = "/api/v1"
 def test_health_reports_llm_disabled_without_key(client):
     assert client.get(f"{API}/health").json() == {
         "status": "ok",
-        "api_version": "1.1.0",
+        "api_version": "1.2.0",
         "llm_enabled": settings.llm_enabled,
     }
 
@@ -98,6 +98,26 @@ def test_unrelated_filters_return_an_empty_list(client):
     body = client.get(f"{API}/search", params={"q": "space", "interpret": False, "year_min": 2100})
     assert body.status_code == 200
     assert body.json()["results"] == []
+
+
+def test_people_lookup_and_exact_name_search(client):
+    people = client.get(f"{API}/people/lookup", params={"q": "sam rai"}).json()["results"]
+    assert people[0]["name"] == "Sam Raimi"
+    assert "director" in people[0]["roles"]
+
+    body = client.get(f"{API}/search", params={"q": "sam raimi", "interpret": False}).json()
+    assert body["applied_filters"]["people"] == ["Sam Raimi"]
+    assert "Send Help" in {r["movie"]["title"] for r in body["results"]}
+
+
+def test_market_opportunities_cover_every_target(client):
+    body = client.get(f"{API}/decisions/markets", params={"title_id": "tt8036976"}).json()
+    assert len(body["targets"]) == 16
+    ratios = [t["ratio"] for t in body["targets"] if t["ratio"] is not None]
+    assert ratios == sorted(ratios, reverse=True)
+    assert (
+        client.get(f"{API}/decisions/markets", params={"title_id": "tt0000001"}).status_code == 404
+    )
 
 
 def test_similar_never_returns_the_movie_itself(client):

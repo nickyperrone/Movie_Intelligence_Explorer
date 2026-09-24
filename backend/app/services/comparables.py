@@ -253,6 +253,50 @@ def licensing_assessment(
     )
 
 
+def market_opportunities(title_id: str) -> m.MarketOpportunities | None:
+    movie = summaries([title_id]).get(title_id)
+    if movie is None:
+        return None
+    comparable_ids = [tid for tid, _ in licensing_comparables(title_id)]
+    cutoff = eligibility_cutoff()
+    vocabulary = filter_options().consumption
+    available = {
+        (row["country"], row["platform"])
+        for row in fetch_all(
+            "SELECT DISTINCT country, platform FROM availability WHERE title_id = ?", [title_id]
+        )
+    }
+    targets = []
+    for platform in vocabulary.platforms:
+        for country in vocabulary.countries:
+            windows = first_six_months(comparable_ids, platform, country)
+            evidence = expected_range(
+                [w.streams for w in windows.values() if w.first_month <= cutoff],
+                benchmark(platform, country),
+            )
+            ratio = (
+                evidence.median / evidence.benchmark
+                if evidence.median is not None and evidence.benchmark
+                else None
+            )
+            targets.append(
+                m.MarketOpportunity(
+                    platform=platform,
+                    country=country,
+                    signal=demand_signal(evidence),
+                    median=evidence.median,
+                    benchmark=evidence.benchmark,
+                    ratio=ratio,
+                    eligible_count=evidence.eligible_count,
+                    already_available=any(
+                        (country, name) in available for name in AVAILABILITY_PLATFORMS[platform]
+                    ),
+                )
+            )
+    targets.sort(key=lambda t: (t.ratio is None, -(t.ratio or 0), t.platform, t.country))
+    return m.MarketOpportunities(movie=movie, comparable_count=len(comparable_ids), targets=targets)
+
+
 def licensing_display(assessment: m.LicensingAssessment) -> dict[str, Any]:
     evidence = assessment.expected_range
     return {

@@ -634,6 +634,45 @@ class AssistantReply(BaseModel):
     evidence: list[Evidence]
 
 
+class Person(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    name: str
+    roles: list[Literal["director", "cast"]]
+    movie_count: int = Field(..., ge=1)
+
+
+class PersonList(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    results: list[Person]
+
+
+class MarketOpportunity(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    platform: str
+    country: str
+    signal: DemandSignal
+    median: float | None
+    benchmark: float | None
+    ratio: float | None
+    eligible_count: int = Field(..., ge=0)
+    already_available: bool
+
+
+class MarketOpportunities(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    movie: MovieSummary
+    comparable_count: int = Field(..., ge=0)
+    targets: list[MarketOpportunity]
+
+
 class Error(BaseModel):
     model_config = ConfigDict(
         extra="forbid",

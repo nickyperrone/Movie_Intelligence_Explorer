@@ -20,6 +20,14 @@ def get_licensing_assessment(
     return assessment
 
 
+@router.get("/markets")
+def get_market_opportunities(title_id: TitleId) -> m.MarketOpportunities:
+    opportunities = comparables.market_opportunities(title_id)
+    if opportunities is None:
+        raise HTTPException(404, f"Movie {title_id} not found")
+    return opportunities
+
+
 @router.get("/licensing/memo")
 def get_licensing_memo(title_id: TitleId, platform: str, country: str) -> m.LicensingMemo:
     memo = comparables.licensing_memo(title_id, platform, country)

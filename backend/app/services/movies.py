@@ -82,6 +82,41 @@ def lookup(text: str, limit: int) -> list[m.MovieSummary]:
     return [to_summary(row) for row in rows]
 
 
+def lookup_people(text: str, limit: int) -> list[m.Person]:
+    rows = fetch_all(
+        """
+        WITH credits AS (
+            SELECT unnest(directors) AS name, 'director' AS role, title_id FROM movies
+            UNION ALL
+            SELECT unnest(cast_names) AS name, 'cast' AS role, title_id FROM movies
+        )
+        SELECT name, list_sort(list(DISTINCT role)) AS roles, count(DISTINCT title_id) AS movies
+        FROM credits
+        WHERE name ILIKE '%' || ? || '%'
+        GROUP BY name
+        ORDER BY (name ILIKE ? || '%') DESC, movies DESC, name
+        LIMIT ?
+        """,
+        [text, text, limit],
+    )
+    return [m.Person(name=r["name"], roles=r["roles"], movie_count=r["movies"]) for r in rows]
+
+
+def exact_person(text: str) -> str | None:
+    """The catalog spelling of a director or cast member named exactly `text`, if any."""
+    row = fetch_one(
+        """
+        SELECT name FROM (
+            SELECT unnest(list_concat(directors, cast_names)) AS name FROM movies
+        )
+        WHERE lower(name) = lower(?)
+        LIMIT 1
+        """,
+        [text.strip()],
+    )
+    return row["name"] if row else None
+
+
 def availability(title_id: str) -> m.Availability:
     offers = fetch_all(
         """

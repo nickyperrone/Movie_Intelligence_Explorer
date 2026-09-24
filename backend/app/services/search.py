@@ -104,6 +104,9 @@ def search_catalog(
         )
     semantic_query = interpretation.semantic_query or query
     applied = merge_filters(explicit, interpretation.proposed_filters)
+    if not applied.people and (person := movies.exact_person(query)):
+        # A bare actor or director name becomes a people filter, with or without the LLM.
+        applied = applied.model_copy(update={"people": [person]})
     allowed_ids = movies.candidate_ids(applied)
     # With filters the user has already chosen the candidates; they are ranked, not cut.
     ranked = search_index().rank_text(
