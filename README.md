@@ -11,6 +11,13 @@ answers from the data and says so when the data cannot answer.
 - **API docs:** `/api/docs` on the running app (serves the hand-written OpenAPI contract).
 - Built by [Nicole Perrone](https://www.linkedin.com/in/perronenicole/).
 
+> [!WARNING]
+> **The AI features on the live app have fixed daily limits that cannot be exceeded.** The chat
+> accepts **10 questions per device per day** (30 per network), and all AI features together stop
+> at **1 US dollar of OpenAI usage per day**. When a limit is reached, the AI parts say so and come
+> back the next day (UTC); search, the dashboard, Discover, movie pages and every figure keep
+> working, because none of them depend on the LLM. See [the details](#where-the-llm-is-used-and-where-it-is-not).
+
 ## Run it locally
 
 Requirements: Python 3.12 with [uv](https://docs.astral.sh/uv/), Node 22 and make.
