@@ -209,6 +209,11 @@ The LLM never computes numbers and never makes a decision.
 Without an API key the whole app works: search falls back to embeddings only, and each LLM section
 says it is unavailable.
 
+The app is public, so the paid key is protected by limits: 20 model calls per client per minute, 200
+per client per day, and 2,000 per day for the whole app, plus 300 API requests per client per
+minute. Above a limit, the LLM parts say so and everything else keeps working. All limits are
+environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
+
 ## The product
 
 | Page | Decision it supports |
@@ -221,10 +226,11 @@ says it is unavailable.
 
 ## Tests
 
-- Backend (102): data validations, metric correctness against the raw CSVs, search filter semantics,
+- Backend (107): data validations, metric correctness against the raw CSVs, search filter semantics,
   LLM guards with a fake client, chat assistant safety (DROP, INSERT, multiple statements and file
-  reads are rejected), error envelopes, and a schemathesis contract test.
-- Frontend (12): formatting, month math, Discover cover rules, chat text rendering, empty states.
+  reads are rejected), rate limits, error envelopes, and a schemathesis contract test.
+- Frontend (15): formatting, month math, Discover cover rules, chat text rendering, saved chat
+  history, empty states.
 - CI runs lint, type checks, all tests and a codegen drift check on every push.
 
 ## Known limitations

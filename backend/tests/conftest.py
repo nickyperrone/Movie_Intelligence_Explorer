@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+from app import rate_limits
 from app.config import settings
 from app.main import app
 from app.services import llm
@@ -17,6 +18,19 @@ def client():
 def no_real_llm(monkeypatch):
     # No test may reach the OpenAI API; tests that need replies install a FakeOpenAI.
     monkeypatch.setattr(llm, "openai_client", lambda: None)
+
+
+@pytest.fixture(autouse=True)
+def fresh_rate_limits(monkeypatch):
+    # The contract test sends hundreds of requests from one client; limit tests lower this again.
+    monkeypatch.setattr(rate_limits.api_requests, "limit", 1_000_000)
+    for window in (
+        rate_limits.api_requests,
+        rate_limits.llm_per_client_minute,
+        rate_limits.llm_per_client_day,
+        rate_limits.llm_per_day,
+    ):
+        window.reset()
 
 
 @pytest.fixture(scope="session")

@@ -4,6 +4,7 @@ import type { Schemas } from '@/api/client'
 const UNAVAILABLE: Record<string, string> = {
   disabled: 'Summary unavailable: no language model configured.',
   failed: 'Summary unavailable right now.',
+  rate_limited: 'AI summaries are paused: the usage limit was reached. Try again later.',
   insufficient_evidence: 'Not enough data to write a summary.',
 }
 

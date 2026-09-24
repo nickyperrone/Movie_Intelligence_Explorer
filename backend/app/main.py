@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import API_VERSION, settings
 from app.errors import register_error_handlers
+from app.rate_limits import RateLimitMiddleware
 from app.routers import assistant, collections, dashboard, decisions, movies, search, system
 from app.services.movies import filter_options
 from app.services.search import search_index
@@ -37,6 +38,7 @@ app = FastAPI(
     openapi_url=f"{API_PREFIX}/openapi.json",
 )
 register_error_handlers(app)
+app.add_middleware(RateLimitMiddleware, prefix=API_PREFIX)
 
 for router in (system, search, movies, dashboard, collections, decisions, assistant):
     app.include_router(router.router, prefix=API_PREFIX)

@@ -8,6 +8,8 @@ const UNAVAILABLE: Record<string, string> = {
   disabled:
     'Memo unavailable: no language model configured. The facts above are complete without it.',
   failed: 'Memo unavailable right now. The facts above are complete without it.',
+  rate_limited:
+    'AI memos are paused: the usage limit was reached. Try again later. The facts above are complete without it.',
   insufficient_evidence:
     'No memo: there are not enough comparable titles with a full 6-month window.',
 }

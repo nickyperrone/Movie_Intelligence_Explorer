@@ -1,6 +1,7 @@
 import schemathesis
 from schemathesis.specs.openapi.checks import positive_data_acceptance
 
+from app import rate_limits
 from app.config import settings
 from app.main import app
 from app.services.comparables import eligibility_cutoff, licensing_assessment
@@ -11,9 +12,32 @@ API = "/api/v1"
 def test_health_reports_llm_disabled_without_key(client):
     assert client.get(f"{API}/health").json() == {
         "status": "ok",
-        "api_version": "1.4.0",
+        "api_version": "1.5.0",
         "llm_enabled": settings.llm_enabled,
     }
+
+
+def test_requests_above_the_limit_get_429(client, monkeypatch):
+    monkeypatch.setattr(rate_limits.api_requests, "limit", 2)
+    headers = {"X-Forwarded-For": "203.0.113.9"}
+    assert client.get(f"{API}/filters", headers=headers).status_code == 200
+    assert client.get(f"{API}/filters", headers=headers).status_code == 200
+    limited = client.get(f"{API}/filters", headers=headers)
+    assert limited.status_code == 429
+    assert limited.json()["error"]["code"] == "rate_limited"
+    assert limited.headers["Retry-After"] == "60"
+    # Another client and the health check are not affected.
+    other = {"X-Forwarded-For": "203.0.113.10"}
+    assert client.get(f"{API}/filters", headers=other).status_code == 200
+    assert client.get(f"{API}/health", headers=headers).status_code == 200
+
+
+def test_the_last_forwarded_address_identifies_the_client(client, monkeypatch):
+    monkeypatch.setattr(rate_limits.api_requests, "limit", 1)
+    client.get(f"{API}/filters", headers={"X-Forwarded-For": "198.51.100.1"})
+    # A forged first entry does not create a new client: Traefik's entry is last.
+    forged = {"X-Forwarded-For": "10.9.9.9, 198.51.100.1"}
+    assert client.get(f"{API}/filters", headers=forged).status_code == 429
 
 
 def test_error_envelopes(client):

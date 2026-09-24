@@ -20,6 +20,7 @@ import openai
 from app import api_models as m
 from app.config import settings
 from app.db import connection
+from app.rate_limits import LlmRateLimited, spend_llm_call
 from app.services import llm
 from app.services.search import search_index
 
@@ -302,6 +303,7 @@ def run_exchange(
     """Lets the model call tools until it writes a final message; returns that message's JSON."""
     while True:
         budget_left = MAX_TOOL_CALLS - len(evidence)
+        spend_llm_call()
         response = client.chat.completions.create(
             model=settings.openai_model,
             messages=conversation,
@@ -383,6 +385,9 @@ def answer(messages: list[m.ChatMessage]) -> m.AssistantReply:
                 }
             )
         return reply("failed", None, evidence)
+    except LlmRateLimited:
+        logger.warning("assistant stopped: usage limit reached")
+        return reply("rate_limited", None, evidence)
     except (openai.OpenAIError, ValueError, TimeoutError) as error:
         # ValueError covers JSON decoding errors from the final message.
         logger.warning("assistant failed: %s", type(error).__name__)

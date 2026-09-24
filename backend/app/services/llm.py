@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from app import api_models as m
 from app.config import settings
+from app.rate_limits import LlmRateLimited, spend_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,7 @@ def complete_json(system: str, user: str, timeout: float) -> str:
     client = openai_client()
     if client is None:
         raise LlmUnavailable
+    spend_llm_call()
     response = client.chat.completions.create(
         model=settings.openai_model,
         messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
@@ -125,6 +127,9 @@ def call_model[T: BaseModel](
     except LlmUnavailable:
         status = "disabled"
         return m.LlmStatus("disabled"), None
+    except LlmRateLimited:
+        status = "rate_limited"
+        return m.LlmStatus("rate_limited"), None
     except (openai.OpenAIError, ValueError) as error:
         # ValueError covers invalid JSON and schema mismatches (pydantic.ValidationError).
         logger.warning("llm %s failed: %s", name, type(error).__name__)

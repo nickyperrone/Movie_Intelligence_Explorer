@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
-API_VERSION = "1.4.0"
+API_VERSION = "1.5.0"
 
 
 class Settings(BaseSettings):
@@ -23,6 +23,11 @@ class Settings(BaseSettings):
 
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
+    # Limits for a public deployment (docs/08-deployment.md, "Rate limits").
+    api_requests_per_client_minute: int = 300
+    llm_calls_per_client_minute: int = 20
+    llm_calls_per_client_day: int = 200
+    llm_calls_per_day: int = 2000
     log_level: str = "INFO"
 
     @property

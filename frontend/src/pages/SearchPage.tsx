@@ -11,6 +11,8 @@ import { useUrlState } from '@/lib/url-state'
 const INTERPRETATION_NOTES: Partial<Record<Schemas['LlmStatus'], string>> = {
   disabled: 'Filters are not inferred from the text because no language model is configured.',
   failed: 'Filters could not be inferred from the text this time; results use the text as written.',
+  rate_limited:
+    'Filters are not inferred right now because the AI usage limit was reached; results use the text as written.',
 }
 
 function ExampleLinks() {

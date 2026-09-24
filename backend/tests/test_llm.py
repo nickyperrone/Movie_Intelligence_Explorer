@@ -5,6 +5,7 @@ import openai
 import pytest
 
 from app import api_models as m
+from app import rate_limits
 from app.services import llm
 from app.services.movies import filter_options
 from tests.fake_openai import FakeOpenAI
@@ -34,6 +35,24 @@ def interpretation(**fields) -> str:
         "people": [],
     }
     return json.dumps(base | fields)
+
+
+def test_full_usage_counter_skips_the_model(monkeypatch):
+    fake = use_fake(monkeypatch)
+    monkeypatch.setattr(rate_limits.llm_per_day, "limit", 0)
+    result = llm.interpret_query("comedies", filter_options())
+    assert result.status.root == "rate_limited"
+    assert fake.calls == []
+
+
+def test_per_client_limit_counts_only_model_calls(monkeypatch):
+    use_fake(monkeypatch, interpretation(), interpretation(semantic_query="drama"))
+    monkeypatch.setattr(rate_limits.llm_per_client_minute, "limit", 2)
+    assert llm.interpret_query("comedies", filter_options()).status.root == "ok"
+    # Served from the cache: no model call, nothing counted.
+    assert llm.interpret_query("comedies", filter_options()).status.root == "ok"
+    assert llm.interpret_query("dramas", filter_options()).status.root == "ok"
+    assert llm.interpret_query("thrillers", filter_options()).status.root == "rate_limited"
 
 
 def test_disabled_without_key(monkeypatch):

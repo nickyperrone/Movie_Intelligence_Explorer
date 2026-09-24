@@ -10,7 +10,9 @@ class ErrorBody(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    code: Literal["not_found", "validation_error", "method_not_allowed", "internal_error"]
+    code: Literal[
+        "not_found", "validation_error", "method_not_allowed", "rate_limited", "internal_error"
+    ]
     message: str
 
 
@@ -26,8 +28,12 @@ class MonthRange(BaseModel):
     end: Month
 
 
-class LlmStatus(RootModel[Literal["ok", "skipped", "disabled", "failed", "insufficient_evidence"]]):
-    root: Literal["ok", "skipped", "disabled", "failed", "insufficient_evidence"]
+class LlmStatus(
+    RootModel[
+        Literal["ok", "skipped", "disabled", "failed", "insufficient_evidence", "rate_limited"]
+    ]
+):
+    root: Literal["ok", "skipped", "disabled", "failed", "insufficient_evidence", "rate_limited"]
 
 
 class Health(BaseModel):
@@ -608,13 +614,23 @@ class AssistantRequest(BaseModel):
 
 
 class AssistantStatus(
-    RootModel[Literal["answered", "no_data", "out_of_scope", "conversation", "disabled", "failed"]]
+    RootModel[
+        Literal[
+            "answered",
+            "no_data",
+            "out_of_scope",
+            "conversation",
+            "disabled",
+            "failed",
+            "rate_limited",
+        ]
+    ]
 ):
-    root: Literal["answered", "no_data", "out_of_scope", "conversation", "disabled", "failed"] = (
-        Field(
-            ...,
-            description="conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed.",
-        )
+    root: Literal[
+        "answered", "no_data", "out_of_scope", "conversation", "disabled", "failed", "rate_limited"
+    ] = Field(
+        ...,
+        description="conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed. rate_limited (added in 1.5.0): a usage limit on model calls was reached.",
     )
 
 

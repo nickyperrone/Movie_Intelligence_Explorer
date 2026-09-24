@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from app import rate_limits
 from app.services import assistant, llm
 from tests.fake_openai import FakeOpenAI, tool_call
 
@@ -26,6 +27,16 @@ def test_disabled_without_key(monkeypatch):
     monkeypatch.setattr(llm, "openai_client", lambda: None)
     result = assistant.answer([assistant.m.ChatMessage(role="user", content="hi")])
     assert result.status.root == "disabled"
+
+
+def test_usage_limit_stops_the_exchange(monkeypatch):
+    monkeypatch.setattr(rate_limits.llm_per_client_minute, "limit", 1)
+    result, fake = ask(
+        monkeypatch, sql_call(COUNT_SQL), final("answered", "The catalog has 1,590 movies.")
+    )
+    assert result.status.root == "rate_limited"
+    assert len(fake.calls) == 1
+    assert result.evidence[0].sql == COUNT_SQL
 
 
 def test_grounded_answer_returns_evidence(monkeypatch):
