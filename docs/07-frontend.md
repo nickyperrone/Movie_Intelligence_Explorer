@@ -258,12 +258,25 @@ name, same size, grid of 2 to 6 columns). A tile opens the dashboard filtered by
 
 ## Search examples
 
-The example queries on the empty Search page and the example in the search box placeholder rotate
-every 4 seconds with a fade, through a fixed list of 12 examples, always in English (search still
-accepts Spanish and Portuguese). Each time the Search page opens (and on each app load for the
-search box), the examples come in a new random order, and the first one is never the one shown first
-the previous time.
-Rotation pauses while the user hovers or types, and does not run with reduced motion.
+The examples come from a fixed list of 12, always in English (search still accepts Spanish and
+Portuguese). Each time the Search page opens (and on each app load for the search box), they come
+in a new random order, and the first one is never the one shown first the previous time.
+
+On the empty Search page, four examples show as chips and rotate every 4 seconds with a fade.
+Rotation pauses while the pointer is over them.
+
+In the search box, the example types itself like a person typing:
+
+- The hint reads `Find a movie and its performance, e.g. “<example>”`; below 640 px only
+  `Try “<example>”`, so the example is never cut off.
+- The example appears one letter at a time (about 45 to 95 ms per letter, slightly irregular),
+  stays whole for 2.2 seconds, is deleted from the end at about 30 ms per letter, and after a
+  0.4-second pause the next example starts. A thin caret blinks after the last letter.
+- It stops as soon as the box has focus or text; the hint then shows the current example whole
+  while empty, and nothing once the user types. It resumes from the next example on blur.
+- It does not run in a hidden tab. With reduced motion, the whole example is shown and changes
+  every 4 seconds without typing.
+- Screen readers hear a fixed label ("Search movies, people or themes"), not the moving text.
 
 ## States
 
