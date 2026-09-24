@@ -13,6 +13,10 @@ export const EXAMPLE_QUERIES = [
   'romantic comedies at Christmas',
   'sports underdog stories',
   'Ryan Gosling',
+  'Florence Pugh',
+  'Guillermo del Toro',
+  // Not "directed by women": the data has no director gender, so that query cannot be answered.
+  'stories led by women',
 ]
 
 const ROTATION_MS = 4000
