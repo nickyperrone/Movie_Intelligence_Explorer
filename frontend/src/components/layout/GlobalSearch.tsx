@@ -127,7 +127,7 @@ export function GlobalSearch({ urlQuery }: { urlQuery: string }) {
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={onKeyDown}
-        placeholder="What do you want to watch? Try “movies about artificial intelligence”"
+        placeholder="Find a movie and its performance, e.g. “heist movies” or “Zootopia”"
         className={cn(
           'h-12 w-full bg-pill pl-11 pr-4 text-sm text-white placeholder:text-subtle outline-none transition-shadow hover:bg-hover focus:ring-2 focus:ring-white',
           showDropdown ? 'rounded-t-3xl' : 'rounded-full',
