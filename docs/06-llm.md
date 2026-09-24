@@ -135,6 +135,10 @@ words"}`. A person reviews all names before committing.
 
 ## Ask the data (`services/assistant.py`)
 
+The chat is an assistant named **Reel**, the Movie Intelligence assistant: friendly, plain and
+brief. It greets, explains what it can do, answers from the data, and ends every reply by offering
+further help in the language of the conversation ("Can I help you with anything else?").
+
 A chat that answers questions about the datasets. The model can only reach the data through two
 tools, and every answer carries the evidence it came from.
 
@@ -144,8 +148,9 @@ tools, and every answer carries the evidence it came from.
    one from the user, each at most 1,000 characters. The server keeps no conversation state.
 2. The model receives the system prompt below and the conversation, with tool calling enabled.
 3. Up to 4 tool calls are executed. Each result is returned to the model and recorded as evidence.
-4. The model ends with a JSON object: `{"status": "answered" | "no_data" | "out_of_scope",
-   "answer": "..."}`.
+4. The model ends with a JSON object: `{"status": "answered" | "no_data" | "out_of_scope" |
+   "conversation", "answer": "..."}`. `conversation` is for greetings, thanks, questions about what
+   Reel can do, and clarifying questions back to the user; it needs no tool call.
 5. The server validates the answer (below). If the number guard rejects it and tool calls remain,
    the model gets one more turn with the numbers that could not be found, to query for them or
    drop them. Then the answer is returned with the evidence. Timeout for the whole exchange: 60 s.
@@ -200,7 +205,10 @@ tools, and every answer carries the evidence it came from.
 
 ### Status values
 
-`answered`, `no_data`, `out_of_scope`, `disabled` (no API key), `failed`. The UI shows a label for
+`answered`, `no_data`, `out_of_scope`, `conversation`, `disabled` (no API key), `failed`.
+
+A `conversation` reply may not contain figures: any number other than a year or an integer up to 12
+turns it into `failed`, so data can only enter through tool results. The UI shows a label for
 each (`07-frontend.md`).
 
 ### Acceptance criteria

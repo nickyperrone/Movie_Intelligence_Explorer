@@ -185,10 +185,13 @@ Concepts:
   comparables, demand by country bars. `MemoPanel` with the summary and one sentence per concept.
 
 Ask the data:
+- The assistant is Reel: a pink clapperboard avatar and the name above each of its replies. The
+  chat opens with Reel's greeting, what it can answer, and the suggested questions.
 - A chat column: messages in bubbles (user right, assistant left), a multiline input with Enter to
   send and Shift+Enter for a new line, and suggested questions as pills before the first message.
 - Each assistant reply shows a status label: "Answered from data", "No data for this question",
-  "Outside the dataset", "Unavailable" (disabled), "Could not verify" (failed).
+  "Outside the dataset", "Unavailable" (disabled), "Could not verify" (failed). `conversation`
+  replies have no label.
 - Replies render short paragraphs, `- ` bullets and `**bold**`; no other markup is interpreted.
 - Under each reply, a collapsed "How this was answered" section lists the evidence: the purpose and
   the first 20 rows in a table with readable column names (`streams_2024` → "Streams 2024") and

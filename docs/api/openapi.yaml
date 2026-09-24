@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Movie Intelligence Explorer API
-  version: 1.3.0
+  version: 1.4.0
   description: |
     Read-only API for semantic movie search, streaming availability (dataset B, a single-month
     snapshot), monthly consumption (dataset C) and decision support for a studio in LATAM.
@@ -1247,7 +1247,8 @@ components:
 
     AssistantStatus:
       type: string
-      enum: [answered, no_data, out_of_scope, disabled, failed]
+      enum: [answered, no_data, out_of_scope, conversation, disabled, failed]
+      description: "conversation (added in 1.4.0): greetings, thanks and clarifying questions; no figures allowed."
 
     Evidence:
       type: object
