@@ -69,6 +69,12 @@ Server resources: at least 4 GB RAM (the container uses about 1 GB idle, more un
 model runs) and about 6 GB of disk for the image. The first build takes 15 to 30 minutes because it
 embeds the catalog on CPU; later builds reuse the cached layers unless dependencies or data change.
 
+## Analytics
+
+Page views are counted with a self-hosted [Rybbit](https://github.com/rybbit-io/rybbit) instance
+(open source, no cookies) at `rybbit.argy.dev`. The script tag in `frontend/index.html` loads with
+`defer`, so it never delays the app; if it fails to load, nothing else changes.
+
 ## CI (`.github/workflows/ci.yml`)
 
 Runs on pushes and pull requests to `main`.
