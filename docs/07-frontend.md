@@ -177,10 +177,11 @@ performance) once per title; no new endpoint.
    months with consumption; peak month; top country and top platform with their share;
    availability (number of countries, platform logos). In each numeric row the highest value
    carries a small "Top" mark when 2 or more titles are shown.
-4. Chart: one line per title in the column's color (pink, white, sky blue), a legend with the titles,
-   and a tooltip with every title's value for the month.
+4. Chart: right under the posters and above the rows, across all columns. One line per title in
+   the column's color (pink, white, sky blue), a legend with the titles, and a tooltip with every
+   title's value for the month.
 5. Phones: columns become a horizontal swipe, one and a bit columns per view, so the next title
-   peeks in; the chart stays full width above them.
+   peeks in; the chart keeps the screen's width and stays in place while the columns move.
 6. States: skeleton per column while loading; a column whose title does not exist shows "Title not
    found" with the remove button; a title with no consumption shows "No consumption in these
    filters" in the performance rows and no line.
