@@ -59,27 +59,21 @@ Question: what is this title and how has it performed?
 - Insight: key facts and a generated summary.
 - Similar titles.
 - "Assess a deal" opens Decision Studio with this title selected.
-- "Compare" opens the comparison with this title in the first column.
-
-### Compare — `/compare?titles=...`
-
-Question: how do these titles perform against each other?
-
-- Up to 3 titles side by side, one column each, with the same rows in the same order so every
-  figure lines up with its counterpart.
-- One chart with a line per title, by calendar month or by months since each title's first month
-  of data (titles released at different times start together).
-- Country and platform filters apply to every title at once.
+- "Compare" opens Decision Studio's comparison with this title in the first column.
 
 ### 5. Decision Studio — `/decide`
 
-Question: should we do this deal / pursue this project? The page opens with five question cards:
-license a title, find the best market for a title, spot rising genres, compare project ideas, and ask
-your own question (the chat).
+Question: should we do this deal / pursue this project? The page opens with six question cards:
+license a title, find the best market for a title, compare titles side by side, spot rising genres,
+compare project ideas, and ask your own question (the chat).
 
 - Best market (`/decide?tab=markets&title=...`): for one title, every consumption platform and
   country ranked by how comparable titles did there against a typical title, marking where it is
   already available.
+- Compare titles (`/decide?tab=compare&titles=...`): up to 3 titles side by side, one column each,
+  with the same rows in the same order so every figure lines up; one chart with a line per title,
+  by calendar month or from each title's first month of data; country and platform filters apply
+  to every title at once.
 - Rising genres (`/decide?tab=genres`): streams per title by primary genre in the last 12 months
   vs the 12 before, optionally for one country and platform.
 

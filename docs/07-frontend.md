@@ -12,8 +12,7 @@ Recharts. All UI copy in English.
 | `/discover/:collectionId` | `CollectionPage` | `sort` (`rank` \| `title` \| `genres` \| `metric`), `dir` (`asc` \| `desc`) |
 | `/search` | `SearchPage` | `q`, `interpret`, `genres`, `year_min`, `year_max`, `countries`, `platforms`, `people` |
 | `/movies/:titleId` | `MoviePage` | `countries`, `platforms`, `metric` |
-| `/compare` | `ComparePage` | `titles` (1 to 3 title ids, comma-separated, in column order), `countries`, `platforms`, `metric`, `align` (`calendar` \| `launch`) |
-| `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `markets` \| `genres` \| `concepts` \| `ask`), `title`, `platform`, `country` |
+| `/decide` | `DecisionStudioPage` | `tab` (`licensing` \| `markets` \| `compare` \| `genres` \| `concepts` \| `ask`), `title`, `platform`, `country`; for `compare`: `titles` (1 to 3 title ids, comma-separated, in column order), `countries`, `platforms`, `metric`, `align` (`calendar` \| `launch`) |
 | `*` | `NotFoundPage` | — |
 
 `src/lib/url-state.ts` reads and writes these parameters. Filters, tabs and search text change the
@@ -136,8 +135,8 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 
 1. `MovieHeader`: poster (fallback when missing or broken), title, year, runtime, genres, rating and
    votes, directors, principal cast, plot, IMDb link, "Show full cast" toggle, "Assess a deal"
-   button → `/decide?tab=licensing&title=...`, and a "Compare" button → `/compare?titles=...` with
-   this title first.
+   button → `/decide?tab=licensing&title=...`, and a "Compare" button →
+   `/decide?tab=compare&titles=...` with this title first.
 2. `PerformanceSection`: metric toggle, country and platform multi-selects (options from the
    response), totals, `PerformanceChart` (line over months), `BreakdownBars` by country and by
    platform. Coverage note for the four countries and platforms.
@@ -146,12 +145,26 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
 4. `InsightPanel`: facts as a definition list, generated summary below it with its label.
 5. `SimilarMovies`: horizontal row of `MovieCard`s.
 
-### Compare
+### Decision Studio
+
+The page opens with a grid of six question cards (3 per row, 6 per row from 1536 px) (icon, question, one-line description). The
+selected card is outlined in pink and its tool renders below; the choice is kept in `tab`:
+
+| Card | `tab` |
+|---|---|
+| Should we license this title? | `licensing` |
+| Where should this title go next? | `markets` |
+| How do these titles compare? | `compare` |
+| Which genres are gaining? | `genres` |
+| Which project should we pursue? | `concepts` |
+| Ask your own question | `ask` |
+
+#### Compare titles (`tab=compare`)
 
 A split screen of up to 3 titles. It uses the existing movie endpoints (metadata, availability,
 performance) once per title; no new endpoint.
 
-1. Header: "Compare titles" and the shared filters: metric toggle (streams, viewing hours), country
+1. Shared filters above the columns: metric toggle (streams, viewing hours), country
    and platform multi-selects (dataset C values), and an alignment toggle: "Calendar" or "From
    launch" (month 1 is each title's first month with consumption).
 2. Columns: one per title, equal width. With fewer than 3 titles, the next column is an "Add a
@@ -169,19 +182,6 @@ performance) once per title; no new endpoint.
 6. States: skeleton per column while loading; a column whose title does not exist shows "Title not
    found" with the remove button; a title with no consumption shows "No consumption in these
    filters" in the performance rows and no line.
-
-### Decision Studio
-
-The page opens with a grid of five question cards (icon, question, one-line description). The
-selected card is outlined in pink and its tool renders below; the choice is kept in `tab`:
-
-| Card | `tab` |
-|---|---|
-| Should we license this title? | `licensing` |
-| Where should this title go next? | `markets` |
-| Which genres are gaining? | `genres` |
-| Which project should we pursue? | `concepts` |
-| Ask your own question | `ask` |
 
 Best market:
 - A title picker, then a ranked table of the 16 platform × country targets: platform logo and flag,
