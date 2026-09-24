@@ -2,7 +2,21 @@ SPEC := docs/api/openapi.yaml
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
 
-.PHONY: codegen data themes back front test eval up
+# Port 5000 is taken by the AirPlay receiver on recent macOS, so the API uses 5001.
+API_PORT ?= 5001
+WEB_PORT ?= 5173
+export API_PORT WEB_PORT
+
+.PHONY: setup dev codegen data themes back front test eval up
+
+setup:
+	$(BACKEND) uv sync
+	$(FRONTEND) npm ci
+	$(MAKE) data
+
+dev:
+	@echo "API on http://localhost:$(API_PORT), app on http://localhost:$(WEB_PORT)"
+	@trap 'kill 0' EXIT; $(MAKE) back & $(MAKE) front
 
 codegen:
 	$(BACKEND) uv run datamodel-codegen --input ../$(SPEC) --input-file-type openapi \
@@ -19,7 +33,7 @@ themes:
 	$(BACKEND) uv run python -m pipeline.build_themes
 
 back:
-	$(BACKEND) uv run uvicorn app.main:app --reload --port 8000
+	$(BACKEND) uv run uvicorn app.main:app --reload --port $(API_PORT)
 
 front:
 	$(FRONTEND) npm run dev

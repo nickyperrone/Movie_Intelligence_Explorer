@@ -169,7 +169,7 @@ shows.
 - `src/api/queries.ts` exports one hook per endpoint (`useSearch`, `useMovie`, ...). Query keys
   include every parameter. `staleTime` 5 minutes, 1 retry, no retry on 4xx.
 - Error envelopes become `ApiError` objects with `code` and `message`.
-- In development Vite proxies `/api` to `http://localhost:8000`.
+- In development Vite proxies `/api` to `http://localhost:5001` (`API_PORT`).
 
 ## Visual direction
 

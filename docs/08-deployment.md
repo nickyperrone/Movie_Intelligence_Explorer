@@ -14,7 +14,7 @@
    - Copy `frontend/dist` from stage 1.
    - Run as a non-root user.
    - `HEALTHCHECK` calls `GET /api/v1/health`.
-   - `CMD uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1`.
+   - `CMD uvicorn app.main:app --host 0.0.0.0 --port 5001 --workers 1`.
 
 One worker: each worker would load its own copy of the model (about 2.2 GB). Requests are short and
 FastAPI runs sync endpoints in a thread pool, which is enough for this traffic.
@@ -34,17 +34,27 @@ No secrets are baked into the image. `.env` is gitignored and excluded by `.dock
 
 ## Local
 
-- `docker compose up --build` builds the image and serves the app on `http://localhost:8000`,
-  reading `.env`.
-- Without Docker: `make data`, then `make back` and `make front` (Vite on `http://localhost:5173`,
-  proxying `/api`).
+Defaults work after a clone, with no configuration:
+
+| Service | Default port | Override |
+|---|---|---|
+| API (FastAPI) | 5001 | `API_PORT` |
+| Web (Vite dev server) | 5173 | `WEB_PORT` |
+
+Port 5000 is avoided because recent macOS versions use it for the AirPlay receiver.
+
+- First time: `make setup` (installs Python and Node dependencies, builds the data).
+- Every day: `make dev` starts the API and the web app; open `http://localhost:5173`. Vite proxies
+  `/api` to the API port.
+- `docker compose up --build` builds the production image and serves everything on
+  `http://localhost:5001`, reading `.env` if present.
 
 ## Dokploy
 
 1. Create an Application from the GitHub repository, branch `main`.
 2. Build type: Dockerfile, path `./Dockerfile`, context `.`.
 3. Environment: `OPENAI_API_KEY`, `OPENAI_MODEL`.
-4. Port 8000. Add a domain; Dokploy's Traefik issues the HTTPS certificate.
+4. Container port 5001. Add a domain; Dokploy's Traefik issues the HTTPS certificate.
 5. Enable auto-deploy so every push to `main` rebuilds and redeploys.
 6. Server resources: at least 4 GB RAM (model plus Python process), about 5 GB disk for the image.
 

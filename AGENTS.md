@@ -26,10 +26,12 @@ streaming availability and consumption in LATAM, with semantic search over the c
 
 | Command | What it does |
 |---|---|
+| `make setup` | Install backend and frontend dependencies and build the data (first run) |
+| `make dev` | Run the API on :5001 and the web app on :5173 together |
 | `make codegen` | Regenerate Pydantic and TypeScript types from the OpenAPI spec |
 | `make data` | Build DuckDB and embeddings from `data/raw/` |
 | `make themes` | Rebuild `data/curated/themes.json` (needs `OPENAI_API_KEY`; review the output) |
-| `make back` | Run the API on :8000 with reload |
+| `make back` | Run the API on :5001 with reload |
 | `make front` | Run the Vite dev server on :5173 (proxies `/api`) |
 | `make test` | ruff, pytest, tsc, oxlint, vitest |
 | `make eval` | Run the search evaluation set |
