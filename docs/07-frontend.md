@@ -168,8 +168,10 @@ performance) once per title; no new endpoint.
    and platform multi-selects (dataset C values), and an alignment toggle: "Calendar" or "From
    launch" (month 1 is each title's first month with consumption).
 2. Columns: one per title, equal width. With fewer than 3 titles, the next column is an "Add a
-   title" slot with the title picker (a title already on screen cannot be added twice). Each column
-   has a remove button; removing the last title leaves the empty slot.
+   title" slot: the title picker on top, as wide as a poster, and under it a dashed box of the same
+   size as a poster. The picker's results open over the box. A title already on screen cannot be
+   added twice. Each column has a remove button on its poster; removing the last title leaves the
+   empty slot.
 3. Rows, identical in every column so values line up: poster (2:3) with title, year and genres;
    rating and votes; runtime; directors; total streams and viewing hours for the filtered scope;
    months with consumption; peak month; top country and top platform with their share;
