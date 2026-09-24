@@ -185,7 +185,9 @@ names are used.
 | `--pill` | `#2a2a2a` | Inactive pills, inputs |
 | `--text` | `#ffffff` | Headings, primary text, active pill background |
 | `--text-muted` | `#b3b3b3` | Subtitles, secondary text, axis labels |
-| `--accent` | `#1ed760` | Primary buttons, active toggles, positive changes, main chart series |
+| `--pink` | `#ff6fcf` | Accent: active states, main chart series, links on hover |
+| `--brand-gradient` | `#ffd6f0 → #ff7ad6 → #e157f5` (left to right) | Primary buttons, logo, highlighted words in page titles, bars |
+| `--positive` | `#4ade80` | Positive changes only |
 | `--negative` | `#f3727f` | Negative changes, errors |
 | `--warning` | `#ffa42b` | Engagement above 100%, "already available" warnings |
 
@@ -198,9 +200,11 @@ names are used.
   `--pill` with white text. Multi-select filters open a dark popover list.
 - Cards: `--surface-raised` background, lighten to `--surface-hover` on hover, no borders.
 - Rows of cards: a heading on the left and "Show all" on the right, as on Discover.
-- Charts: `--accent` for the main series, greys for secondary series, no gridlines except faint
+- Charts: `--pink` for the main series with a pink-to-transparent area fill, greys for secondary series, no gridlines except faint
   horizontal ones, tooltips on `--surface-hover`.
-- Primary action buttons: `--accent` background, black bold text, pill shape, slight scale on hover.
+- Primary action buttons: `--brand-gradient` background, black bold text, pill shape, slight scale on
+  hover.
+- Page titles may highlight their key word with the gradient as text fill.
 - Motion: 150–200 ms transitions on hover and focus only.
 
 ## Accessibility
