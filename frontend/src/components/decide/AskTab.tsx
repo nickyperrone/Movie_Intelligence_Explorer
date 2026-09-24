@@ -20,7 +20,7 @@ const SUGGESTIONS = [
   'Which 5 movies had the most streams in Brazil in 2025?',
   'Which platform grew the most in Mexico from 2024 to 2025?',
   'How did Sony titles perform on Netflix compared with Amazon?',
-  'What was the box office of Zootopia 2?',
+  'Which country streamed the most horror movies in 2025?',
 ]
 
 const STATUS: Record<Schemas['AssistantStatus'], { label: string; className: string }> = {
@@ -296,7 +296,7 @@ export function AskTab() {
           Answers use only the datasets: consumption for AR, BR, CO, MX on 4 platforms (Jan 2023–Jun
           2026) and one availability snapshot.
         </p>
-        <div className="flex items-end gap-2 rounded-3xl bg-pill p-2 focus-within:ring-2 focus-within:ring-white">
+        <div className="flex items-end gap-2 rounded-3xl bg-pill p-2 transition-shadow focus-within:ring-1 focus-within:ring-white/40">
           <label htmlFor="ask-input" className="sr-only">
             Question for the assistant
           </label>
@@ -308,7 +308,7 @@ export function AskTab() {
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Ask about streams, platforms, countries or titles"
-            className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-subtle"
+            className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-subtle focus-visible:[box-shadow:none]"
           />
           <button
             type="submit"
