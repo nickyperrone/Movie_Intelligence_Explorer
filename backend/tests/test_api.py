@@ -179,6 +179,7 @@ def test_spa_routes_do_not_shadow_the_api(client):
 def test_the_page_is_never_cached_and_hashed_files_always_are(client):
     page = client.get("/movies/tt30017619")
     assert page.headers["Cache-Control"] == "no-cache"
+    assert client.head("/decide").status_code == 200
     asset = next((settings.frontend_dist / "assets").glob("*.js")).name
     cached = client.get(f"/assets/{asset}")
     assert cached.headers["Cache-Control"] == "public, max-age=31536000, immutable"

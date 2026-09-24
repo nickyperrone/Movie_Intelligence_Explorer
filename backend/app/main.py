@@ -69,7 +69,8 @@ class HashedAssets(StaticFiles):
 if settings.frontend_dist.exists():
     app.mount("/assets", HashedAssets(directory=settings.frontend_dist / "assets"), name="assets")
 
-    @app.get("/{path:path}", include_in_schema=False)
+    # HEAD too: uptime monitors and link previews check pages with it.
+    @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
     def single_page_app(path: str) -> FileResponse:
         if path.startswith("api/"):
             raise HTTPException(404, f"No endpoint at /{path}")

@@ -5,7 +5,7 @@ search over the catalog, a movie view with availability and consumption, a perfo
 Discover shelves, and a Decision Studio for licensing and project decisions, including a chat that
 answers from the data and says so when the data cannot answer.
 
-- **Live app:** added after the Dokploy deploy.
+- **Live app:** https://movie-intelligence.nicoleperrone.com
 - **Deploy:** one `Dockerfile` builds the data, the embeddings and the app, and serves everything on
   port 4040. Steps in [08-deployment](docs/08-deployment.md#dokploy).
 - **API docs:** `/api/docs` on the running app (serves the hand-written OpenAPI contract).
@@ -226,11 +226,12 @@ environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
 
 ## Tests
 
-- Backend (107): data validations, metric correctness against the raw CSVs, search filter semantics,
+- Backend (108): data validations, metric correctness against the raw CSVs, search filter semantics,
   LLM guards with a fake client, chat assistant safety (DROP, INSERT, multiple statements and file
   reads are rejected), rate limits, error envelopes, and a schemathesis contract test.
-- Frontend (15): formatting, month math, Discover cover rules, chat text rendering, saved chat
-  history, empty states.
+- Frontend (24): formatting, month math, Discover cover rules, chat text rendering, saved chat
+  history, title comparison (month alignment, top marks), the search box typing effect, empty
+  states.
 - CI runs lint, type checks, all tests and a codegen drift check on every push.
 
 ## Known limitations
@@ -245,6 +246,9 @@ environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
   strict categories. The current names were written by hand from each cluster's central movies
   (`data/curated/theme_names.json`); `make themes` can regenerate them with the LLM.
 - Platform logos load from Google's favicon service; a monogram is shown if they cannot load.
+- Rate limit counters live in memory in one worker: they reset on restart and would not be shared
+  across several instances (Redis would be the next step).
+- The chat history is kept only in the browser that wrote it.
 
 ## Next steps
 
