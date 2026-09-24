@@ -88,11 +88,12 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
   "Themes") and a "Show all" link on the right that selects that section's pill.
 - Each section is one horizontal row of `CollectionCard`s with scroll snap (with `All`), or a
   grid (with a single section selected).
-- Every cover on the page has the same size. Cards per view are the smaller of 5 (desktop), 3
-  (tablet) or 2 (phone) and the number of cards in the shortest visible row, so no row ends in a
-  gap; longer rows scroll by themselves while the pointer rests on
-  a row's left or right edge (a soft fade marks the edge); clicking an edge moves one page; on touch
-  screens rows are swiped. The grid view uses the same number of columns.
+- Every cover on the page has the same size, and covers never grow past about 230 px wide. Cards
+  per view depend on the width of the content area, not the window: 2 below 448 px, then 3, 4, 5,
+  6 and 7 from 448, 672, 896, 1152 and 1280 px. A row with fewer cards than that leaves blank
+  space at its end instead of enlarging its covers. Longer rows scroll by themselves while the
+  pointer rests on a row's left or right edge (a soft fade marks the edge); clicking an edge moves
+  one page; on touch screens rows are swiped. The grid view uses the same number of columns.
 - `CollectionCard`:
   - Cover = poster of the collection's number 1 movie at the poster ratio (2:3), rounded corners.
     If an earlier collection in the page order already uses that poster, the next movie in the
