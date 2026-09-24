@@ -202,7 +202,7 @@ The LLM never computes numbers and never makes a decision.
 |---|---|---|
 | Search interpretation | Turns a query into filters and a cleaner search text | Values are checked against the real vocabularies; unknown values are dropped |
 | Movie insight, dashboard "What changed" | Writes 2 or 3 sentences from facts computed in SQL | Every number in the text must appear in the facts, or the text is not shown |
-| Licensing and concept memos | Writes the memo around a demand signal computed in code | Same number guard; fixed caveats added by the API |
+| Licensing and concept memos | Writes the memo around a demand signal or a concept decision computed in code | Same number guard; the memo must agree with the decision; fixed caveats added by the API. The concept decision and its reasons are written by code, so they show without a key |
 | Ask the data (chat) | Answers questions using only read-only SQL and semantic search | One SELECT per call on a locked read-only connection; every answer shows its SQL and rows; answers with numbers not found in the results are withheld; "no data" and "outside the dataset" are explicit answers |
 | Themes (offline) | Names clusters of similar movies for Discover | Reviewed by a person before commit |
 
@@ -222,17 +222,32 @@ environment variables ([08-deployment](docs/08-deployment.md#rate-limits)).
 | Discover | What stands out without a query: top by country and platform, rising, evergreen, binge-worthy, hidden gems, AI themes |
 | Search | Which titles match an idea, in English or Spanish |
 | Movie | What a title is, where it is available and how it performed, by country and platform |
-| Decision Studio | Should we license this title to this platform in this country (comparable titles, expected range, verdict, memo); where a title should go next (every platform and country ranked); how up to 3 titles compare side by side (by calendar month or from launch); which genres are gaining; which project to pursue (demand behind up to 3 loglines); and a chat that answers from the data |
+| Decision Studio | Should we license this title to this platform in this country (comparable titles, expected range, verdict, memo); where a title should go next (every platform and country ranked); how up to 3 titles compare side by side (by calendar month or from launch); which genres are gaining; which project to pursue (up to 3 loglines ranked by how their most similar movies did, with a decision, its reasons, the evidence level and the method, all computed from the data); and a chat that answers from the data |
 
 ## Tests
 
-- Backend (108): data validations, metric correctness against the raw CSVs, search filter semantics,
+- Backend (119): data validations, metric correctness against the raw CSVs, search filter semantics,
   LLM guards with a fake client, chat assistant safety (DROP, INSERT, multiple statements and file
-  reads are rejected), rate limits, error envelopes, and a schemathesis contract test.
+  reads are rejected), rate limits, concept decisions, error envelopes, and a schemathesis contract
+  test.
 - Frontend (24): formatting, month math, Discover cover rules, chat text rendering, saved chat
   history, title comparison (month alignment, top marks), the search box typing effect, empty
   states.
 - CI runs lint, type checks, all tests and a codegen drift check on every push.
+
+## Phone, tablet and desktop
+
+Every page is designed for phones as well as desktops, and each change was checked in a browser at
+phone (375 px), tablet (768 px) and desktop (1280 to 1920 px) widths:
+
+- No page scrolls sideways. Below 640 px the sidebar becomes a bottom bar, and card rows, filter
+  pills and the comparison columns swipe sideways instead.
+- Cards and covers are sized from the width of the content area, so they never get too large on a
+  wide screen or too small on a phone.
+- The chat input and the comparison chart stay pinned while the content around them scrolls, and
+  the search box hint shortens on phones so its example is never cut off.
+- Motion (page fades, count-ups, the typing hint) is skipped when the device asks for reduced
+  motion.
 
 ## Known limitations
 

@@ -1,5 +1,5 @@
-import { Columns3, Plus, X } from 'lucide-react'
-import type { CSSProperties, ReactNode } from 'react'
+import { Columns3, Plus, RefreshCw, X } from 'lucide-react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ApiError, type Schemas } from '@/api/client'
 import { useCollections, useComparedTitles, useFilterOptions } from '@/api/queries'
@@ -19,8 +19,7 @@ import { useUrlState } from '@/lib/url-state'
 const MAX_TITLES = 3
 const COLORS = ['#ff6fcf', '#ffffff', '#7dd3fc']
 const TITLE_ID = /^tt\d{7,9}$/
-// Discover shelves offered as one-click comparisons when nothing is picked yet.
-const STARTER_SHELVES = ['top-2025', 'top-brazil', 'rising-now']
+const IDEAS_PER_VIEW = 3
 
 type Column = {
   titleId: string
@@ -158,12 +157,37 @@ function AddSlot({ exclude, onAdd }: { exclude: string[]; onAdd: (titleId: strin
   )
 }
 
+// Fisher-Yates driven by a seeded generator (mulberry32), so the order stays the same across
+// renders of one visit and changes between visits.
+function shuffled<T>(items: T[], seed: number): T[] {
+  let state = seed
+  const random = () => {
+    state = (state + 0x6d2b79f5) | 0
+    let t = Math.imul(state ^ (state >>> 15), 1 | state)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 2 ** 32
+  }
+  const result = [...items]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 function StartPanel({ onPick }: { onPick: (titleIds: string[]) => void }) {
   const collections = useCollections()
-  const shelves = STARTER_SHELVES.flatMap((id) => {
-    const shelf = collections.data?.collections.find((c) => c.collection_id === id)
-    return shelf && shelf.preview.length >= 2 ? [shelf] : []
-  })
+  // A random order fixed for this visit; "Other ideas" walks through it, so every shelf with
+  // something to compare comes up before any repeats.
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32))
+  const [page, setPage] = useState(0)
+  const candidates = shuffled(
+    (collections.data?.collections ?? []).filter((c) => c.preview.length >= 2),
+    seed,
+  )
+  const pages = Math.max(Math.ceil(candidates.length / IDEAS_PER_VIEW), 1)
+  const start = (page % pages) * IDEAS_PER_VIEW
+  const shelves = candidates.slice(start, start + IDEAS_PER_VIEW)
   return (
     <Panel className="mx-auto max-w-2xl p-8 text-center max-sm:p-5">
       <span className="mx-auto grid size-12 place-items-center rounded-full bg-pink text-black">
@@ -181,10 +205,22 @@ function StartPanel({ onPick }: { onPick: (titleIds: string[]) => void }) {
           className="w-full max-w-sm"
         />
       </div>
-      <p className="mt-8 text-xs font-bold uppercase tracking-wide text-subtle">
-        Or start from a shelf
-      </p>
-      <div className="mt-3 flex flex-wrap justify-center gap-3">
+      <div className="mt-8 flex items-center justify-center gap-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-subtle">
+          Or start from a shelf
+        </p>
+        {pages > 1 && (
+          <button
+            type="button"
+            onClick={() => setPage((current) => current + 1)}
+            className="pressable inline-flex items-center gap-1 rounded-full bg-pill px-2.5 py-1 text-xs font-bold text-subtle hover:text-white"
+          >
+            <RefreshCw className="size-3" />
+            Other ideas
+          </button>
+        )}
+      </div>
+      <div key={page} className="appear mt-3 flex flex-wrap justify-center gap-3">
         {collections.isLoading &&
           Array.from({ length: 3 }, (_, index) => (
             <Skeleton key={index} className="h-14 w-48 rounded-full" />
