@@ -24,7 +24,8 @@ The whole app follows the layout patterns of a music streaming desktop client:
 
 - `AppLayout`: a fixed left sidebar (240 px, collapses to icons below 1024 px, becomes a bottom bar
   below 640 px) and a main panel with rounded corners on a black frame.
-- Sidebar: app name "Movie Intelligence" and navigation items with icons (Dashboard, Discover,
+- Sidebar: a solid pink clapperboard icon (no gradient) with the app name "Movie Intelligence", and
+  navigation items with icons (Dashboard, Discover,
   Search, Decision Studio). The active item is white; the others are grey and turn white on hover.
 - Top bar inside the main panel: back and forward buttons (history), and a pill-shaped search input
   with a search icon. `/` focuses it unless the user is typing in a field.
@@ -89,7 +90,9 @@ Modeled on a music streaming home screen: dark surface, pill filters, titled row
   grid (with a single section selected).
 - Every cover on the page has the same size. Cards per view are the smaller of 5 (desktop), 3
   (tablet) or 2 (phone) and the number of cards in the shortest visible row, so no row ends in a
-  gap; longer rows scroll with small arrows. The grid view uses the same number of columns.
+  gap; longer rows scroll by themselves while the pointer rests on
+  a row's left or right edge (a soft fade marks the edge); clicking an edge moves one page; on touch
+  screens rows are swiped. The grid view uses the same number of columns.
 - `CollectionCard`:
   - Cover = poster of the collection's number 1 movie at the poster ratio (2:3), rounded corners.
     If an earlier collection in the page order already uses that poster, the next movie in the
@@ -262,7 +265,7 @@ names are used.
 | `--text` | `#ffffff` | Headings, primary text, active pill background |
 | `--text-muted` | `#b3b3b3` | Subtitles, secondary text, axis labels |
 | `--pink` | `#ff6fcf` | Accent: primary buttons (solid), active states, main chart series, bars |
-| `--brand-gradient` | `#ffd6f0 → #ff7ad6 → #e157f5` (left to right) | Only the logo and one highlighted word per page title. Never on buttons |
+| `--brand-gradient` | `#ffd6f0 → #ff7ad6 → #e157f5` (left to right) | Only one highlighted word per page title. Never on buttons or the logo |
 | `--positive` | `#3ddc84` | Gains: positive changes and growth, always with a + sign |
 | `--negative` | `#ff5c5c` | Losses: negative changes, always with a − sign; errors |
 | `--warning` | `#ffa42b` | Engagement above 100%, "already available" warnings |
