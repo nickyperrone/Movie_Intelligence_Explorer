@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router'
 import { ApiError } from '@/api/client'
-import { useCollection } from '@/api/queries'
+import { useCollection, useCollections } from '@/api/queries'
 import { Poster } from '@/components/common/Poster'
 import { ErrorState } from '@/components/common/States'
 import { CollectionCover } from '@/components/discover/CollectionCover'
+import { assignCovers } from '@/components/discover/covers'
 import { Skeleton } from '@/components/ui/skeleton'
 import { compact, percent, rating } from '@/lib/format'
 import { NotFoundPage } from './NotFoundPage'
@@ -18,6 +19,7 @@ function formatMetric(label: string, value: number | null): string {
 export function CollectionPage() {
   const { collectionId = '' } = useParams()
   const collection = useCollection(collectionId)
+  const collections = useCollections()
 
   if (collection.error instanceof ApiError && collection.error.status === 404) {
     return <NotFoundPage message="This collection does not exist." />
@@ -42,9 +44,11 @@ export function CollectionPage() {
     <div>
       <header className="-mx-6 flex items-end gap-6 bg-gradient-to-b from-pill to-surface px-6 pb-6 pt-8 max-sm:-mx-4 max-sm:flex-col max-sm:items-start max-sm:px-4">
         <CollectionCover
-          collectionId={data.collection_id}
-          title={data.title}
-          cover={data.items[0]?.movie}
+          collection={data}
+          cover={
+            assignCovers(collections.data?.collections ?? []).get(data.collection_id) ??
+            data.items[0]?.movie
+          }
           className="w-52 shrink-0 max-sm:w-40"
         />
         <div className="min-w-0">

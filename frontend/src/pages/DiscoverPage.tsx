@@ -6,6 +6,7 @@ import { Pill } from '@/components/common/Pill'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { EmptyState, ErrorState } from '@/components/common/States'
 import { CollectionCard } from '@/components/discover/CollectionCard'
+import { assignCovers } from '@/components/discover/covers'
 import { useUrlState } from '@/lib/url-state'
 
 type Section = Schemas['CollectionSection']
@@ -22,6 +23,7 @@ export function DiscoverPage() {
   const collections = useCollections()
   const selected = SECTIONS.find((section) => section.id === get('section'))?.id
   const visible = selected ? SECTIONS.filter((section) => section.id === selected) : SECTIONS
+  const covers = assignCovers(collections.data?.collections ?? [])
 
   return (
     <div className="pt-2">
@@ -72,7 +74,7 @@ export function DiscoverPage() {
               {!collections.data ? (
                 <CardRow label={`${section.title} loading`}>
                   {Array.from({ length: 5 }, (_, index) => (
-                    <div key={index} className="w-48 shrink-0">
+                    <div key={index}>
                       <MovieCardSkeleton />
                     </div>
                   ))}
@@ -80,7 +82,11 @@ export function DiscoverPage() {
               ) : selected ? (
                 <div className="-mx-3 grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
                   {items.map((collection) => (
-                    <CollectionCard key={collection.collection_id} collection={collection} />
+                    <CollectionCard
+                      key={collection.collection_id}
+                      collection={collection}
+                      cover={covers.get(collection.collection_id)}
+                    />
                   ))}
                 </div>
               ) : (
@@ -89,7 +95,7 @@ export function DiscoverPage() {
                     <CollectionCard
                       key={collection.collection_id}
                       collection={collection}
-                      className="w-52 shrink-0 max-sm:w-40"
+                      cover={covers.get(collection.collection_id)}
                     />
                   ))}
                 </CardRow>

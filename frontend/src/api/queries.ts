@@ -41,6 +41,17 @@ export function useSearch(query: SearchQuery | null) {
   })
 }
 
+export function useSearchSuggestions(text: string) {
+  const q = text.trim()
+  return useQuery({
+    queryKey: ['suggestions', q],
+    queryFn: () =>
+      unwrap(api.GET('/search', { params: { query: { q, interpret: false, limit: 5 } } })),
+    enabled: q.length >= 2,
+    placeholderData: keepPreviousData,
+  })
+}
+
 export function useMovieLookup(text: string) {
   return useQuery({
     queryKey: ['lookup', text],

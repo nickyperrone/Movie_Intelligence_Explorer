@@ -20,11 +20,7 @@ function SimilarMovies({ titleId }: { titleId: string }) {
       <SectionHeader title="More like this" description="Closest movies by plot and genres." />
       <CardRow label="Similar movies">
         {similar.data.results.map((result) => (
-          <MovieCard
-            key={result.movie.title_id}
-            movie={result.movie}
-            className="w-44 shrink-0 snap-start"
-          />
+          <MovieCard key={result.movie.title_id} movie={result.movie} className="snap-start" />
         ))}
       </CardRow>
     </section>
