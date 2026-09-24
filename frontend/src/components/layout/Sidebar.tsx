@@ -1,4 +1,4 @@
-import { Compass, LayoutDashboard, Scale, Search } from 'lucide-react'
+import { Clapperboard, Compass, LayoutDashboard, Scale, Search } from 'lucide-react'
 import { NavLink } from 'react-router'
 import { cn } from '@/lib/cn'
 
@@ -19,9 +19,7 @@ export function Sidebar() {
         to="/"
         className="mb-4 flex items-center gap-2 px-3 py-2 max-lg:justify-center max-sm:hidden"
       >
-        <span className="grid size-7 place-items-center rounded-md bg-brand text-sm font-black text-black">
-          M
-        </span>
+        <Clapperboard className="size-7 shrink-0 text-pink" aria-hidden />
         <span className="font-bold tracking-tight max-lg:hidden">Movie Intelligence</span>
       </NavLink>
       <ul className="flex flex-col gap-1 max-sm:w-full max-sm:flex-row max-sm:justify-around">

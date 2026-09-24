@@ -26,7 +26,7 @@ export function CollectionCover({ collection, cover, className }: CollectionCove
       <div className="absolute inset-x-0 bottom-[10%] flex items-stretch">
         <span className="w-1.5 shrink-0" style={{ background: color }} />
         <span
-          className="ml-1.5 flex-1 truncate px-2 py-1 text-base font-bold"
+          className="ml-1.5 line-clamp-2 flex-1 px-2 py-1 text-sm leading-tight font-bold sm:text-base"
           style={{ background: color, color: textOn(color) }}
         >
           {collection.title}

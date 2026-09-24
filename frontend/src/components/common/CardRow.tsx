@@ -10,9 +10,12 @@ import {
 } from 'react'
 import { cn } from '@/lib/cn'
 
+const EDGE_SPEED_PX_PER_FRAME = 7
+
 // A row of cards that always fills the width: 2, 3 or 5 cards per view by screen size, capped by
 // `maxPerView` (a page passes its shortest row's length so every card has the same size) or by
-// the row's own length. Small arrows scroll one view at a time.
+// the row's own length. Resting the pointer on an edge scrolls the row by itself; clicking an
+// edge moves one page; touch screens swipe.
 export function CardRow({
   children,
   label,
@@ -23,6 +26,7 @@ export function CardRow({
   maxPerView?: number
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<number | null>(null)
   const [canScroll, setCanScroll] = useState({ back: false, forward: false })
   const count = Children.count(children)
 
@@ -35,22 +39,45 @@ export function CardRow({
     })
   }, [])
 
+  const stopGlide = useCallback(() => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
+    frameRef.current = null
+    trackRef.current?.style.removeProperty('scroll-snap-type')
+  }, [])
+
   useEffect(() => {
     measure()
     const track = trackRef.current
     if (!track) return
     const observer = new ResizeObserver(measure)
     observer.observe(track)
-    return () => observer.disconnect()
-  }, [measure, count])
+    return () => {
+      observer.disconnect()
+      stopGlide()
+    }
+  }, [measure, stopGlide, count])
 
-  function scroll(direction: 1 | -1) {
+  function startGlide(direction: 1 | -1) {
+    const track = trackRef.current
+    if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    stopGlide()
+    // Snapping fights a continuous scroll, so it is paused while gliding.
+    track.style.setProperty('scroll-snap-type', 'none')
+    const step = () => {
+      track.scrollLeft += direction * EDGE_SPEED_PX_PER_FRAME
+      frameRef.current = requestAnimationFrame(step)
+    }
+    frameRef.current = requestAnimationFrame(step)
+  }
+
+  function page(direction: 1 | -1) {
+    stopGlide()
     const track = trackRef.current
     track?.scrollBy({ left: direction * track.clientWidth, behavior: 'smooth' })
   }
 
-  const arrow =
-    'absolute top-[38%] z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-black/80 text-white shadow-lg transition-opacity hover:bg-black focus-visible:opacity-100'
+  const edge =
+    'absolute inset-y-0 z-10 flex w-16 cursor-pointer items-center text-white/70 transition-opacity duration-200 max-sm:hidden'
 
   return (
     <div className="group/row relative">
@@ -71,8 +98,13 @@ export function CardRow({
         <button
           type="button"
           aria-label={`Scroll ${label} back`}
-          onClick={() => scroll(-1)}
-          className={cn(arrow, '-left-3 opacity-0 group-hover/row:opacity-100')}
+          onMouseEnter={() => startGlide(-1)}
+          onMouseLeave={stopGlide}
+          onClick={() => page(-1)}
+          className={cn(
+            edge,
+            '-left-3 justify-start bg-gradient-to-r from-surface to-transparent pl-1 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100',
+          )}
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -81,8 +113,13 @@ export function CardRow({
         <button
           type="button"
           aria-label={`Scroll ${label} forward`}
-          onClick={() => scroll(1)}
-          className={cn(arrow, '-right-3 opacity-80 group-hover/row:opacity-100')}
+          onMouseEnter={() => startGlide(1)}
+          onMouseLeave={stopGlide}
+          onClick={() => page(1)}
+          className={cn(
+            edge,
+            '-right-3 justify-end bg-gradient-to-l from-surface to-transparent pr-1 opacity-60 group-hover/row:opacity-100 focus-visible:opacity-100',
+          )}
         >
           <ChevronRight className="size-5" />
         </button>
