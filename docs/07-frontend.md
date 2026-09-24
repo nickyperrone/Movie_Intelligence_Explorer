@@ -220,8 +220,11 @@ name, same size, grid of 2 to 6 columns). A tile opens the dashboard filtered by
 ## Search examples
 
 The example queries on the empty Search page and the example in the search box placeholder rotate
-every 4 seconds with a fade, through a fixed list of 12 examples (English and Spanish). Rotation
-pauses while the user hovers or types, and does not run with reduced motion.
+every 4 seconds with a fade, through a fixed list of 12 examples, always in English (search still
+accepts Spanish and Portuguese). Each time the Search page opens (and on each app load for the
+search box), the examples come in a new random order, and the first one is never the one shown first
+the previous time.
+Rotation pauses while the user hovers or types, and does not run with reduced motion.
 
 ## States
 
