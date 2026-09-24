@@ -13,26 +13,53 @@ answers from the data and says so when the data cannot answer.
 
 ## Run it locally
 
-Requirements: Python 3.12 with [uv](https://docs.astral.sh/uv/), Node 22, make.
+Requirements: Python 3.12 with [uv](https://docs.astral.sh/uv/), Node 22 and make.
 
 ```bash
-make setup   # install backend and frontend dependencies, build the database and embeddings
+git clone https://github.com/nickyperrone/Movie_Intelligence_Explorer.git
+cd Movie_Intelligence_Explorer
+make setup   # installs dependencies, builds the database and the embeddings
 make dev     # API on http://localhost:5001, app on http://localhost:5173
 ```
 
-The first `make setup` downloads the embedding model (about 2.2 GB). Ports can be changed with
-`API_PORT` and `WEB_PORT`; 5000 is avoided because macOS uses it for AirPlay.
-
-LLM features are optional. To enable them, copy `.env.example` to `.env` and set `OPENAI_API_KEY`
-(and `OPENAI_MODEL` if you want a model other than the default). Without a key every page works and
-the LLM parts say they are unavailable.
-
-With Docker instead: `docker compose up --build`, then open http://localhost:4040. The image serves
-the app and the API on one port (4040), which is also what Dokploy exposes.
+- The first `make setup` downloads the embedding model (about 2.2 GB) and embeds the 1,590 plots.
+  Later runs reuse both.
+- Open http://localhost:5173. The Vite server sends `/api` calls to the API, so there is nothing
+  else to configure.
+- Ports can be changed with `API_PORT` and `WEB_PORT` (`make dev API_PORT=5002`). 5000 is avoided
+  because macOS uses it for AirPlay.
+- The LLM features are optional. To turn them on, copy `.env.example` to `.env` and set
+  `OPENAI_API_KEY`. Without a key every page works, search uses embeddings only, and each LLM section
+  says it is unavailable.
 
 Other commands: `make test` (lint, type checks and all tests), `make eval` (search evaluation),
 `make codegen` (regenerate types from the API spec), `make themes` (rebuild the AI themes; needs an
 OpenAI key and a human review of the names).
+
+## Run it with Docker
+
+Only Docker is needed:
+
+```bash
+docker compose up --build   # or: make up
+```
+
+Then open http://localhost:4040. The same image is what Dokploy runs.
+
+- One image holds everything: the build compiles the frontend, builds the database from
+  `data/raw/`, downloads the model and computes the embeddings, so the container downloads nothing when it starts.
+- The first build takes several minutes, and the image is about 5 GB, mostly PyTorch and the model.
+  Give Docker at least 4 GB of memory.
+- If a `.env` file exists, compose passes it to the container. Without it the app runs with the LLM
+  features off.
+- Without compose:
+
+  ```bash
+  docker build -t movie-intelligence .
+  docker run -p 4040:4040 -e OPENAI_API_KEY=sk-... movie-intelligence
+  ```
+
+- The container runs as a non-root user and has a health check on `/api/v1/health`.
 
 ## How it was built: spec first
 
@@ -60,13 +87,13 @@ every GET endpoint's responses against it.
 
 ```mermaid
 flowchart LR
-    subgraph BUILD["Docker build"]
+    subgraph BUILD["Docker build (or make data)"]
         RAW["data/raw/*.csv"] --> DB["pipeline/build_db.py<br/>clean + validate"]
         DB --> DUCK[("DuckDB")]
         DUCK --> EMB["pipeline/build_embeddings.py"]
         EMB --> VEC[("embeddings.npy")]
     end
-    subgraph RUNTIME["One container"]
+    subgraph RUNTIME["One container, port 4040"]
         UI["React app"] -->|"/api/v1"| API["FastAPI routers"]
         API --> SVC["services"]
         SVC --> DUCK2["DuckDB, read-only"]
@@ -77,12 +104,28 @@ flowchart LR
     VEC -.-> IDX
 ```
 
-- **Backend:** FastAPI, DuckDB (embedded, read-only, file access disabled), sentence-transformers,
-  NumPy. Routers only handle HTTP; services hold all SQL and logic.
-- **Frontend:** React, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Recharts. All shareable
-  state (filters, tabs, search) lives in the URL.
-- **Deployment:** one Docker image built from the raw CSVs, deployed on Dokploy. See
-  [08-deployment](docs/08-deployment.md).
+- **Data is built ahead of time.** The pipeline reads the three CSVs, cleans them, fails on any
+  broken rule (duplicate grain, unknown id, negative metric) and writes a DuckDB file and the plot
+  embeddings. The running app only reads.
+- **One process serves everything.** FastAPI serves the API under `/api/v1` and the built React app.
+  There is no separate web server, database server or vector database to run.
+- **Backend:** routers only handle HTTP; services hold all SQL and logic. DuckDB is embedded, opened
+  read-only with file access disabled. The embedding model and the vectors are loaded once at
+  startup; a search embeds the query and compares it with every movie in NumPy.
+- **Frontend:** React, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query and Recharts. Filters,
+  tabs and searches live in the URL, so every view can be shared as a link.
+- **Contract:** the hand-written OpenAPI file generates the Pydantic models and the TypeScript types.
+- **Deployment:** one Dockerfile on Dokploy. See [08-deployment](docs/08-deployment.md).
+
+| Folder | Contents |
+|---|---|
+| `docs/` | Specs and the API contract |
+| `data/raw/` | The three source CSVs |
+| `data/curated/` | Reviewed files that are committed (theme names) |
+| `backend/pipeline/` | Offline build: database, embeddings, themes |
+| `backend/app/` | FastAPI app: `routers/` for HTTP, `services/` for SQL and logic |
+| `backend/eval/` | Search evaluation queries and runner |
+| `frontend/src/` | React app: `pages/`, `components/`, `api/` hooks |
 
 Main decisions and the alternatives rejected are in the
 [decision log](docs/02-architecture.md#decisions).
@@ -174,14 +217,14 @@ says it is unavailable.
 | Discover | What stands out without a query: top by country and platform, rising, evergreen, binge-worthy, hidden gems, AI themes |
 | Search | Which titles match an idea, in English or Spanish |
 | Movie | What a title is, where it is available and how it performed, by country and platform |
-| Decision Studio | Should we license this title to this platform in this country (comparable titles, expected range, verdict, memo); which project to revive (demand of up to 3 loglines); and a chat to ask the data |
+| Decision Studio | Should we license this title to this platform in this country (comparable titles, expected range, verdict, memo); where a title should go next (every platform and country ranked); which genres are gaining; which project to pursue (demand behind up to 3 loglines); and a chat that answers from the data |
 
 ## Tests
 
-- Backend (93): data validations, metric correctness against the raw CSVs, search filter semantics,
+- Backend (102): data validations, metric correctness against the raw CSVs, search filter semantics,
   LLM guards with a fake client, chat assistant safety (DROP, INSERT, multiple statements and file
   reads are rejected), error envelopes, and a schemathesis contract test.
-- Frontend (11): formatting, month math, Discover cover rules, empty states.
+- Frontend (12): formatting, month math, Discover cover rules, chat text rendering, empty states.
 - CI runs lint, type checks, all tests and a codegen drift check on every push.
 
 ## Known limitations
@@ -199,11 +242,27 @@ says it is unavailable.
 
 ## Next steps
 
-- pgvector or FAISS once the catalog grows past what fits comfortably in memory.
-- A cross-encoder reranker on the top 50 results to lift precision on subtle queries.
-- Docling to extract press kits and scripts (PDF) and add them to the search index.
-- Availability history, so licensing can use windows and exclusivity.
-- A forecasting model trained on first-months curves, validated against the comparables approach.
+What I would do with more time, most useful first:
+
+- **Check the licensing verdicts against the past.** Hide the last 6 months of consumption, run the
+  comparables for titles that launched before that, and measure how often the actual streams fall
+  inside the expected range. Today the range is evidence with no measured accuracy.
+- **Rerank the top results.** A cross-encoder over the top 50 would lift precision on subtle queries
+  such as "family movies about overcoming loss" (0.20 today).
+- **Mix keyword and semantic search.** BM25 on titles and people, merged with the embedding ranking,
+  would handle exact names and rare words without the current special case for people.
+- **An evaluation set for the chat.** 30 questions with answers checked by hand, run in CI, so a
+  prompt change cannot silently make answers worse.
+- **Availability history.** Keeping each monthly snapshot would let licensing use windows and
+  exclusivity, and let the app say when a title was available where it was streamed.
+- **A smaller image.** Build the data as a release artifact instead of inside the image, and run a
+  quantized e5 with ONNX Runtime instead of PyTorch. The image would drop from about 5 GB to under
+  1 GB and start faster.
+- **Usage and cost logs for the LLM.** Latency, tokens and grounding failures per feature, to see
+  what the LLM parts cost and how often their answers are withheld.
+- **Scale.** pgvector or FAISS once the catalog no longer fits comfortably in memory; today 1,590
+  vectors take under a millisecond to compare.
+- **More sources.** Docling to read press kits and scripts (PDF) into the search index.
 
 ## AI-assisted development
 
