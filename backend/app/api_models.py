@@ -567,25 +567,17 @@ class ConceptsRequest(BaseModel):
     loglines: list[Logline] = Field(..., max_length=3, min_length=1)
 
 
-class ConceptResult(BaseModel):
+class EvidenceLevel(RootModel[Literal["high", "medium", "low", "insufficient_evidence"]]):
+    root: Literal["high", "medium", "low", "insufficient_evidence"]
+
+
+class ConceptDecision(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    index: int = Field(..., description="Position in the request", ge=0)
-    logline: str
-    rank: int = Field(..., ge=1)
-    demand_index: float | None
-    eligible_count: int = Field(..., ge=0)
-    saturation: int = Field(..., ge=0)
-    comparables: list[ScoredMovie] = Field(..., max_length=20)
-    demand_by_country: list[ShareItem]
-
-
-class ConceptsEvaluation(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    concepts: list[ConceptResult]
+    status: Literal["clear_lead", "narrow_lead", "too_close", "single", "insufficient_evidence"]
+    headline: str
+    reasons: list[str]
 
 
 class ConceptsMemo(BaseModel):
@@ -709,3 +701,47 @@ class DashboardTrend(BaseModel):
     filters: DashboardFilters
     series: list[MonthlyPoint]
     groups: list[TrendGroup]
+
+
+class ConceptResult(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    index: int = Field(..., description="Position in the request", ge=0)
+    logline: str
+    rank: int = Field(..., ge=1)
+    demand_index: float | None = Field(
+        ..., description="Null with fewer than 3 eligible comparables (since 1.6.0)"
+    )
+    eligible_count: int = Field(..., ge=0)
+    saturation: int = Field(..., ge=0)
+    comparables: list[ScoredMovie] = Field(..., max_length=20)
+    demand_by_country: list[ShareItem]
+    evidence: ExpectedRange
+    demand_vs_typical: float | None
+    evidence_level: EvidenceLevel
+    crowded: bool
+    comparable_evidence: list[Comparable] = Field(
+        ...,
+        description="Same movies as comparables, with their first-6-month streams over all countries and platforms",
+        max_length=20,
+    )
+    reasons: list[str] = Field(
+        ..., description="Plain sentences written by code from the figures above"
+    )
+
+
+class ConceptsEvaluation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    concepts: list[ConceptResult]
+    decision: ConceptDecision
+    typical_movie: float | None = Field(
+        ..., description="Median first-6-month streams of every eligible movie"
+    )
+    window_start_limit: Month
+    similarity_cutoff: float = Field(
+        ...,
+        description="Standard deviations above the catalog mean a movie's similarity must reach",
+    )

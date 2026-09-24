@@ -13,7 +13,6 @@ from typing import Any
 import numpy as np
 
 from app import api_models as m
-from app.config import settings
 from app.db import fetch_all, fetch_one, fetch_values
 from app.services import display, llm
 from app.services.dashboard import data_months
@@ -326,76 +325,3 @@ def licensing_memo(title_id: str, platform: str, country: str) -> m.LicensingMem
     if assessment is None:
         return None
     return llm.write_licensing_memo(licensing_display(assessment), assessment.signal)
-
-
-def concept_result(index: int, logline: str) -> m.ConceptResult:
-    search = search_index()
-    ranked = search.rank_vector(
-        search.embed_query(logline), limit=COMPARABLE_COUNT, min_z=settings.min_relevance_z
-    )
-    comparable_ids = [tid for tid, _ in ranked]
-    windows = first_six_months(comparable_ids) if comparable_ids else {}
-    cutoff = eligibility_cutoff()
-    eligible = [w.streams for w in windows.values() if w.first_month <= cutoff]
-    recent_start = shift_months(data_months()[1], -11)
-    by_country = fetch_all(
-        """
-        SELECT country AS key, sum(streams) AS streams, sum(total_minutes) AS minutes
-        FROM consumption WHERE list_contains(?, title_id)
-        GROUP BY country ORDER BY streams DESC
-        """,
-        [comparable_ids],
-    )
-    total = sum(row["streams"] for row in by_country)
-    movies = summaries(comparable_ids)
-    return m.ConceptResult(
-        index=index,
-        logline=logline,
-        rank=1,
-        demand_index=float(median(eligible)) if eligible else None,
-        eligible_count=len(eligible),
-        saturation=sum(w.first_month >= recent_start for w in windows.values()),
-        comparables=[m.ScoredMovie(movie=movies[tid], score=score) for tid, score in ranked],
-        demand_by_country=[
-            m.ShareItem(
-                key=row["key"],
-                streams=row["streams"],
-                viewing_hours=row["minutes"] / 60,
-                share_of_streams=row["streams"] / total if total else 0,
-            )
-            for row in by_country
-        ],
-    )
-
-
-def evaluate_concepts(loglines: list[str]) -> m.ConceptsEvaluation:
-    results = [concept_result(index, logline) for index, logline in enumerate(loglines)]
-    order = sorted(results, key=lambda r: (r.demand_index is None, -(r.demand_index or 0), r.index))
-    for rank, result in enumerate(order, start=1):
-        result.rank = rank
-    return m.ConceptsEvaluation(concepts=results)
-
-
-def concepts_memo(loglines: list[str]) -> m.ConceptsMemo:
-    evaluation = evaluate_concepts(loglines)
-    if all(result.demand_index is None for result in evaluation.concepts):
-        return m.ConceptsMemo(
-            status=m.LlmStatus("insufficient_evidence"),
-            summary=None,
-            per_concept=[],
-            caveats=llm.DECISION_CAVEATS,
-        )
-    facts = {
-        "concepts": [
-            {
-                "logline": result.logline,
-                "rank": str(result.rank),
-                "demand_index_median_first_6_month_streams": display.compact(result.demand_index),
-                "comparables_with_full_window": str(result.eligible_count),
-                "comparables_released_in_last_12_months": str(result.saturation),
-                "closest_comparables": [c.movie.title for c in result.comparables[:5]],
-            }
-            for result in evaluation.concepts
-        ]
-    }
-    return llm.write_concepts_memo(facts, len(loglines))

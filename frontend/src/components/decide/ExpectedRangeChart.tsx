@@ -4,9 +4,10 @@ import { compact } from '@/lib/format'
 type ExpectedRangeChartProps = {
   range: Schemas['ExpectedRange']
   comparables: Schemas['Comparable'][]
+  typicalLabel?: string
 }
 
-function Legend() {
+function Legend({ typicalLabel }: { typicalLabel: string }) {
   return (
     <ul className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-subtle">
       <li className="flex items-center gap-1.5">
@@ -19,8 +20,7 @@ function Legend() {
         <span className="h-3 w-0.5 bg-pink" /> Their median
       </li>
       <li className="flex items-center gap-1.5">
-        <span className="h-3 border-l border-dashed border-white" /> Typical title on this platform
-        and country
+        <span className="h-3 border-l border-dashed border-white" /> {typicalLabel}
       </li>
     </ul>
   )
@@ -28,7 +28,11 @@ function Legend() {
 
 // One axis of "streams in the first 6 months": the comparables' middle half, their median, the
 // median of every title on the target, and one dot per comparable.
-export function ExpectedRangeChart({ range, comparables }: ExpectedRangeChartProps) {
+export function ExpectedRangeChart({
+  range,
+  comparables,
+  typicalLabel = 'Typical title on this platform and country',
+}: ExpectedRangeChartProps) {
   const values = comparables.filter((c) => c.eligible).map((c) => c.first_six_month_streams ?? 0)
   const max = Math.max(...values, range.p75 ?? 0, range.benchmark ?? 0, 1) * 1.08
   const x = (value: number) => `${(value / max) * 100}%`
@@ -91,7 +95,7 @@ export function ExpectedRangeChart({ range, comparables }: ExpectedRangeChartPro
         ))}
       </div>
       <figcaption className="mt-4">
-        <Legend />
+        <Legend typicalLabel={typicalLabel} />
       </figcaption>
     </figure>
   )

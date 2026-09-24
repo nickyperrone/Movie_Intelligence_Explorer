@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 
 from app import api_models as m
-from app.services import comparables
+from app.services import comparables, concepts
 
 router = APIRouter(prefix="/decisions", tags=["decisions"])
 
@@ -38,9 +38,9 @@ def get_licensing_memo(title_id: TitleId, platform: str, country: str) -> m.Lice
 
 @router.post("/concepts")
 def evaluate_concepts(request: m.ConceptsRequest) -> m.ConceptsEvaluation:
-    return comparables.evaluate_concepts([logline.root for logline in request.loglines])
+    return concepts.evaluate_concepts([logline.root for logline in request.loglines])
 
 
 @router.post("/concepts/memo")
 def get_concepts_memo(request: m.ConceptsRequest) -> m.ConceptsMemo:
-    return comparables.concepts_memo([logline.root for logline in request.loglines])
+    return concepts.concepts_memo([logline.root for logline in request.loglines])

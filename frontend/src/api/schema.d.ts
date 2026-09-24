@@ -808,19 +808,44 @@ export interface components {
         ConceptsRequest: {
             loglines: string[];
         };
+        /** @description evidence, demand_vs_typical, evidence_level, crowded, comparable_evidence and reasons were added in 1.6.0 (docs/04-metrics.md). */
         ConceptResult: {
             /** @description Position in the request */
             index: number;
             logline: string;
             rank: number;
+            /** @description Null with fewer than 3 eligible comparables (since 1.6.0) */
             demand_index: number | null;
             eligible_count: number;
             saturation: number;
             comparables: components["schemas"]["ScoredMovie"][];
             demand_by_country: components["schemas"]["ShareItem"][];
+            evidence: components["schemas"]["ExpectedRange"];
+            demand_vs_typical: number | null;
+            evidence_level: components["schemas"]["EvidenceLevel"];
+            crowded: boolean;
+            /** @description Same movies as comparables, with their first-6-month streams over all countries and platforms */
+            comparable_evidence: components["schemas"]["Comparable"][];
+            /** @description Plain sentences written by code from the figures above */
+            reasons: string[];
         };
+        /** @enum {string} */
+        EvidenceLevel: "high" | "medium" | "low" | "insufficient_evidence";
+        ConceptDecision: {
+            /** @enum {string} */
+            status: "clear_lead" | "narrow_lead" | "too_close" | "single" | "insufficient_evidence";
+            headline: string;
+            reasons: string[];
+        };
+        /** @description decision, typical_movie, window_start_limit and similarity_cutoff were added in 1.6.0. */
         ConceptsEvaluation: {
             concepts: components["schemas"]["ConceptResult"][];
+            decision: components["schemas"]["ConceptDecision"];
+            /** @description Median first-6-month streams of every eligible movie */
+            typical_movie: number | null;
+            window_start_limit: components["schemas"]["Month"];
+            /** @description Standard deviations above the catalog mean a movie's similarity must reach */
+            similarity_cutoff: number;
         };
         ConceptsMemo: {
             status: components["schemas"]["LlmStatus"];
