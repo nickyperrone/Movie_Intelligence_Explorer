@@ -8,7 +8,7 @@ Recharts. All UI copy in English.
 | Route | Page | URL parameters |
 |---|---|---|
 | `/` | `DashboardPage` | `start`, `end` (`YYYY-MM`), `countries`, `platforms`, `genres`, `distributors` (repeated), `metric` (`streams` \| `hours`), `sort` |
-| `/discover` | `DiscoverPage` | — |
+| `/discover` | `DiscoverPage` | `section` (`country` \| `now` \| `platform` \| `theme`) |
 | `/discover/:collectionId` | `CollectionPage` | — |
 | `/search` | `SearchPage` | `q`, `interpret`, `genres`, `year_min`, `year_max`, `countries`, `platforms`, `people` |
 | `/movies/:titleId` | `MoviePage` | `countries`, `platforms`, `metric` |
@@ -50,12 +50,27 @@ Enter navigates to `/search?q=...`.
 
 ### Discover
 
-- Sections in this order: "Top by country", "Right now" (rising, top of 2025, evergreen,
-  binge-worthy, hidden gems), "By platform", "Themes".
-- Each section is a horizontal row with scroll snap. Each `CollectionCard` shows a 2 × 2 mosaic of
-  the first four posters under a dark gradient, the title and the one-line description.
-- `CollectionPage`: header with title and description, then a ranked list of `MovieRow`s with the
-  ranking metric in the last column.
+Modeled on a music streaming home screen: dark surface, pill filters, titled rows of square covers.
+
+- The page always uses the dark palette, independent of the system theme, so posters stand out.
+- Top: pill filters `All`, `Top by country`, `Right now`, `By platform`, `Themes`. The active pill is
+  filled white with dark text; the others are dark grey. The selection is kept in the URL
+  (`/discover?section=country`). `All` shows every section; the others show one section.
+- Each section: a large bold heading on the left ("Top by country", "Right now", "By platform",
+  "Themes") and a "Show all" link on the right that selects that section's pill.
+- Each section is one horizontal row of `CollectionCard`s with scroll snap (with `All`), or a
+  wrapping grid (with a single section selected).
+- `CollectionCard`:
+  - Square cover = poster of the collection's number 1 movie, rounded corners, `object-fit: cover`.
+  - A colored band across the lower part of the cover with the collection name in bold
+    ("Top in Brazil"). The band color is picked from a fixed palette by a hash of the collection id,
+    so it is stable across reloads.
+  - Below the cover: the collection title (one line, truncated) and a muted subtitle listing the
+    next titles ("Zootopia 2, Elio and more", two lines max).
+  - On hover the card background lightens; the whole card is a link to `/discover/:collectionId`.
+- `CollectionPage`, also dark: a header with the large cover, the label "Collection", the title,
+  the description and the number of movies; then the ranked list as rows (rank, poster thumbnail,
+  title with year and genres, metric value aligned right). A row links to the movie.
 
 ### Search
 
@@ -144,7 +159,8 @@ shows.
 ## Visual direction
 
 - Neutral base (shadcn "zinc"), one accent color for data highlights, system light/dark theme.
-- Posters carry the color on Discover; the rest of the UI stays quiet.
+- Discover and collection pages use a dark surface; posters and cover bands carry the color. The
+  rest of the UI stays quiet and follows the system theme.
 - Inter font via `@fontsource-variable/inter` (bundled, no external requests).
 - Numbers use tabular figures in tables and KPI cards.
 
